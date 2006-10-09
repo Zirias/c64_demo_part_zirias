@@ -6,8 +6,6 @@
 
 .export gfx_init
 .export gfx_done
-.export gfx_setviewpage
-.export gfx_setdrawpage
 .export gfx_setcolor
 .export gfx_clear
 .export	gfx_coreplot
@@ -24,21 +22,20 @@ PLOT_Y		= $fc
 PLOT_MODE	= $f9
 
 .data
-gfx_drawpage:	.byte	$e0
-gfx_colpage:	.byte	$cc
-gfx_tabhptr:	.word	gfx_tabh0
+gfx_drawpage:	.byte	$60
+gfx_colpage:	.byte	$5c
 
 .code
 gfx_init:
 		lda	CIA2_DATA_A
-		and	#%11111100
+		and	#%11111110
 		sta	CIA2_DATA_A
 		lda	VIC_CTL1
 		ora	#%00100000
 		sta	VIC_CTL1
 		lda	VIC_MEMCTL
-		and	#%00111111
-		ora	#%00111000
+		and	#%01111111
+		ora	#%01111000
 		sta	VIC_MEMCTL
 		rts
 
@@ -52,38 +49,6 @@ gfx_done:
 		lda	VIC_MEMCTL
 		and	#%00010111
 		sta	VIC_MEMCTL
-		rts
-
-gfx_setviewpage:
-		bne	vp_1
-		lda	CIA2_DATA_A
-		and	#$FE
-		sta	CIA2_DATA_A
-		rts
-vp_1:		lda	CIA2_DATA_A
-		ora	#$01
-		sta	CIA2_DATA_A
-		rts
-
-gfx_setdrawpage:
-		bne	dp_1
-		lda	#$e0
-		sta	gfx_drawpage
-		lda	#$dc
-		sta	gfx_colpage
-		lda	#<gfx_tabh0
-		sta	gfx_tabhptr
-		lda	#>gfx_tabh0
-		sta	gfx_tabhptr+1
-		rts
-dp_1:		lda	#$a0
-		sta	gfx_drawpage
-		lda	#$8c
-		sta	gfx_colpage
-		lda	#<gfx_tabh1
-		sta	gfx_tabhptr
-		lda	#>gfx_tabh1
-		sta	gfx_tabhptr+1
 		rts
 
 gfx_setcolor:
@@ -128,10 +93,6 @@ cl_loop:	sta	($9e),y
 		rts
 
 gfx_coreplot:
-		lda	gfx_tabhptr
-		sta	cp_addh+1
-		lda	gfx_tabhptr+1
-		sta	cp_addh+2
 		ldx	PLOT_Y
 		ldy	PLOT_XL
 		tya
@@ -140,7 +101,7 @@ gfx_coreplot:
 		adc	gfx_tabl,x
 		sta	$9e
 		lda	PLOT_XH
-cp_addh:	adc	$FFFF,x
+		adc	gfx_tabh,x
 		sta	$9f
 		lda	gfx_bits,y
 		ldy	#0
@@ -195,57 +156,31 @@ gfx_tabl:	.byte	$00,$01,$02,$03,$04,$05,$06,$07
 		.byte	$C0,$C1,$C2,$C3,$C4,$C5,$C6,$C7
 		.byte	$00,$01,$02,$03,$04,$05,$06,$07
 
-gfx_tabh0:	.byte	$E0,$E0,$E0,$E0,$E0,$E0,$E0,$E0
-		.byte	$E1,$E1,$E1,$E1,$E1,$E1,$E1,$E1
-		.byte	$E2,$E2,$E2,$E2,$E2,$E2,$E2,$E2
-		.byte	$E3,$E3,$E3,$E3,$E3,$E3,$E3,$E3
-		.byte	$E5,$E5,$E5,$E5,$E5,$E5,$E5,$E5
-		.byte	$E6,$E6,$E6,$E6,$E6,$E6,$E6,$E6
-		.byte	$E7,$E7,$E7,$E7,$E7,$E7,$E7,$E7
-		.byte	$E8,$E8,$E8,$E8,$E8,$E8,$E8,$E8
-		.byte	$EA,$EA,$EA,$EA,$EA,$EA,$EA,$EA
-		.byte	$EB,$EB,$EB,$EB,$EB,$EB,$EB,$EB
-		.byte	$EC,$EC,$EC,$EC,$EC,$EC,$EC,$EC
-		.byte	$ED,$ED,$ED,$ED,$ED,$ED,$ED,$ED
-		.byte	$EF,$EF,$EF,$EF,$EF,$EF,$EF,$EF
-		.byte	$F0,$F0,$F0,$F0,$F0,$F0,$F0,$F0
-		.byte	$F1,$F1,$F1,$F1,$F1,$F1,$F1,$F1
-		.byte	$F2,$F2,$F2,$F2,$F2,$F2,$F2,$F2
-		.byte	$F4,$F4,$F4,$F4,$F4,$F4,$F4,$F4
-		.byte	$F5,$F5,$F5,$F5,$F5,$F5,$F5,$F5
-		.byte	$F6,$F6,$F6,$F6,$F6,$F6,$F6,$F6
-		.byte	$F7,$F7,$F7,$F7,$F7,$F7,$F7,$F7
-		.byte	$F9,$F9,$F9,$F9,$F9,$F9,$F9,$F9
-		.byte	$FA,$FA,$FA,$FA,$FA,$FA,$FA,$FA
-		.byte	$FB,$FB,$FB,$FB,$FB,$FB,$FB,$FB
-		.byte	$FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
-		.byte	$FE,$FE,$FE,$FE,$FE,$FE,$FE,$FE
-
-gfx_tabh1:	.byte	$A0,$A0,$A0,$A0,$A0,$A0,$A0,$A0
-		.byte	$A1,$A1,$A1,$A1,$A1,$A1,$A1,$A1
-		.byte	$A2,$A2,$A2,$A2,$A2,$A2,$A2,$A2
-		.byte	$A3,$A3,$A3,$A3,$A3,$A3,$A3,$A3
-		.byte	$A5,$A5,$A5,$A5,$A5,$A5,$A5,$A5
-		.byte	$A6,$A6,$A6,$A6,$A6,$A6,$A6,$A6
-		.byte	$A7,$A7,$A7,$A7,$A7,$A7,$A7,$A7
-		.byte	$A8,$A8,$A8,$A8,$A8,$A8,$A8,$A8
-		.byte	$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
-		.byte	$AB,$AB,$AB,$AB,$AB,$AB,$AB,$AB
-		.byte	$AC,$AC,$AC,$AC,$AC,$AC,$AC,$AC
-		.byte	$AD,$AD,$AD,$AD,$AD,$AD,$AD,$AD
-		.byte	$AF,$AF,$AF,$AF,$AF,$AF,$AF,$AF
-		.byte	$B0,$B0,$B0,$B0,$B0,$B0,$B0,$B0
-		.byte	$B1,$B1,$B1,$B1,$B1,$B1,$B1,$B1
-		.byte	$B2,$B2,$B2,$B2,$B2,$B2,$B2,$B2
-		.byte	$B4,$B4,$B4,$B4,$B4,$B4,$B4,$B4
-		.byte	$B5,$B5,$B5,$B5,$B5,$B5,$B5,$B5
-		.byte	$B6,$B6,$B6,$B6,$B6,$B6,$B6,$B6
-		.byte	$B7,$B7,$B7,$B7,$B7,$B7,$B7,$B7
-		.byte	$B9,$B9,$B9,$B9,$B9,$B9,$B9,$B9
-		.byte	$BA,$BA,$BA,$BA,$BA,$BA,$BA,$BA
-		.byte	$BB,$BB,$BB,$BB,$BB,$BB,$BB,$BB
-		.byte	$BC,$BC,$BC,$BC,$BC,$BC,$BC,$BC
-		.byte	$BE,$BE,$BE,$BE,$BE,$BE,$BE,$BE
+gfx_tabh:	.byte	$60,$60,$60,$60,$60,$60,$60,$60
+		.byte	$61,$61,$61,$61,$61,$61,$61,$61
+		.byte	$62,$62,$62,$62,$62,$62,$62,$62
+		.byte	$63,$63,$63,$63,$63,$63,$63,$63
+		.byte	$65,$65,$65,$65,$65,$65,$65,$65
+		.byte	$66,$66,$66,$66,$66,$66,$66,$66
+		.byte	$67,$67,$67,$67,$67,$67,$67,$67
+		.byte	$68,$68,$68,$68,$68,$68,$68,$68
+		.byte	$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A
+		.byte	$6B,$6B,$6B,$6B,$6B,$6B,$6B,$6B
+		.byte	$6C,$6C,$6C,$6C,$6C,$6C,$6C,$6C
+		.byte	$6D,$6D,$6D,$6D,$6D,$6D,$6D,$6D
+		.byte	$6F,$6F,$6F,$6F,$6F,$6F,$6F,$6F
+		.byte	$70,$70,$70,$70,$70,$70,$70,$70
+		.byte	$71,$71,$71,$71,$71,$71,$71,$71
+		.byte	$72,$72,$72,$72,$72,$72,$72,$72
+		.byte	$74,$74,$74,$74,$74,$74,$74,$74
+		.byte	$75,$75,$75,$75,$75,$75,$75,$75
+		.byte	$76,$76,$76,$76,$76,$76,$76,$76
+		.byte	$77,$77,$77,$77,$77,$77,$77,$77
+		.byte	$79,$79,$79,$79,$79,$79,$79,$79
+		.byte	$7A,$7A,$7A,$7A,$7A,$7A,$7A,$7A
+		.byte	$7B,$7B,$7B,$7B,$7B,$7B,$7B,$7B
+		.byte	$7C,$7C,$7C,$7C,$7C,$7C,$7C,$7C
+		.byte	$7E,$7E,$7E,$7E,$7E,$7E,$7E,$7E
 
 gfx_bits:	.byte	$80,$40,$20,$10,$08,$04,$02,$01
 		.byte	$80,$40,$20,$10,$08,$04,$02,$01

@@ -1,7 +1,5 @@
 .import gfx_init
 .import gfx_done
-.import gfx_setviewpage
-.import gfx_setdrawpage
 .import gfx_setcolor
 .import gfx_clear
 .import gfx_coreplot

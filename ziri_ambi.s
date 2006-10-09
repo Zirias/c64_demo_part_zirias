@@ -2,15 +2,14 @@
 ; Zirias Ambigramm in 8 lines and 20 cols
 ;
 
-;LINE1	= $EA50
-LINE1	= $EB90
-LINE2	= $ECD0
-LINE3	= $EE10
-LINE4	= $EF50
-LINE5	= $F090
-LINE6	= $F1D0
-LINE7	= $F310
-LINE8	= $F450
+LINE1	= $6B90
+LINE2	= $6CD0
+LINE3	= $6E10
+LINE4	= $6F50
+LINE5	= $7090
+LINE6	= $71D0
+LINE7	= $7310
+LINE8	= $7450
 
 length	= 160
 
