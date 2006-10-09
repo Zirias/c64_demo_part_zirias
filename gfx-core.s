@@ -8,7 +8,6 @@
 .export gfx_done
 .export gfx_setcolor
 .export gfx_clear
-.export	gfx_coreplot
 .export gfx_plot
 
 .export PLOT_XL
@@ -62,9 +61,6 @@ gfx_setcolor:
 		stx	$9f
 		ldy	#0
 		sty	$9e
-		ldx	#$34
-		sei
-		stx	$01
 		ldx	#$04
 sc_loop:	sta	($9e),y
 		iny
@@ -72,9 +68,6 @@ sc_loop:	sta	($9e),y
 		inc	$9f
 		dex
 		bne	sc_loop
-		ldx	#$37
-		stx	$01
-		cli
 		rts
 
 gfx_clear:
@@ -92,7 +85,7 @@ cl_loop:	sta	($9e),y
 		bne	cl_loop
 		rts
 
-gfx_coreplot:
+gfx_plot:
 		ldx	PLOT_Y
 		ldy	PLOT_XL
 		tya
@@ -117,16 +110,6 @@ cp_set:		ora	($9e),y
 		rts
 cp_inv:		eor	($9e),y
 		sta	($9e),y
-		rts
-
-gfx_plot:
-		lda	#$34
-		sei
-		sta	$01
-		jsr	gfx_coreplot
-		lda	#$37
-		sta	$01
-		cli
 		rts
 
 .rodata

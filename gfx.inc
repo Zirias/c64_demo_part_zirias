@@ -2,7 +2,6 @@
 .import gfx_done
 .import gfx_setcolor
 .import gfx_clear
-.import gfx_coreplot
 .import gfx_plot
 .import gfx_coreline
 .import gfx_line

@@ -10,7 +10,7 @@
 .importzp PLOT_MODE
 
 ; gfx_plot function
-.import gfx_coreplot
+.import gfx_plot
 
 .export gfx_coreline
 .export gfx_line
@@ -54,7 +54,6 @@ ZPINC		= $E6
 ; expects (x1,y1) in PLOT_*
 ;         (x2,y2) in LINETO_*
 ;	  x2 MUST be >= x1
-;	  Processor port MUST be set to RAM
 
 gfx_coreline:
 		lda	LINETO_XL	; compute
@@ -95,7 +94,7 @@ cl_y:		lda	DY		; load DY
 		ldx	DY		; initialize counter
 		inx			;
 		stx	CNTL		; with DY + 1
-cl_y_l:		jsr	gfx_coreplot	; draw a point
+cl_y_l:		jsr	gfx_plot	; draw a point
 cl_incdec1:	dec	PLOT_Y		; count in y-direction
 		dec	CNTL		; decrease counter
 		bne	cl_y_c1		; not yet zero -> go on
@@ -124,7 +123,7 @@ cl_x:		lda	DXH		;
 		stx	CNTL		; initialize counter
 		lda	DXH		; with DX +1
 		sta	CNTH		;
-cl_x_l:		jsr	gfx_coreplot	; draw a point
+cl_x_l:		jsr	gfx_plot	; draw a point
 		inc	PLOT_XL		; count in x-direction
 		bne	cl_x_c1		;
 		inc	PLOT_XH		; count highbyte when necessary
@@ -159,9 +158,6 @@ cl_incdec2:	dec	PLOT_Y		; count in y-direction
 ;         (x2,y2) in LINETO_*
 
 gfx_line:
-		lda	#$34		; set processor port
-		sei			; to RAM
-		sta	$01		; 
 		lda	LINETO_XL	; compare
 		sec			; x1 and x2
 		sbc	PLOT_XL		;
@@ -181,8 +177,5 @@ gfx_line:
 		sta	PLOT_Y		;
 		stx	LINETO_Y	;
 gl_ok:		jsr	gfx_coreline	; call gfx_coreline
-		lda	#$37		; set processor port
-		sta	$01		; back to ROM
-		cli
 		rts
 
