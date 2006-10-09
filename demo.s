@@ -12,6 +12,9 @@ tbllen		= 195
 
 .import ziri_ambi
 
+.import	raster_on
+.import raster_off
+
 .code
 		; Initialisierung:
 		ldx	#0
@@ -78,6 +81,8 @@ tbllen		= 195
 		jsr	gfx_clear
 		; Ambigramm:
 		jsr	ziri_ambi
+		; Raster-Effekt:
+		jsr	raster_on
 		; Zeichenmodus auf invertieren:
 		lda	#MODE_INV
 		sta	PLOT_MODE
@@ -213,7 +218,8 @@ cont1b:		sty	to1
 		jsr	GETKB
 		bne	out
 		jmp	loop
-out:		jsr	gfx_done
+out:		jsr	raster_off
+		jsr	gfx_done
 		jsr	snd_stop
 		lda	border
 		sta	BORDER_COLOR
