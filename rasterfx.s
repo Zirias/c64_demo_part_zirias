@@ -43,23 +43,23 @@ sp_pointer:	sta	$5ff8,x
 		bpl	sp_pointer
 
 		; configure sprites in VIC
-		lda	#$58
+		lda	#$10
 		sta	SPRITE_0_X
-		lda	#$70
+		lda	#$40
 		sta	SPRITE_1_X
-		lda	#$88
+		lda	#$70
 		sta	SPRITE_2_X
 		lda	#$a0
 		sta	SPRITE_3_X
-		lda	#$b8
-		sta	SPRITE_4_X
 		lda	#$d0
-		sta	SPRITE_5_X
-		lda	#$e8
-		sta	SPRITE_6_X
+		sta	SPRITE_4_X
 		lda	#$00
+		sta	SPRITE_5_X
+		lda	#$30
+		sta	SPRITE_6_X
+		lda	#$60
 		sta	SPRITE_7_X
-		lda	#$80
+		lda	#$e0
 		sta	SPRITE_X_HB
 		lda	#0
 		sta	SPRITE_MCOL_1
@@ -85,6 +85,7 @@ sp_pointer:	sta	$5ff8,x
 		sta	SPRITE_7_Y
 		lda	#$ff
 		sta	SPRITE_MULTI
+		sta	SPRITE_DBL_X
 		lda	#$f8
 		sta	flash_offset
 		lda	#1
@@ -215,7 +216,7 @@ spm_hd:		dec	SPRITE_0_X,x
 		bne	spm_next
 spm_l:		lda	SPRITE_0_X,x
 		bne	spm_ld
-		lda	#$60
+		lda	#$90
 		sta	SPRITE_0_X,x
 		iny
 		bne	spm_next
