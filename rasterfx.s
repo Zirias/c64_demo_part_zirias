@@ -14,6 +14,8 @@
 interrupt_tmp:	.res	1
 pointer:	.res	1
 bg_save:	.res	1
+flash_offset:	.res	1
+flash_counter:	.res	1
 
 .code
 
@@ -83,6 +85,10 @@ sp_pointer:	sta	$5ff8,x
 		sta	SPRITE_7_Y
 		lda	#$ff
 		sta	SPRITE_MULTI
+		lda	#$f8
+		sta	flash_offset
+		lda	#1
+		sta	flash_counter
 
 		; install raster-irq-routine
 		lda	BG_COLOR_0
@@ -177,7 +183,24 @@ sprites_bottom: lda	#0
 		jsr	raster_next
 		jmp	$ea7e
 
-sprites_move:	lda	SPRITE_X_HB
+sprites_move:	; do flashing first
+		ldx	flash_counter
+		dex
+		stx	flash_counter
+		bpl	spmove
+		ldx	#1
+		stx	flash_counter
+		ldx	flash_offset
+		lda	#12
+		sta	SPRITE_0_COL-$f8,x
+		inx
+		bne	spfok
+		ldx	#$f8
+spfok:		lda	#1
+		sta	SPRITE_0_COL-$f8,x
+		stx	flash_offset
+		; now move sprites
+spmove:		lda	SPRITE_X_HB
 		ldx	#14
 spm_while:	asl
 		tay
@@ -235,7 +258,6 @@ raster_table:
 		.byte	4,60
 		.byte	8,80
 		.byte	0,250,%10010011
-		.byte	1,24,0
 		.byte	3,30
 		.byte	0,24,14
 		.byte	0,28,13
@@ -247,7 +269,6 @@ raster_table:
 		.byte	4,60
 		.byte	8,80
 		.byte	0,250,%10010011
-		.byte	1,24,0
 		.byte	3,30
 		.byte	255
 
