@@ -43,26 +43,28 @@ sp_pointer:	sta	$5ff8,x
 		bpl	sp_pointer
 
 		; configure sprites in VIC
-		lda	#$10
-		sta	SPRITE_0_X
-		lda	#$40
-		sta	SPRITE_1_X
 		lda	#$70
-		sta	SPRITE_2_X
+		sta	SPRITE_0_X
+		lda	#$88
+		sta	SPRITE_1_X
 		lda	#$a0
+		sta	SPRITE_2_X
+		lda	#$b8
 		sta	SPRITE_3_X
 		lda	#$d0
 		sta	SPRITE_4_X
-		lda	#$00
+		lda	#$e8
 		sta	SPRITE_5_X
-		lda	#$30
+		lda	#$00
 		sta	SPRITE_6_X
-		lda	#$60
+		lda	#$18
 		sta	SPRITE_7_X
-		lda	#$e0
+		lda	#$c0
 		sta	SPRITE_X_HB
 		lda	#0
 		sta	SPRITE_MCOL_1
+		sta	SPRITE_DBL_X
+		sta	SPRITE_DBL_Y
 		lda	#7
 		sta	SPRITE_MCOL_2
 		lda	#12
@@ -74,7 +76,7 @@ sp_pointer:	sta	$5ff8,x
 		sta	SPRITE_5_COL
 		sta	SPRITE_6_COL
 		sta	SPRITE_7_COL
-		lda	#0
+		lda	#4
 		sta	SPRITE_0_Y
 		sta	SPRITE_1_Y
 		sta	SPRITE_2_Y
@@ -85,7 +87,6 @@ sp_pointer:	sta	$5ff8,x
 		sta	SPRITE_7_Y
 		lda	#$ff
 		sta	SPRITE_MULTI
-		sta	SPRITE_DBL_X
 		lda	#$f8
 		sta	flash_offset
 		lda	#1
@@ -259,6 +260,8 @@ raster_table:
 		.byte	4,60
 		.byte	8,80
 		.byte	0,250,%10010011
+		.byte	0,253,14
+		.byte	1,27,6
 		.byte	3,30
 		.byte	0,24,14
 		.byte	0,28,13
@@ -270,6 +273,8 @@ raster_table:
 		.byte	4,60
 		.byte	8,80
 		.byte	0,250,%10010011
+		.byte	0,254,14
+		.byte	1,28,6
 		.byte	3,30
 		.byte	255
 
