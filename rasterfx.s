@@ -4,6 +4,7 @@
 
 .include "vic.inc"
 .include "gfx.inc"
+.include "snd.inc"
 
 .export raster_on
 .export raster_off
@@ -127,7 +128,7 @@ goon:		inx
 		sta	VIC_RASTER
 		inx
 		tya
-		bne	sprite_cmd
+		bne	other_cmd
 		inx
 		stx	pointer
 		lda	raster_table-1,x
@@ -141,12 +142,17 @@ next_setparm:	and	#%01111111
 		lda	#(setparm - irq_branch - 2)
 		sta	irq_branch + 1
 		rts
-sprite_cmd:	stx	pointer
+other_cmd:	stx	pointer
 		lsr
 		beq	spcmd_bot
 		lsr
 		beq	spcmd_top
-		lda	#(sprites_move - irq_branch - 2)
+		lsr
+		beq	spcmd_move
+		lda	#(sound_step - irq_branch - 2)
+		sta	irq_branch + 1
+		rts
+spcmd_move:	lda	#(sprites_move - irq_branch - 2)
 		sta	irq_branch + 1
 		rts
 spcmd_bot:	lda	#(sprites_bottom - irq_branch - 2)
@@ -172,6 +178,10 @@ setparm:	lda	interrupt_tmp
 setcolor:	lda	interrupt_tmp
 		sta	BG_COLOR_0
 		sta	BORDER_COLOR
+		jsr	raster_next
+		jmp	$ea7e
+
+sound_step:	jsr	snd_play
 		jsr	raster_next
 		jmp	$ea7e
 
@@ -259,6 +269,7 @@ raster_table:
 		.byte	0,50,%10111011
 		.byte	4,60
 		.byte	8,80
+		.byte	16,100
 		.byte	0,250,%10010011
 		.byte	0,253,14
 		.byte	1,27,6
@@ -272,6 +283,7 @@ raster_table:
 		.byte	0,50,%10111011
 		.byte	4,60
 		.byte	8,80
+		.byte	16,100
 		.byte	0,250,%10010011
 		.byte	0,254,14
 		.byte	1,28,6

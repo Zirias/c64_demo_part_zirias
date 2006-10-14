@@ -25,7 +25,6 @@ tbllen		= 195
 		lda	#tbllen
 		sta	from1
 		sta	from2
-;		lda	#tbllen - 129
 		lda	#tbllen - 123
 		sta	to1
 		sta	to2
@@ -65,7 +64,7 @@ tbllen		= 195
 		sta	snd_songptr
 		lda	#>song
 		sta	snd_songptr+1
-		lda	#112
+		lda	#12
 		sta	snd_speed
 		jsr	snd_init
 
@@ -151,7 +150,6 @@ to2_cont:	sta	to2ptr1+1
 		stx	to2ptr3+2
 		ldy	#tbllen
 cont2b:		sty	to2
-		jsr	snd_play
 		jsr	gfx_line
 
 		; Linie 1:
@@ -211,7 +209,6 @@ to1_cont:	sta	to1ptr1+1
 		stx	to1ptr3+2
 		ldy	#tbllen
 cont1b:		sty	to1
-		jsr	snd_play
 		jsr	gfx_line
 
 		; Ende wenn Taste gedrückt:

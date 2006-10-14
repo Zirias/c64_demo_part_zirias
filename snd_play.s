@@ -13,6 +13,9 @@
 .export snd_instr2
 .export snd_instr3
 
+.bss
+snd_count:	.res	1
+
 .code
 
 getbyte:
@@ -25,12 +28,13 @@ gb_ptr:		lda	$FFFF,x
 gb_out:		rts
 
 snd_play:
-		lda	$DD06
-		cmp	snd_speed
-		beq	play
+		ldx	snd_count
+		dex
+		beq	next_step
+		stx	snd_count
 		rts
-play:		lda	#%01001001
-		sta	$DD0F
+next_step:	ldx	snd_speed
+		stx	snd_count
 real_play:	jsr	getbyte
 		tax
 		bpl	play_disp
@@ -151,18 +155,8 @@ adsr_ch3:	jsr	getbyte
 		jmp	real_play
 
 snd_init:
-		lda	#$D0
-		ldx	#$07
-		sta	$DD04
-		stx	$DD05
-		lda	#%00000001
-		sta	$DD0E
-		lda	snd_speed
-		sta	$DD06
-		lda	#0
-		sta	$DD07
-		lda	#%01001001
-		sta	$DD0F
+		lda	#1
+		sta	snd_count
 		lda	snd_songptr
 		ldx	snd_songptr+1
 		sta	gb_ptr+1
