@@ -2,9 +2,11 @@
 ; C64 startup code
 ;
 
-.segment	"STARTUP"
+.export         __LOADADDR__: absolute = 1
+.segment        "LOADADDR"
+        .addr   *+2
 
-		.word	bs_head
+.segment	"CODE"
 bs_head:	.word	@bs_next
 		.word	$17
 		.byte	$9E,"2061"
