@@ -1,7 +1,7 @@
 ;
 ; line drawing
 ;
-; 14/11/2005 Felix M. Palmen <fmp@palmen.homeip.net>
+; 14/11/2005 Felix Palmen <felix@palmen-it.de>
 
 ; Parameters for gfx_plot, first point of line, counted by gfx_line
 .importzp PLOT_XL
