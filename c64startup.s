@@ -7,7 +7,7 @@
         .addr   *+2
 
 .segment	"CODE"
-bs_head:	.word	@bs_next
+		.word	@bs_next
 		.word	$17
 		.byte	$9E,"2061"
 		.byte	$00
