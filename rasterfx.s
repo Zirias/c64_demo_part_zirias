@@ -9,23 +9,95 @@
 .export raster_on
 .export raster_off
 
+SAVE_A		= $22
+SAVE_X		= $23
+SAVE_Y		= $24
+TBL_OFFSET	= $25
 
 .bss
 
-action:		.res	2
-
-tbl_offset:	.res	1
 bg_save:	.res	1
 flash_offset:	.res	1
 flash_counter:	.res	1
 
 
-.code
+.segment "ALGNCODE"
+.align $100
+
+raster_main:
+		sta	SAVE_A
+		stx	SAVE_X
+		sty	SAVE_Y
+		lda	#<raster_stable
+		sta	$fffe
+		inc	VIC_RASTER
+		sta	VIC_IRR
+		ldy	TBL_OFFSET		; 3
+		dey				; 2
+		bpl	offset_ok		; 2
+		ldy	#raster_start		; 2
+offset_ok:	lda	raster_switch,y
+		eor	VIC_CTL1
+		sta	VIC_CTL1
+		tsx
+		cli
+		nop
+		nop
+		nop
+		nop
+		nop
+		nop
+raster_stable:	txs
+		sty	TBL_OFFSET
+		lda	raster_action,y
+		sta	branch_act+1
+		lda	raster_data,y	; 4
+		ldx	raster_lines,y
+		stx	VIC_RASTER
+		ldy	SAVE_Y
+		inc	VIC_IRR
+		ldx	#<raster_main	; #0, aligned
+		stx	$fffe
+		nop
+		nop
+branch_act:	beq	actions		; bra
+actions:
+setcolor:	sta	BG_COLOR_0
+		sta	BORDER_COLOR
+		ldx	SAVE_X
+		lda	SAVE_A
+		rti
+setparm:	sta	VIC_CTL1
+		ldx	SAVE_X
+		lda	SAVE_A
+		rti
+showsprites:	sta	SPRITE_SHOW
+		ldx	SAVE_X
+		lda	SAVE_A
+		rti
+sound_step:	lda	#>sound_task
+		pha
+		lda	#<sound_task
+		pha
+		lda	#0
+		pha
+		ldx	SAVE_X
+		lda	SAVE_A
+		rti
+movesprites:	lda	#>sprites_task
+		pha
+		lda	#<sprites_task
+		pha
+		lda	#0
+		pha
+raster_done:	ldx	SAVE_X
+		lda	SAVE_A
+		rti
 
 raster_on:
 		; copy sprite data:
 		ldx	#0
-		stx	tbl_offset
+		stx	TBL_OFFSET
 sp_copy1:	lda	header,x
 		sta	$5000,x
 		inx
@@ -98,10 +170,8 @@ sp_pointer:	sta	$5ff8,x
 		; install raster-irq-routine
 		lda	BG_COLOR_0
 		sta	bg_save
-		lda	#<raster_done
-		ldx	#>raster_done
-		sta	action
-		stx	action+1
+		lda	raster_done-actions
+		sta	branch_act+1
 		sei
 		lda	#%01111111
 		sta	$dc0d
@@ -126,120 +196,6 @@ sp_pointer:	sta	$5ff8,x
 		cli
 		rts
 
-raster_main:
-		pha
-		txa
-		pha
-		tya
-		pha
-		lda	#<raster_stable
-		ldx	#>raster_stable
-		sta	$fffe
-		stx	$ffff
-		inc	VIC_RASTER
-		lda	#$ff
-		sta	VIC_IRR
-		tsx
-		cli
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-raster_stable:	txs
-		ldx	tbl_offset		; 4
-		lda	raster_data,x		; 4
-		dex				; 2
-		bpl	offset_ok
-		ldx	#raster_start
-		bne	store_offset
-offset_ok:	nop
-		nop
-store_offset:	stx	tbl_offset		; 4
-		ldy	#<raster_main
-		sty	$fffe
-		ldy	#>raster_main
-		sty	$ffff
-		nop
-		nop
-		nop
-		nop
-		nop
-		;jmp	(action)
-		sta	BG_COLOR_0
-		sta	BORDER_COLOR
-raster_done:
-raster_next:	lda	raster_action,x
-		sta	action+1
-		ldy	raster_data,x
-		cpy	VIC_RASTER
-		bcs	hi_noswitch
-		lda	VIC_CTL1
-		eor	#%10000000
-		sta	VIC_CTL1
-hi_noswitch:	sty	VIC_RASTER
-		dex
-		lda	raster_action,x
-		sta	action
-		stx	tbl_offset
-		lda	#$ff
-		sta	VIC_IRR
-		pla
-		tay
-		pla
-		tax
-		pla
-		rti
-
-setparm:	sta	VIC_CTL1
-		jmp	raster_done
-
-setcolor:	sta	BG_COLOR_0
-		sta	BORDER_COLOR
-		jmp	raster_done
-
-sound_step:	lda	#<raster_main
-		ldx	#>raster_main
-		sta	$fffe
-		stx	$ffff
-		jsr	raster_next
-		lda	#$ff
-		sta	VIC_IRR
-		lda	#>sound_task
-		pha
-		lda	#<sound_task
-		pha
-		lda	#0
-		pha
-		rti
-sound_task:	jsr	snd_play
-		pla
-		tay
-		pla
-		tax
-		pla
-		rti
-
-showsprites:	sta	SPRITE_SHOW
-		jmp	raster_done
-
-movesprites:	lda	#<raster_main
-		ldx	#>raster_main
-		sta	$fffe
-		stx	$ffff
-		jsr	raster_next
-		lda	#$ff
-		sta	VIC_IRR
-		lda	#>sprites_task
-		pha
-		lda	#<sprites_task
-		pha
-		lda	#0
-		pha
-		rti
 sprites_task:	; do flashing first
 		ldx	flash_counter
 		dex
@@ -282,11 +238,16 @@ spm_next:	tya
 		dex
 		bpl	spm_while
 		sta	SPRITE_X_HB
-		pla
-		tay
-		pla
-		tax
-		pla
+		ldy	SAVE_Y
+		ldx	SAVE_X
+		lda	SAVE_A
+		rti
+
+sound_task:
+		jsr	snd_play
+		ldy	SAVE_Y
+		ldx	SAVE_X
+		lda	SAVE_A
 		rti
 
 raster_off:	rts	; dummy for now
@@ -295,102 +256,192 @@ raster_off:	rts	; dummy for now
 
 .ifdef DEBUG_IRQTIMING
 raster_data:
-;		      argument		rasterline
-		.byte 13,		30
-		.byte 12,		27
-		.byte 11,		253
-		.byte 10,		250
-		.byte 9,		100
-		.byte 8,		80
-		.byte 7,		50
-		.byte 6,		42
-		.byte 5,		38
-		.byte 4,		34
-		.byte 3,		30
-		.byte 2,		26
-		.byte 1,		22
-		.byte 0,		1
+		.byte 12
+		.byte 11
+		.byte 10
+		.byte 9
+		.byte 8
+		.byte 7
+		.byte 6
+		.byte 5
+		.byte 4
+		.byte 3
+		.byte 2
+		.byte 1
+		.byte 0
+		.byte 13
 raster_start = *-raster_data-1
 
+raster_lines:
+		.byte 30
+		.byte 27
+		.byte 253
+		.byte 250
+		.byte 100
+		.byte 80
+		.byte 50
+		.byte 42
+		.byte 36
+		.byte 34
+		.byte 30
+		.byte 26
+		.byte 22
+		.byte 1
+
+raster_switch:
+		.byte $00
+		.byte $80
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $80
+
 raster_action:
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
 .else
 raster_data:
-;		      argument		rasterline
-		.byte 0,		30
-		.byte 6,		28
-		.byte 14,		254
-		.byte %00010011,	250
-		.byte 0,		100
-		.byte $ff,		80
-		.byte %00111011,	50
-		.byte 6,		44
-		.byte 14,		40
-		.byte 13,		36
-		.byte 1,		32
-		.byte 13,		28
-		.byte 14,		24
-		.byte 0,		1
-		.byte 0,		30
-		.byte 6,		27
-		.byte 14,		253
-		.byte %00010011,	250
-		.byte 0,		100
-		.byte $ff,		80
-		.byte %00111011,	50
-		.byte 6,		42
-		.byte 14,		38
-		.byte 13,		34
-		.byte 1,		30
-		.byte 13,		26
-		.byte 14,		22
-		.byte 0,		1
+		.byte 6
+		.byte 14
+		.byte %00010011
+		.byte 0
+		.byte $ff
+		.byte %00111011
+		.byte 6
+		.byte 14
+		.byte 13
+		.byte 1
+		.byte 13
+		.byte 14
+		.byte 0
+		.byte 0
+		.byte 6
+		.byte 14
+		.byte %00010011
+		.byte 0
+		.byte $ff
+		.byte %00111011
+		.byte 6
+		.byte 14
+		.byte 13
+		.byte 1
+		.byte 13
+		.byte 14
+		.byte 0
+		.byte 0
 raster_start = *-raster_data-1
 
+raster_lines:
+		.byte 30
+		.byte 27
+		.byte 254
+		.byte 249
+		.byte 100
+		.byte 80
+		.byte 49
+		.byte 44
+		.byte 40
+		.byte 36
+		.byte 32
+		.byte 28
+		.byte 24
+		.byte 1
+		.byte 30
+		.byte 27
+		.byte 253
+		.byte 249
+		.byte 100
+		.byte 80
+		.byte 49
+		.byte 42
+		.byte 38
+		.byte 34
+		.byte 30
+		.byte 26
+		.byte 22
+		.byte 1
+
+raster_switch:
+		.byte $00
+		.byte $80
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $80
+		.byte $00
+		.byte $80
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $80
+
 raster_action:
-		.word sound_step
-		.word setcolor
-		.word setcolor
-		.word setparm
-		.word movesprites
-		.word showsprites
-		.word setparm
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word showsprites
-		.word sound_step
-		.word setcolor
-		.word setcolor
-		.word setparm
-		.word movesprites
-		.word showsprites
-		.word setparm
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word setcolor
-		.word showsprites
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setparm-actions
+		.byte movesprites-actions
+		.byte showsprites-actions
+		.byte setparm-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte showsprites-actions
+		.byte sound_step-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setparm-actions
+		.byte movesprites-actions
+		.byte showsprites-actions
+		.byte setparm-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte setcolor-actions
+		.byte showsprites-actions
+		.byte sound_step-actions
 .endif
 
 ; Sprites:

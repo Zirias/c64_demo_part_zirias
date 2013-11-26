@@ -1,11 +1,11 @@
 SYS		= c64
-SYSCFG		= c64-asm.cfg
+LINKCFG		= ld65.cfg
 AS		= ca65
 LD		= ld65
 C1541		= c1541
 
 AFLAGS		= -t $(SYS) -g
-LDFLAGS		= -Ln $(BINARY).lbl -m $(BINARY).map -C $(SYSCFG)
+LDFLAGS		= -Ln $(BINARY).lbl -m $(BINARY).map -C $(LINKCFG)
 
 BINARY		= demo
 MODULES		= gfx-core.o gfx-line.o soundtable.o snd_play.o ziri_ambi.o \
