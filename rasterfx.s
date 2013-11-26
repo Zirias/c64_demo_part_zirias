@@ -332,82 +332,52 @@ raster_action:
 .else
 raster_data:
 		.byte 6
+		.byte 10
 		.byte 14
+		.byte 10
 		.byte %00010011
 		.byte 0
 		.byte $ff
 		.byte %00111011
 		.byte 6
-		.byte 14
-		.byte 13
 		.byte 1
-		.byte 13
-		.byte 14
-		.byte 0
-		.byte 0
 		.byte 6
-		.byte 14
-		.byte %00010011
-		.byte 0
-		.byte $ff
-		.byte %00111011
-		.byte 6
-		.byte 14
-		.byte 13
 		.byte 1
-		.byte 13
-		.byte 14
+		.byte 6
+		.byte 1
+		.byte 6
+		.byte 1
 		.byte 0
 		.byte 0
 raster_start = *-raster_data-1
 
 raster_lines:
-		.byte 30
-		.byte 27
-		.byte 254
-		.byte 249
-		.byte 100
-		.byte 80
-		.byte 49
-		.byte 44
-		.byte 40
-		.byte 36
-		.byte 32
-		.byte 28
-		.byte 24
-		.byte 1
-		.byte 30
+		.byte 31
+		.byte 29
 		.byte 27
 		.byte 253
+		.byte 251
 		.byte 249
 		.byte 100
 		.byte 80
 		.byte 49
-		.byte 42
-		.byte 38
-		.byte 34
-		.byte 30
-		.byte 26
-		.byte 22
+		.byte 47
+		.byte 45
+		.byte 43
+		.byte 41
+		.byte 39
+		.byte 37
+		.byte 35
+		.byte 25
 		.byte 1
 
 raster_switch:
 		.byte $00
-		.byte $80
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
 		.byte $00
 		.byte $80
 		.byte $00
-		.byte $80
+		.byte $00
+		.byte $00
 		.byte $00
 		.byte $00
 		.byte $00
@@ -424,24 +394,14 @@ raster_switch:
 raster_action:
 		.byte setcolor-actions
 		.byte setcolor-actions
-		.byte setparm-actions
-		.byte movesprites-actions
-		.byte showsprites-actions
-		.byte setparm-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte showsprites-actions
-		.byte sound_step-actions
 		.byte setcolor-actions
 		.byte setcolor-actions
 		.byte setparm-actions
 		.byte movesprites-actions
 		.byte showsprites-actions
 		.byte setparm-actions
+		.byte setbg-actions
+		.byte setbg-actions
 		.byte setbg-actions
 		.byte setbg-actions
 		.byte setbg-actions
