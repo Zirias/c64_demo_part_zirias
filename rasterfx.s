@@ -13,18 +13,19 @@
 .bss
 
 action:		.res	2
+
 tbl_offset:	.res	1
 bg_save:	.res	1
 flash_offset:	.res	1
 flash_counter:	.res	1
 
+
 .code
 
 raster_on:
 		; copy sprite data:
-		ldx	#raster_start
-		stx	tbl_offset	; needed later
 		ldx	#0
+		stx	tbl_offset
 sp_copy1:	lda	header,x
 		sta	$5000,x
 		inx
@@ -97,65 +98,116 @@ sp_pointer:	sta	$5ff8,x
 		; install raster-irq-routine
 		lda	BG_COLOR_0
 		sta	bg_save
+		lda	#<raster_done
+		ldx	#>raster_done
+		sta	action
+		stx	action+1
 		sei
+		lda	#%01111111
+		sta	$dc0d
+		sta	$dd0d
+		lda	$dc0d
+		lda	$dd0d
+		lda	#%00000001
+		sta	VIC_IRM
+		sta	VIC_IRR
+		lda	#30
+		sta	VIC_RASTER
 		lda	VIC_CTL1
-		and	#%01111111
+		ora	#%10000000
+;		and	#%01111111
 		sta	VIC_CTL1
-		jsr	raster_next
+		lda	#$35
+		sta	$01
 		lda	#<raster_main
 		ldx	#>raster_main
-		sta	$0314
-		stx	$0315
-		lda	#%10000001
-		sta	VIC_IRM
+		sta	$fffe
+		stx	$ffff
 		cli
 		rts
 
-raster_next:
-		ldx	tbl_offset
+raster_main:
+		pha
+		txa
+		pha
+		tya
+		pha
+		lda	#<raster_stable
+		ldx	#>raster_stable
+		sta	$fffe
+		stx	$ffff
+		inc	VIC_RASTER
+		lda	#$ff
+		sta	VIC_IRR
+		tsx
+		cli
+		nop
+		nop
+		nop
+		nop
+		nop
+		nop
+		nop
+		nop
+raster_stable:	txs
+		ldx	tbl_offset		; 4
+		lda	raster_data,x		; 4
+		dex				; 2
 		bpl	offset_ok
 		ldx	#raster_start
-offset_ok:
-		lda	raster_action,x
+		bne	store_offset
+offset_ok:	nop
+		nop
+store_offset:	stx	tbl_offset		; 4
+		ldy	#<raster_main
+		sty	$fffe
+		ldy	#>raster_main
+		sty	$ffff
+		nop
+		nop
+		nop
+		nop
+		nop
+		;jmp	(action)
+		sta	BG_COLOR_0
+		sta	BORDER_COLOR
+raster_done:
+raster_next:	lda	raster_action,x
 		sta	action+1
 		ldy	raster_data,x
 		cpy	VIC_RASTER
-		bcs	raster_noswitch
+		bcs	hi_noswitch
 		lda	VIC_CTL1
 		eor	#%10000000
 		sta	VIC_CTL1
-raster_noswitch:
-		sty	VIC_RASTER
+hi_noswitch:	sty	VIC_RASTER
 		dex
 		lda	raster_action,x
 		sta	action
 		stx	tbl_offset
-		rts
-
-raster_main:
-		lda	VIC_IRR
+		lda	#$ff
 		sta	VIC_IRR
-		bpl	exit_irq
-		ldx	tbl_offset
-		lda	raster_data,x
-		dex
-		stx	tbl_offset
-		jmp	(action)
-exit_irq:
-		lda	$dc0d
-		cli
-		jmp	$ea31
+		pla
+		tay
+		pla
+		tax
+		pla
+		rti
 
 setparm:	sta	VIC_CTL1
-		jsr	raster_next
-		jmp	$ea7e
+		jmp	raster_done
 
 setcolor:	sta	BG_COLOR_0
 		sta	BORDER_COLOR
-		jsr	raster_next
-		jmp	$ea7e
+		jmp	raster_done
 
-sound_step:	jsr	raster_next
+sound_step:	lda	#<raster_main
+		ldx	#>raster_main
+		sta	$fffe
+		stx	$ffff
+		jsr	raster_next
+		lda	#$ff
+		sta	VIC_IRR
 		lda	#>sound_task
 		pha
 		lda	#<sound_task
@@ -163,16 +215,24 @@ sound_step:	jsr	raster_next
 		lda	#0
 		pha
 		rti
-sound_task:	
-		jsr	snd_play
-		jmp	$ea7e
+sound_task:	jsr	snd_play
+		pla
+		tay
+		pla
+		tax
+		pla
+		rti
 
 showsprites:	sta	SPRITE_SHOW
-		jsr	raster_next
-		jmp	$ea7e
+		jmp	raster_done
 
-movesprites:
+movesprites:	lda	#<raster_main
+		ldx	#>raster_main
+		sta	$fffe
+		stx	$ffff
 		jsr	raster_next
+		lda	#$ff
+		sta	VIC_IRR
 		lda	#>sprites_task
 		pha
 		lda	#<sprites_task
@@ -180,8 +240,7 @@ movesprites:
 		lda	#0
 		pha
 		rti
-sprites_task:
-		; do flashing first
+sprites_task:	; do flashing first
 		ldx	flash_counter
 		dex
 		stx	flash_counter
@@ -223,35 +282,60 @@ spm_next:	tya
 		dex
 		bpl	spm_while
 		sta	SPRITE_X_HB
-		jmp	$ea7e
+		pla
+		tay
+		pla
+		tax
+		pla
+		rti
 
-raster_off:
-		sei
-		lda	#$31
-		ldx	#$ea
-		sta	$0314
-		stx	$0315
-		lda	#0
-		sta	VIC_IRM
-		cli
-		sta	SPRITE_SHOW
-		lda	bg_save
-		sta	BG_COLOR_0
-		lda	VIC_CTL1
-		ora	#%00001000
-		sta	VIC_CTL1
-		rts
+raster_off:	rts	; dummy for now
 
 .rodata
 
+.ifdef DEBUG_IRQTIMING
+raster_data:
+;		      argument		rasterline
+		.byte 13,		30
+		.byte 12,		27
+		.byte 11,		253
+		.byte 10,		250
+		.byte 9,		100
+		.byte 8,		80
+		.byte 7,		50
+		.byte 6,		42
+		.byte 5,		38
+		.byte 4,		34
+		.byte 3,		30
+		.byte 2,		26
+		.byte 1,		22
+		.byte 0,		1
+raster_start = *-raster_data-1
 
-
+raster_action:
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+.else
 raster_data:
 ;		      argument		rasterline
 		.byte 0,		30
 		.byte 6,		28
 		.byte 14,		254
-		.byte %00010011,	249
+		.byte %00010011,	250
 		.byte 0,		100
 		.byte $ff,		80
 		.byte %00111011,	50
@@ -265,7 +349,7 @@ raster_data:
 		.byte 0,		30
 		.byte 6,		27
 		.byte 14,		253
-		.byte %00010011,	249
+		.byte %00010011,	250
 		.byte 0,		100
 		.byte $ff,		80
 		.byte %00111011,	50
@@ -279,34 +363,35 @@ raster_data:
 raster_start = *-raster_data-1
 
 raster_action:
-		.byte <sound_step, >sound_step
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <setparm, >setparm
-		.byte <movesprites, >movesprites
-		.byte <showsprites, >showsprites
-		.byte <setparm, >setparm
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <showsprites, >showsprites
-		.byte <sound_step, >sound_step
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <setparm, >setparm
-		.byte <movesprites, >movesprites
-		.byte <showsprites, >showsprites
-		.byte <setparm, >setparm
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <setcolor, >setcolor
-		.byte <showsprites, >showsprites
+		.word sound_step
+		.word setcolor
+		.word setcolor
+		.word setparm
+		.word movesprites
+		.word showsprites
+		.word setparm
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word showsprites
+		.word sound_step
+		.word setcolor
+		.word setcolor
+		.word setparm
+		.word movesprites
+		.word showsprites
+		.word setparm
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word setcolor
+		.word showsprites
+.endif
 
 ; Sprites:
 

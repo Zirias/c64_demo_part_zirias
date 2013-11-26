@@ -212,8 +212,8 @@ cont1b:		sty	to1
 		jsr	gfx_line
 
 		; Ende wenn Taste gedrückt:
-		jsr	GETKB
-		bne	out
+		;jsr	GETKB
+		;bne	out
 		jmp	loop
 out:		jsr	raster_off
 		jsr	gfx_done
