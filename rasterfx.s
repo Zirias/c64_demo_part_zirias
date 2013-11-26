@@ -67,6 +67,14 @@ setcolor:	sta	BG_COLOR_0
 		ldx	SAVE_X
 		lda	SAVE_A
 		rti
+setbg:		sta	BG_COLOR_0
+		ldx	SAVE_X
+		lda	SAVE_A
+		rti
+setborder:	sta	BORDER_COLOR
+		ldx	SAVE_X
+		lda	SAVE_A
+		rti
 setparm:	sta	VIC_CTL1
 		ldx	SAVE_X
 		lda	SAVE_A
@@ -420,12 +428,12 @@ raster_action:
 		.byte movesprites-actions
 		.byte showsprites-actions
 		.byte setparm-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
 		.byte showsprites-actions
 		.byte sound_step-actions
 		.byte setcolor-actions
@@ -434,12 +442,12 @@ raster_action:
 		.byte movesprites-actions
 		.byte showsprites-actions
 		.byte setparm-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
 		.byte showsprites-actions
 		.byte sound_step-actions
 .endif
