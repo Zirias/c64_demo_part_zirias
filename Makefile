@@ -18,10 +18,6 @@ DISKID		= zz
 
 OBJS		= c64startup.o $(BINARY).o $(MODULES)
 
-ifdef DEBUG_IRQTIMING
-	AFLAGS += -DDEBUG_IRQTIMING=1
-endif
-
 all:	$(OBJS)
 	$(LD) -o $(BINARY) $(LDFLAGS) $(OBJS)
 

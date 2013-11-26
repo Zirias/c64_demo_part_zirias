@@ -183,9 +183,7 @@ sp_pointer:	sta	$5ff8,x
 		sei
 		lda	#%01111111
 		sta	$dc0d
-		sta	$dd0d
 		lda	$dc0d
-		lda	$dd0d
 		lda	#%00000001
 		sta	VIC_IRM
 		sta	VIC_IRR
@@ -193,7 +191,6 @@ sp_pointer:	sta	$5ff8,x
 		sta	VIC_RASTER
 		lda	VIC_CTL1
 		ora	#%10000000
-;		and	#%01111111
 		sta	VIC_CTL1
 		lda	#$35
 		sta	$01
@@ -262,74 +259,6 @@ raster_off:	rts	; dummy for now
 
 .rodata
 
-.ifdef DEBUG_IRQTIMING
-raster_data:
-		.byte 12
-		.byte 11
-		.byte 10
-		.byte 9
-		.byte 8
-		.byte 7
-		.byte 6
-		.byte 5
-		.byte 4
-		.byte 3
-		.byte 2
-		.byte 1
-		.byte 0
-		.byte 13
-raster_start = *-raster_data-1
-
-raster_lines:
-		.byte 30
-		.byte 27
-		.byte 253
-		.byte 250
-		.byte 100
-		.byte 80
-		.byte 50
-		.byte 42
-		.byte 36
-		.byte 34
-		.byte 30
-		.byte 26
-		.byte 22
-		.byte 1
-
-raster_switch:
-		.byte $00
-		.byte $80
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $80
-
-raster_action:
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-.else
 raster_data:
 		.byte 6
 		.byte 10
@@ -410,7 +339,6 @@ raster_action:
 		.byte setbg-actions
 		.byte showsprites-actions
 		.byte sound_step-actions
-.endif
 
 ; Sprites:
 
