@@ -60,7 +60,6 @@ raster_stable:	txs
 		ldx	#<raster_main	; #0, aligned
 		stx	$fffe
 		nop
-		nop
 branch_act:	beq	actions		; bra
 actions:
 setcolor:	sta	BG_COLOR_0
@@ -171,7 +170,7 @@ sp_pointer:	sta	$5ff8,x
 		sta	SPRITE_5_COL
 		sta	SPRITE_6_COL
 		sta	SPRITE_7_COL
-		lda	#4
+		lda	#0
 		sta	SPRITE_0_Y
 		sta	SPRITE_1_Y
 		sta	SPRITE_2_Y
@@ -322,6 +321,7 @@ sound_task:
 .rodata
 
 raster_data:
+		.byte 0
 		.byte 6
 		.byte 10
 		.byte 14
@@ -341,13 +341,13 @@ raster_data:
 		.byte 6
 		.byte 1
 		.byte 0
-		.byte 0
 raster_start = *-raster_data-1
 
 raster_lines:
 		.byte 31
-		.byte 29
-		.byte 27
+		.byte 26
+		.byte 23
+		.byte 21
 		.byte 253
 		.byte 251
 		.byte 249
@@ -364,13 +364,12 @@ raster_lines:
 		.byte 37
 		.byte 35
 		.byte 25
-		.byte 1
 
 raster_switch:
 		.byte $00
 		.byte $00
-		.byte $80
 		.byte $00
+		.byte $80
 		.byte $00
 		.byte $00
 		.byte $00
@@ -389,6 +388,7 @@ raster_switch:
 		.byte $80
 
 raster_action:
+		.byte showsprites-actions
 		.byte setcolor-actions
 		.byte setcolor-actions
 		.byte setcolor-actions
@@ -407,7 +407,6 @@ raster_action:
 		.byte setbg-actions
 		.byte setbg-actions
 		.byte setbg-actions
-		.byte showsprites-actions
 		.byte sound_step-actions
 
 ; Sprites:
