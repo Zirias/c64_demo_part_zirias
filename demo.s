@@ -1,5 +1,5 @@
 ;
-; Demo nach AmigaBASIC-Demo
+; demo inspired by AmigaBASIC demo
 ;
 
 GETKB		= $F142
@@ -17,7 +17,7 @@ tbllen		= 195
 .import key_pressed
 
 .code
-		; Initialisierung:
+		; initialize:
 		ldx	#0
 		stx	from1tbl
 		stx	from2tbl
@@ -58,7 +58,7 @@ tbllen		= 195
 		sta	to2ptr3+1
 		stx	to2ptr3+2
 
-		; Sound:
+		; sound:
 		lda	#%00001111
 		sta	$D418
 		lda	#<song
@@ -69,7 +69,7 @@ tbllen		= 195
 		sta	snd_speed
 		jsr	snd_init
 
-		; Rahmenfarbe, Grafikmodus, Bildschirm löschen:
+		; border color, graphics mode, clear screen
 		lda	BORDER_COLOR
 		sta	border
 		lda	#6
@@ -143,19 +143,19 @@ bb_nodec:	sta	$9e
 		dex
 		bne	bb_loop
 
-		; Ambigramm:
+		; ambigram:
 		jsr	ziri_ambi
-		; Raster-Effekt:
+		; raster effects:
 		jsr	raster_on
-		; Zeichenmodus auf invertieren:
+		; set drawing mode to invert
 		lda	#MODE_INV
 		sta	PLOT_MODE
 
-		; Hauptschleife:
+		; main loop
 loop:		ldx	countdown
-		beq	do2			; 2. Linie schon aktiv
+		beq	do2			; 2nd line already active
 		dex
-		stx	countdown		; sonst weiterzählen
+		stx	countdown		; otherwise continue counting
 		jmp	do1
 
 		; Linie 2:
@@ -276,7 +276,7 @@ to1_cont:	sta	to1ptr1+1
 cont1b:		sty	to1
 		jsr	gfx_line
 
-		; Ende wenn Taste gedrückt:
+		; end when key pressed:
 		lda	key_pressed
 		bne	out
 		jmp	loop

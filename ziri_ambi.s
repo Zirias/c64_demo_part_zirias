@@ -1,5 +1,5 @@
 ;
-; Zirias Ambigramm in 8 lines and 20 cols
+; Zirias ambigram in 8 lines and 20 cols
 ;
 
 LINE1	= $6B90
