@@ -79,6 +79,70 @@ tbllen		= 195
 		ldx	#6
 		jsr	gfx_setcolor
 		jsr	gfx_clear
+
+		; draw "window" border
+		; left
+		ldy	#7
+		lda	#0
+		sta	$9e
+		lda	#$60
+		sta	$9f
+		ldx	#$19
+		lda	#$80
+bl_loop:	sta	($9e),y
+		dey
+		bpl	bl_loop
+		ldy	#7
+		inc	$9f
+		lda	$9e
+		clc
+		adc	#$40
+		bcc	bl_noinc
+		inc	$9f
+bl_noinc:	sta	$9e
+		lda	#$80
+		dex
+		bne	bl_loop
+		; right
+		ldy	#7
+		lda	#$38
+		sta	$9e
+		lda	#$61
+		sta	$9f
+		ldx	#$19
+		lda	#$01
+br_loop:	sta	($9e),y
+		dey
+		bpl	br_loop
+		ldy	#7
+		inc	$9f
+		lda	$9e
+		clc
+		adc	#$40
+		bcc	br_noinc
+		inc	$9f
+br_noinc:	sta	$9e
+		lda	#$01
+		dex
+		bne	br_loop
+		; bottom
+		dec	$9f
+		lda	#$3f
+		sta	$9e
+		ldx	#$28
+		lda	#$ff
+		ldy	#0
+bb_loop:	sta	($9e),y
+		lda	$9e
+		sec
+		sbc	#$08
+		bcs	bb_nodec
+		dec	$9f
+bb_nodec:	sta	$9e
+		lda	#$ff
+		dex
+		bne	bb_loop
+
 		; Ambigramm:
 		jsr	ziri_ambi
 		; Raster-Effekt:
