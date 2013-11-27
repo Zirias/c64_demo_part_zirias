@@ -98,6 +98,13 @@ keycheck:	lda	#>keycheck_task
 		lda	#0
 		pha
 		rti
+resizer:	lda	#>resizer_task
+		pha
+		lda	#<resizer_task
+		pha
+		lda	#0
+		pha
+		rti
 movesprites:	lda	#>sprites_task
 		pha
 		lda	#<sprites_task
@@ -235,7 +242,25 @@ keycheck_task:
 		cmp	$dc01
 		beq	key_done
 		sta	key_pressed
-key_done:	ldy	SAVE_Y
+key_done:	ldx	SAVE_X
+		lda	SAVE_A
+		rti
+
+resizer_task:
+		lda	#$ff
+		sta	$7f38
+		sta	$7f3f
+		lda	#$ed
+		sta	$7f3c
+		sta	$7f3d
+		lda	#$8f
+		sta	$7f39
+		lda	#$af
+		sta	$7f3a
+		lda	#$81
+		sta	$7f3b
+		lda	#$e1
+		sta	$7f3e
 		ldx	SAVE_X
 		lda	SAVE_A
 		rti
@@ -304,6 +329,7 @@ raster_data:
 		.byte %00010011
 		.byte 0
 		.byte 0
+		.byte 0
 		.byte $ff
 		.byte %00111011
 		.byte 6
@@ -325,6 +351,7 @@ raster_lines:
 		.byte 253
 		.byte 251
 		.byte 249
+		.byte 246
 		.byte 100
 		.byte 80
 		.byte 70
@@ -358,6 +385,7 @@ raster_switch:
 		.byte $00
 		.byte $00
 		.byte $00
+		.byte $00
 		.byte $80
 
 raster_action:
@@ -366,6 +394,7 @@ raster_action:
 		.byte setcolor-actions
 		.byte setcolor-actions
 		.byte setparm-actions
+		.byte resizer-actions
 		.byte movesprites-actions
 		.byte keycheck-actions
 		.byte showsprites-actions
