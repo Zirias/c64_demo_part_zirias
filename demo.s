@@ -14,6 +14,7 @@ tbllen		= 195
 
 .import	raster_on
 .import raster_off
+.import key_pressed
 
 .code
 		; Initialisierung:
@@ -212,14 +213,16 @@ cont1b:		sty	to1
 		jsr	gfx_line
 
 		; Ende wenn Taste gedrückt:
-		;jsr	GETKB
-		;bne	out
+		lda	key_pressed
+		bne	out
 		jmp	loop
 out:		jsr	raster_off
 		jsr	gfx_done
 		jsr	snd_stop
 		lda	border
 		sta	BORDER_COLOR
+eat_keys:	jsr	GETKB
+		bne	eat_keys
 		rts
 
 .bss

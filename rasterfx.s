@@ -8,6 +8,7 @@
 
 .export raster_on
 .export raster_off
+.export key_pressed
 
 SAVE_A		= $22
 SAVE_X		= $23
@@ -19,7 +20,7 @@ TBL_OFFSET	= $25
 bg_save:	.res	1
 flash_offset:	.res	1
 flash_counter:	.res	1
-
+key_pressed:	.res	1
 
 .segment "ALGNCODE"
 .align $100
@@ -64,7 +65,7 @@ branch_act:	beq	actions		; bra
 actions:
 setcolor:	sta	BG_COLOR_0
 		sta	BORDER_COLOR
-		ldx	SAVE_X
+raster_done:	ldx	SAVE_X
 		lda	SAVE_A
 		rti
 setbg:		sta	BG_COLOR_0
@@ -89,8 +90,13 @@ sound_step:	lda	#>sound_task
 		pha
 		lda	#0
 		pha
-		ldx	SAVE_X
-		lda	SAVE_A
+		rti
+keycheck:	lda	#>keycheck_task
+		pha
+		lda	#<keycheck_task
+		pha
+		lda	#0
+		pha
 		rti
 movesprites:	lda	#>sprites_task
 		pha
@@ -98,14 +104,13 @@ movesprites:	lda	#>sprites_task
 		pha
 		lda	#0
 		pha
-raster_done:	ldx	SAVE_X
-		lda	SAVE_A
 		rti
 
 raster_on:
-		; copy sprite data:
 		ldx	#0
 		stx	TBL_OFFSET
+		stx	key_pressed
+		; copy sprite data:
 sp_copy1:	lda	header,x
 		sta	$5000,x
 		inx
@@ -201,6 +206,40 @@ sp_pointer:	sta	$5ff8,x
 		cli
 		rts
 
+raster_off:
+		sei
+		lda	#0
+		sta	VIC_IRM
+		sta	VIC_IRR
+		lda	#%00111011
+		sta	VIC_CTL1
+		lda	#$37
+		sta	$01
+		lda	#%10000011
+		sta	$dc0d
+		cli
+		lda	bg_save
+		sta	BG_COLOR_0
+		rts
+
+keycheck_task:
+		lda	key_pressed
+		bne	key_done
+		lda	#0
+		sta	$dc03
+		lda	#$ff
+		sta	$dc02
+		lda	#0
+		sta	$dc00
+		lda	#$ff
+		cmp	$dc01
+		beq	key_done
+		sta	key_pressed
+key_done:	ldy	SAVE_Y
+		ldx	SAVE_X
+		lda	SAVE_A
+		rti
+
 sprites_task:	; do flashing first
 		ldx	flash_counter
 		dex
@@ -255,8 +294,6 @@ sound_task:
 		lda	SAVE_A
 		rti
 
-raster_off:	rts	; dummy for now
-
 .rodata
 
 raster_data:
@@ -265,6 +302,7 @@ raster_data:
 		.byte 14
 		.byte 10
 		.byte %00010011
+		.byte 0
 		.byte 0
 		.byte $ff
 		.byte %00111011
@@ -289,6 +327,7 @@ raster_lines:
 		.byte 249
 		.byte 100
 		.byte 80
+		.byte 70
 		.byte 49
 		.byte 47
 		.byte 45
@@ -318,6 +357,7 @@ raster_switch:
 		.byte $00
 		.byte $00
 		.byte $00
+		.byte $00
 		.byte $80
 
 raster_action:
@@ -327,6 +367,7 @@ raster_action:
 		.byte setcolor-actions
 		.byte setparm-actions
 		.byte movesprites-actions
+		.byte keycheck-actions
 		.byte showsprites-actions
 		.byte setparm-actions
 		.byte setbg-actions
