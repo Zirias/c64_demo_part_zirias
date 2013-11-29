@@ -9,7 +9,7 @@ LDFLAGS		= -Ln $(BINARY).lbl -m $(BINARY).map -C $(LINKCFG)
 
 BINARY		= demo
 MODULES		= gfx-core.o gfx-line.o soundtable.o snd_play.o ziri_ambi.o \
-			rasterfx.o
+			rasterfx.o font.o
 
 DISKFILE	= ziri-demo
 DISKNAME	= zirias
@@ -17,6 +17,12 @@ PRGNAME		= zirias
 DISKID		= zz
 
 OBJS		= c64startup.o $(BINARY).o $(MODULES)
+
+HCC		= gcc
+HCFLAGS		= -O2 -g0
+TOOLS		= tools/bmp2c64
+
+bmp2c64_OBJS	= tools/bmp2c64.o
 
 all:	$(OBJS)
 	$(LD) -o $(BINARY) $(LDFLAGS) $(OBJS)
@@ -28,8 +34,17 @@ disk:	all
 		-attach disks/$(DISKFILE).d64 \
 		-write $(BINARY) $(PRGNAME).prg
 
+tools/bmp2c64:	tools/bmp2c64.o
+	$(HCC) -o$@ $^
+
+tools/%.o:	tools/%.c
+	$(HCC) -c -o$@ $(HCFLAGS) $<
+
 %.o:	%.s
-	$(AS) -o $@ $(AFLAGS) $<
+	$(AS) -o$@ $(AFLAGS) $<
+
+font.s:	$(TOOLS)
+	tools/bmp2c64 res/font_topaz_80col_petscii_western.bmp >$@
 	
 clean:
 	rm -f $(BINARY)
@@ -37,6 +52,8 @@ clean:
 	rm -f *.map
 	rm -f *.lbl
 	rm -fr disks
+	rm -f tools/*.o
+	rm -f $(TOOLS)
 
 .PHONY:	disk all clean
 
