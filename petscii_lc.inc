@@ -15,6 +15,7 @@
 .charmap	$4d, $6d
 .charmap	$4e, $6e
 .charmap	$4f, $6f
+.charmap	$50, $70
 .charmap	$51, $71
 .charmap	$52, $72
 .charmap	$53, $73
