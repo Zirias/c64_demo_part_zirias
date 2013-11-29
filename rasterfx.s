@@ -77,6 +77,16 @@ setbg:		sta	BG_COLOR_0
 		ldx	SAVE_X
 		lda	SAVE_A
 		rti
+linebg:		ldx	BG_COLOR_0
+		sta	BG_COLOR_0
+		txa
+		ldx	#$a
+		dex
+		bne	*-1
+		ldx	SAVE_X
+		sta	BG_COLOR_0
+		lda	SAVE_A
+		rti
 setborder:	sta	BORDER_COLOR
 		ldx	SAVE_X
 		lda	SAVE_A
@@ -386,13 +396,12 @@ raster_data_0:
 		.byte 6
 		.byte 1
 		.byte 6
-		.byte 1
 		.byte 6
 		.byte 1
 raster_start_0 = *-raster_data_0-1
 
 raster_lines_0:
-		.byte 25
+		.byte 26
 		.byte 249
 		.byte 246
 		.byte 80
@@ -402,11 +411,9 @@ raster_lines_0:
 		.byte 43
 		.byte 41
 		.byte 39
-		.byte 37
-		.byte 35
+		.byte 36
 
 raster_switch_0:
-		.byte $00
 		.byte $00
 		.byte $00
 		.byte $00
@@ -429,8 +436,7 @@ raster_action_0:
 		.byte setbg-actions
 		.byte setbg-actions
 		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
+		.byte linebg-actions
 		.byte setbg-actions
 
 raster_data_1:
@@ -450,7 +456,6 @@ raster_data_1:
 		.byte 6
 		.byte 1
 		.byte 6
-		.byte 1
 		.byte 6
 		.byte 1
 		.byte 0
@@ -474,16 +479,14 @@ raster_lines_1:
 		.byte 43
 		.byte 41
 		.byte 39
-		.byte 37
-		.byte 35
-		.byte 25
+		.byte 36
+		.byte 26
 
 raster_switch_1:
 		.byte $00
 		.byte $00
 		.byte $00
 		.byte $80
-		.byte $00
 		.byte $00
 		.byte $00
 		.byte $00
@@ -517,8 +520,7 @@ raster_action_1:
 		.byte setbg-actions
 		.byte setbg-actions
 		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
+		.byte linebg-actions
 		.byte setbg-actions
 		.byte sound_step-actions
 
