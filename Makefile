@@ -35,16 +35,16 @@ disk:	all
 		-write $(BINARY) $(PRGNAME).prg
 
 tools/bmp2c64:	tools/bmp2c64.o
-	$(HCC) -o$@ $^
+	-$(HCC) -o$@ $^
 
 tools/%.o:	tools/%.c
-	$(HCC) -c -o$@ $(HCFLAGS) $<
+	-$(HCC) -c -o$@ $(HCFLAGS) $<
 
 %.o:		%.s
 	$(AS) -o$@ $(AFLAGS) $<
 
-font:		res/font_topaz_80col_petscii_western.bmp $(TOOLS)
-	tools/bmp2c64 $< >font.s
+font.s:		res/font_topaz_80col_petscii_western.bmp $(TOOLS)
+	-tools/bmp2c64 $< >font.s
 	
 clean:
 	rm -f $(BINARY)
@@ -58,5 +58,4 @@ clean:
 mrproper:	clean
 	rm -f font.s
 
-.PHONY:	disk font all clean mrproper
-
+.PHONY:	disk all clean mrproper
