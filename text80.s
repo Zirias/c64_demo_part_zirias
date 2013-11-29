@@ -93,6 +93,7 @@ getputaddr:
 		clc
 thispage1:	adc	PUTS_L
 		bcc	thispage2
+		inc	PUTS_H
 thispage2:	sta	PUTS_L
 		rts
 
@@ -199,7 +200,7 @@ t80_print:
 putnext:	jsr	t80_putc
 		inc	T80_COL
 		inc	T80_STRING_L
-		bcc	t80_print
+		bne	t80_print
 		inc	T80_STRING_H
-		bcc	t80_print
+		bne	t80_print
 		rts
