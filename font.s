@@ -343,7 +343,7 @@ font_topaz_80col_petscii_western:
 	.byte	%00100110
 	.byte	%00100110
 	.byte	%00100101
-	.byte	%01100000
+	.byte	%01000000
 
 	.byte	%00100000
 	.byte	%00100000
@@ -919,7 +919,7 @@ font_topaz_80col_petscii_western:
 	.byte	%11011001
 	.byte	%11011001
 	.byte	%11011010
-	.byte	%10011111
+	.byte	%10111111
 
 	.byte	%11011111
 	.byte	%11011111
