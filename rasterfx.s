@@ -8,6 +8,7 @@
 
 .export raster_on
 .export raster_off
+.export raster_phase1
 .export key_pressed
 
 SAVE_A		= $22
@@ -36,8 +37,10 @@ raster_main:
 		ldy	TBL_OFFSET		; 3
 		dey				; 2
 		bpl	offset_ok		; 2
-		ldy	#raster_start		; 2
-offset_ok:	lda	raster_switch,y
+rstart		= *+1
+		ldy	#raster_start_0		; 2
+rswitch		= *+1
+offset_ok:	lda	raster_switch_0,y
 		eor	VIC_CTL1
 		sta	VIC_CTL1
 		tsx
@@ -50,10 +53,13 @@ offset_ok:	lda	raster_switch,y
 		nop
 raster_stable:	txs
 		sty	TBL_OFFSET
-		lda	raster_action,y
+raction		= *+1
+		lda	raster_action_0,y
 		sta	branch_act+1
-		lda	raster_data,y	; 4
-		ldx	raster_lines,y
+rdata		= *+1
+		lda	raster_data_0,y	; 4
+rlines		= *+1
+		ldx	raster_lines_0,y
 		stx	VIC_RASTER
 		ldy	SAVE_Y
 		inc	VIC_IRR
@@ -159,6 +165,7 @@ sp_pointer:	sta	$5ff8,x
 		sta	SPRITE_MCOL_1
 		sta	SPRITE_DBL_X
 		sta	SPRITE_DBL_Y
+		sta	SPRITE_SHOW
 		lda	#7
 		sta	SPRITE_MCOL_2
 		lda	#12
@@ -201,7 +208,7 @@ sp_pointer:	sta	$5ff8,x
 		lda	#30
 		sta	VIC_RASTER
 		lda	VIC_CTL1
-		ora	#%10000000
+		and	#%01111111
 		sta	VIC_CTL1
 		lda	#$35
 		sta	$01
@@ -209,9 +216,58 @@ sp_pointer:	sta	$5ff8,x
 		ldx	#>raster_main
 		sta	$fffe
 		stx	$ffff
+
+		; set pointers to phase 0
+		lda	#raster_start_0
+		sta	rstart
+		lda	#<raster_switch_0
+		sta	rswitch
+		lda	#>raster_switch_0
+		sta	rswitch+1
+		lda	#<raster_action_0
+		sta	raction
+		lda	#>raster_action_0
+		sta	raction+1
+		lda	#<raster_data_0
+		sta	rdata
+		lda	#>raster_data_0
+		sta	rdata+1
+		lda	#<raster_lines_0
+		sta	rlines
+		lda	#>raster_lines_0
+		sta	rlines+1
 		cli
 		rts
 
+raster_phase1:
+		sei
+		ldx	#0
+		stx	TBL_OFFSET
+		lda	#30
+		sta	VIC_RASTER
+		lda	VIC_CTL1
+		and	#%01111111
+		sta	VIC_CTL1
+		lda	#raster_start_1
+		sta	rstart
+		lda	#<raster_switch_1
+		sta	rswitch
+		lda	#>raster_switch_1
+		sta	rswitch+1
+		lda	#<raster_action_1
+		sta	raction
+		lda	#>raster_action_1
+		sta	raction+1
+		lda	#<raster_data_1
+		sta	rdata
+		lda	#>raster_data_1
+		sta	rdata+1
+		lda	#<raster_lines_1
+		sta	rlines
+		lda	#>raster_lines_1
+		sta	rlines+1
+		cli
+		rts
 raster_off:
 		sei
 		lda	#0
@@ -320,7 +376,64 @@ sound_task:
 
 .rodata
 
-raster_data:
+raster_data_0:
+		.byte %00010011
+		.byte 0
+		.byte 0
+		.byte %00111011
+		.byte 6
+		.byte 1
+		.byte 6
+		.byte 1
+		.byte 6
+		.byte 1
+		.byte 6
+		.byte 1
+raster_start_0 = *-raster_data_0-1
+
+raster_lines_0:
+		.byte 25
+		.byte 249
+		.byte 246
+		.byte 80
+		.byte 49
+		.byte 47
+		.byte 45
+		.byte 43
+		.byte 41
+		.byte 39
+		.byte 37
+		.byte 35
+
+raster_switch_0:
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+		.byte $00
+
+raster_action_0:
+		.byte setparm-actions
+		.byte resizer-actions
+		.byte keycheck-actions
+		.byte setparm-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+		.byte setbg-actions
+
+raster_data_1:
 		.byte 0
 		.byte 6
 		.byte 10
@@ -341,9 +454,9 @@ raster_data:
 		.byte 6
 		.byte 1
 		.byte 0
-raster_start = *-raster_data-1
+raster_start_1 = *-raster_data_1-1
 
-raster_lines:
+raster_lines_1:
 		.byte 31
 		.byte 26
 		.byte 23
@@ -365,7 +478,7 @@ raster_lines:
 		.byte 35
 		.byte 25
 
-raster_switch:
+raster_switch_1:
 		.byte $00
 		.byte $00
 		.byte $00
@@ -387,7 +500,7 @@ raster_switch:
 		.byte $00
 		.byte $80
 
-raster_action:
+raster_action_1:
 		.byte showsprites-actions
 		.byte setcolor-actions
 		.byte setcolor-actions

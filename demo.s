@@ -18,6 +18,7 @@ tbllen		= 195
 
 .import	raster_on
 .import raster_off
+.import raster_phase1
 .import key_pressed
 
 .code
@@ -119,7 +120,7 @@ tbllen		= 195
 		lda	#>message4
 		sta	T80_STRING_H
 		jsr	t80_print
-		lda	#5
+		lda	#7
 		sta	T80_ROW
 		lda	#1
 		sta	T80_COL
@@ -128,7 +129,7 @@ tbllen		= 195
 		lda	#>message5
 		sta	T80_STRING_H
 		jsr	t80_print
-		lda	#6
+		lda	#8
 		sta	T80_ROW
 		lda	#1
 		sta	T80_COL
@@ -137,40 +138,31 @@ tbllen		= 195
 		lda	#>message6
 		sta	T80_STRING_H
 		jsr	t80_print
-		lda	#7
+		lda	#12
 		sta	T80_ROW
-		lda	#1
+		lda	#3
 		sta	T80_COL
 		lda	#<message7
 		sta	T80_STRING_L
 		lda	#>message7
 		sta	T80_STRING_H
 		jsr	t80_print
-		lda	#10
+		lda	#15
 		sta	T80_ROW
-		lda	#3
+		lda	#1
 		sta	T80_COL
 		lda	#<message8
 		sta	T80_STRING_L
 		lda	#>message8
 		sta	T80_STRING_H
 		jsr	t80_print
-		lda	#13
+		lda	#18
 		sta	T80_ROW
 		lda	#1
 		sta	T80_COL
 		lda	#<message9
 		sta	T80_STRING_L
 		lda	#>message9
-		sta	T80_STRING_H
-		jsr	t80_print
-		lda	#14
-		sta	T80_ROW
-		lda	#1
-		sta	T80_COL
-		lda	#<message10
-		sta	T80_STRING_L
-		lda	#>message10
 		sta	T80_STRING_H
 		jsr	t80_print
 
@@ -196,6 +188,9 @@ waitkey:	lda	key_pressed
 
 		; ambigram:
 		jsr	ziri_ambi
+
+		; more raster effects
+		jsr	raster_phase1
 
 		; set drawing mode to invert
 		lda	#MODE_INV
@@ -427,12 +422,12 @@ message2:	.asciiz "All rights reserved."
 message3:	.asciiz "C64 Workbench and AmigaBASIC style Demo Disk."
 message4:	.asciiz "Release 0.3b, 2013-11-29"
 
-message5:	.asciiz "This demo started in 2006 and mimicks the style of the AmigaBASIC "
-message6:	.byte "demo ",$22,"Music",$22,".",0
-message7:	.asciiz "The ultimate goal is to make it look just like an Amiga."
-message8:	.asciiz "-- Press any key to start --"
-message9:	.asciiz "Also, any key will exit the demo."
-message10:	.asciiz "Contact: Felix Palmen <felix@palmen-it.de>"
+message5:	.asciiz "This demo started in 2006 and mimicks the style of the AmigaBASIC"
+message6:	.byte 	"demo ",$22,"Music",$22
+		.asciiz ". The ultimate goal is to make it look just like an Amiga."
+message7:	.asciiz "-- Press any key to start --"
+message8:	.asciiz "Also, any key will exit the demo."
+message9:	.asciiz "Contact: Felix Palmen <felix@palmen-it.de>"
 
 cotable_a:	.byte	$BE,$01,$3D,$B6,$01,$3D,$AE,$01,$3D,$A6,$01,$3D
 		.byte	$9E,$01,$3D,$96,$01,$3D,$8E,$01,$3D,$86,$01,$3D
