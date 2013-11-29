@@ -9,7 +9,7 @@ LDFLAGS		= -Ln $(BINARY).lbl -m $(BINARY).map -C $(LINKCFG)
 
 BINARY		= demo
 MODULES		= gfx-core.o gfx-line.o soundtable.o snd_play.o ziri_ambi.o \
-			rasterfx.o font.o
+			rasterfx.o text80.o font.o
 
 DISKFILE	= ziri-demo
 DISKNAME	= zirias
@@ -43,8 +43,8 @@ tools/%.o:	tools/%.c
 %.o:		%.s
 	$(AS) -o$@ $(AFLAGS) $<
 
-font.s:		$(TOOLS)
-	tools/bmp2c64 res/font_topaz_80col_petscii_western.bmp >$@
+font:		res/font_topaz_80col_petscii_western.bmp $(TOOLS)
+	tools/bmp2c64 $< >font.s
 	
 clean:
 	rm -f $(BINARY)
@@ -58,5 +58,5 @@ clean:
 mrproper:	clean
 	rm -f font.s
 
-.PHONY:	disk all clean mrproper
+.PHONY:	disk font all clean mrproper
 

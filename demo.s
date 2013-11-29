@@ -9,8 +9,12 @@ tbllen		= 195
 .include	"gfx.inc"
 .include	"vic.inc"
 .include	"snd.inc"
+.include	"text80.inc"
+.include	"petscii_lc.inc"
 
 .import ziri_ambi
+
+.import font_topaz_80col_petscii_western
 
 .import	raster_on
 .import raster_off
@@ -144,7 +148,23 @@ bb_nodec:	sta	$9e
 		bne	bb_loop
 
 		; ambigram:
-		jsr	ziri_ambi
+		;jsr	ziri_ambi
+		lda	#$60
+		sta	T80_DRAWPAGE
+		lda	#<font_topaz_80col_petscii_western
+		sta	T80_FONT_L
+		lda	#>font_topaz_80col_petscii_western
+		sta	T80_FONT_H
+		lda	#12
+		sta	T80_ROW
+		lda	#30
+		sta	T80_COL
+		lda	#<testtext
+		sta	T80_STRING_L
+		lda	#>testtext
+		sta	T80_STRING_H
+		jsr	t80_print
+
 		; raster effects:
 		jsr	raster_on
 		; set drawing mode to invert
@@ -302,6 +322,8 @@ to2:		.res	1
 countdown:	.res	1
 
 .rodata
+testtext:	.asciiz "Testing 80col text display ..."
+
 cotable_a:	.byte	$BE,$01,$3D,$B6,$01,$3D,$AE,$01,$3D,$A6,$01,$3D
 		.byte	$9E,$01,$3D,$96,$01,$3D,$8E,$01,$3D,$86,$01,$3D
 		.byte	$7F,$01,$3D,$77,$01,$3D,$6F,$01,$3D,$67,$01,$3D
