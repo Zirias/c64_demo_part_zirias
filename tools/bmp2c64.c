@@ -219,7 +219,7 @@ static void formatfont(const char *name)
     char *p = c64bitmap;
     int i;
 
-    printf("%s:\n", name);
+    printf(".export %s\n\n.rodata\n\n%s:\n", name, name);
     for (i = 0; i < bitmapsize; ++i)
     {
 	tobinstring(bin, *p++);
