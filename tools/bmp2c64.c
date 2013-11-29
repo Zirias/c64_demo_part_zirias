@@ -162,6 +162,8 @@ static void converttoblocks()
 	p = bitmap;
     }
 
+    int inverted = (*p & 1<<7);
+
     int i,j,k;
     for (i = rows; i > 0; --i)
     {
@@ -171,7 +173,11 @@ static void converttoblocks()
 	    char *pc = pl;
 	    for (k = 8; k > 0; --k)
 	    {
-		*q++ = ~*pc;
+		if (inverted)
+		    *q++ = ~*pc;
+		else
+		    *q++ = *pc;
+
 		pc += linestep;
 	    }
 	    ++pl;
