@@ -16,6 +16,9 @@
 .bss
 snd_count:	.res	1
 
+.data
+snd_playing:	.byte 0
+
 .code
 
 getbyte:
@@ -28,7 +31,10 @@ gb_ptr:		lda	$FFFF,x
 gb_out:		rts
 
 snd_play:
-		ldx	snd_count
+		ldx	snd_playing
+		bne	doplay
+		rts
+doplay:		ldx	snd_count
 		dex
 		beq	next_step
 		stx	snd_count
@@ -163,10 +169,12 @@ snd_init:
 		stx	gb_ptr+2
 		ldx	#0
 		stx	snd_playpos
+		inc	snd_playing
 		rts
 
 snd_stop:
 		lda	#0
+		sta	snd_playing
 		sta	$D404
 		sta	$D40B
 		sta	$D412

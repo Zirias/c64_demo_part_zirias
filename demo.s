@@ -62,6 +62,127 @@ tbllen		= 195
 		sta	to2ptr3+1
 		stx	to2ptr3+2
 
+		; border color, graphics mode, clear screen
+		lda	BORDER_COLOR
+		sta	border
+		lda	#6
+		sta	BORDER_COLOR
+		jsr	gfx_init
+		lda	#1
+		ldx	#6
+		jsr	gfx_setcolor
+
+		; raster effects:
+		jsr	raster_on
+
+		; start messages
+		jsr	clear_window
+		lda	#$60
+		sta	T80_DRAWPAGE
+		lda	#<font_topaz_80col_petscii_western
+		sta	T80_FONT_L
+		lda	#>font_topaz_80col_petscii_western
+		sta	T80_FONT_H
+		lda	#0
+		sta	T80_ROW
+		lda	#1
+		sta	T80_COL
+		lda	#<message1
+		sta	T80_STRING_L
+		lda	#>message1
+		sta	T80_STRING_H
+		jsr	t80_print
+		lda	#1
+		sta	T80_ROW
+		lda	#1
+		sta	T80_COL
+		lda	#<message2
+		sta	T80_STRING_L
+		lda	#>message2
+		sta	T80_STRING_H
+		jsr	t80_print
+		lda	#2
+		sta	T80_ROW
+		lda	#1
+		sta	T80_COL
+		lda	#<message3
+		sta	T80_STRING_L
+		lda	#>message3
+		sta	T80_STRING_H
+		jsr	t80_print
+		lda	#3
+		sta	T80_ROW
+		lda	#1
+		sta	T80_COL
+		lda	#<message4
+		sta	T80_STRING_L
+		lda	#>message4
+		sta	T80_STRING_H
+		jsr	t80_print
+		lda	#5
+		sta	T80_ROW
+		lda	#1
+		sta	T80_COL
+		lda	#<message5
+		sta	T80_STRING_L
+		lda	#>message5
+		sta	T80_STRING_H
+		jsr	t80_print
+		lda	#6
+		sta	T80_ROW
+		lda	#1
+		sta	T80_COL
+		lda	#<message6
+		sta	T80_STRING_L
+		lda	#>message6
+		sta	T80_STRING_H
+		jsr	t80_print
+		lda	#7
+		sta	T80_ROW
+		lda	#1
+		sta	T80_COL
+		lda	#<message7
+		sta	T80_STRING_L
+		lda	#>message7
+		sta	T80_STRING_H
+		jsr	t80_print
+		lda	#10
+		sta	T80_ROW
+		lda	#3
+		sta	T80_COL
+		lda	#<message8
+		sta	T80_STRING_L
+		lda	#>message8
+		sta	T80_STRING_H
+		jsr	t80_print
+		lda	#13
+		sta	T80_ROW
+		lda	#1
+		sta	T80_COL
+		lda	#<message9
+		sta	T80_STRING_L
+		lda	#>message9
+		sta	T80_STRING_H
+		jsr	t80_print
+		lda	#14
+		sta	T80_ROW
+		lda	#1
+		sta	T80_COL
+		lda	#<message10
+		sta	T80_STRING_L
+		lda	#>message10
+		sta	T80_STRING_H
+		jsr	t80_print
+
+		; clear key
+		lda	#0
+		sta	key_pressed
+
+waitkey:	lda	key_pressed
+		beq	waitkey
+
+		jsr	clear_window
+
 		; sound:
 		lda	#%00001111
 		sta	$D418
@@ -73,103 +194,16 @@ tbllen		= 195
 		sta	snd_speed
 		jsr	snd_init
 
-		; border color, graphics mode, clear screen
-		lda	BORDER_COLOR
-		sta	border
-		lda	#6
-		sta	BORDER_COLOR
-		jsr	gfx_init
-		lda	#1
-		ldx	#6
-		jsr	gfx_setcolor
-		jsr	gfx_clear
-
-		; draw "window" border
-		; left
-		ldy	#7
-		lda	#0
-		sta	$9e
-		lda	#$60
-		sta	$9f
-		ldx	#$19
-		lda	#$80
-bl_loop:	sta	($9e),y
-		dey
-		bpl	bl_loop
-		ldy	#7
-		inc	$9f
-		lda	$9e
-		clc
-		adc	#$40
-		bcc	bl_noinc
-		inc	$9f
-bl_noinc:	sta	$9e
-		lda	#$80
-		dex
-		bne	bl_loop
-		; right
-		ldy	#7
-		lda	#$38
-		sta	$9e
-		lda	#$61
-		sta	$9f
-		ldx	#$19
-		lda	#$01
-br_loop:	sta	($9e),y
-		dey
-		bpl	br_loop
-		ldy	#7
-		inc	$9f
-		lda	$9e
-		clc
-		adc	#$40
-		bcc	br_noinc
-		inc	$9f
-br_noinc:	sta	$9e
-		lda	#$01
-		dex
-		bne	br_loop
-		; bottom
-		dec	$9f
-		lda	#$3f
-		sta	$9e
-		ldx	#$28
-		lda	#$ff
-		ldy	#0
-bb_loop:	sta	($9e),y
-		lda	$9e
-		sec
-		sbc	#$08
-		bcs	bb_nodec
-		dec	$9f
-bb_nodec:	sta	$9e
-		lda	#$ff
-		dex
-		bne	bb_loop
-
 		; ambigram:
-		;jsr	ziri_ambi
-		lda	#$60
-		sta	T80_DRAWPAGE
-		lda	#<font_topaz_80col_petscii_western
-		sta	T80_FONT_L
-		lda	#>font_topaz_80col_petscii_western
-		sta	T80_FONT_H
-		lda	#12
-		sta	T80_ROW
-		lda	#30
-		sta	T80_COL
-		lda	#<testtext
-		sta	T80_STRING_L
-		lda	#>testtext
-		sta	T80_STRING_H
-		jsr	t80_print
+		jsr	ziri_ambi
 
-		; raster effects:
-		jsr	raster_on
 		; set drawing mode to invert
 		lda	#MODE_INV
 		sta	PLOT_MODE
+
+		; clear key
+		lda	#0
+		sta	key_pressed
 
 		; main loop
 loop:		ldx	countdown
@@ -309,6 +343,72 @@ eat_keys:	jsr	GETKB
 		bne	eat_keys
 		rts
 
+clear_window:
+		jsr	gfx_clear
+		; draw "window" border
+		; left
+		ldy	#7
+		lda	#0
+		sta	$9e
+		lda	#$60
+		sta	$9f
+		ldx	#$19
+		lda	#$80
+bl_loop:	sta	($9e),y
+		dey
+		bpl	bl_loop
+		ldy	#7
+		inc	$9f
+		lda	$9e
+		clc
+		adc	#$40
+		bcc	bl_noinc
+		inc	$9f
+bl_noinc:	sta	$9e
+		lda	#$80
+		dex
+		bne	bl_loop
+		; right
+		ldy	#7
+		lda	#$38
+		sta	$9e
+		lda	#$61
+		sta	$9f
+		ldx	#$19
+		lda	#$01
+br_loop:	sta	($9e),y
+		dey
+		bpl	br_loop
+		ldy	#7
+		inc	$9f
+		lda	$9e
+		clc
+		adc	#$40
+		bcc	br_noinc
+		inc	$9f
+br_noinc:	sta	$9e
+		lda	#$01
+		dex
+		bne	br_loop
+		; bottom
+		dec	$9f
+		lda	#$3f
+		sta	$9e
+		ldx	#$28
+		lda	#$ff
+		ldy	#0
+bb_loop:	sta	($9e),y
+		lda	$9e
+		sec
+		sbc	#$08
+		bcs	bb_nodec
+		dec	$9f
+bb_nodec:	sta	$9e
+		lda	#$ff
+		dex
+		bne	bb_loop
+		rts
+
 .bss
 border:		.res	1
 from1tbl:	.res	1
@@ -322,7 +422,17 @@ to2:		.res	1
 countdown:	.res	1
 
 .rodata
-testtext:	.asciiz "Testing 80col text display ..."
+message1:	.asciiz	"Copyright &2013 Zirias"
+message2:	.asciiz "All rights reserved."
+message3:	.asciiz "C64 Workbench and AmigaBASIC style Demo Disk."
+message4:	.asciiz "Release 0.3b, 2013-11-29"
+
+message5:	.asciiz "This demo started in 2006 and mimicks the style of the AmigaBASIC "
+message6:	.byte "demo ",$22,"Music",$22,".",0
+message7:	.asciiz "The ultimate goal is to make it look just like an Amiga."
+message8:	.asciiz "-- Press any key to start --"
+message9:	.asciiz "Also, any key will exit the demo."
+message10:	.asciiz "Contact: Felix Palmen <felix@palmen-it.de>"
 
 cotable_a:	.byte	$BE,$01,$3D,$B6,$01,$3D,$AE,$01,$3D,$A6,$01,$3D
 		.byte	$9E,$01,$3D,$96,$01,$3D,$8E,$01,$3D,$86,$01,$3D
