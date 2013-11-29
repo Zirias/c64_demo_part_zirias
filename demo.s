@@ -420,7 +420,7 @@ countdown:	.res	1
 message1:	.asciiz	"Copyright &2013 Zirias"
 message2:	.asciiz "All rights reserved."
 message3:	.asciiz "C64 Workbench and AmigaBASIC style Demo Disk."
-message4:	.asciiz "Release 0.3b, 2013-11-29"
+message4:	.asciiz "Release 0.4b, 2013-11-29"
 
 message5:	.asciiz "This demo started in 2006 and mimicks the style of the AmigaBASIC"
 message6:	.asciiz	"demo `Music'. The ultimate goal is to make it look just like an Amiga."
