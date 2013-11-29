@@ -40,10 +40,10 @@ tools/bmp2c64:	tools/bmp2c64.o
 tools/%.o:	tools/%.c
 	$(HCC) -c -o$@ $(HCFLAGS) $<
 
-%.o:	%.s
+%.o:		%.s
 	$(AS) -o$@ $(AFLAGS) $<
 
-font.s:	$(TOOLS)
+font.s:		$(TOOLS)
 	tools/bmp2c64 res/font_topaz_80col_petscii_western.bmp >$@
 	
 clean:
@@ -55,5 +55,8 @@ clean:
 	rm -f tools/*.o
 	rm -f $(TOOLS)
 
-.PHONY:	disk all clean
+mrproper:	clean
+	rm -f font.s
+
+.PHONY:	disk all clean mrproper
 
