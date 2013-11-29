@@ -80,7 +80,7 @@ font_topaz_80col_petscii_western:
 	.byte	%00010100
 	.byte	%01100110
 	.byte	%00010001
-	.byte	%01110111
+	.byte	%00110011
 	.byte	%01110111
 	.byte	%00000000
 
@@ -89,7 +89,7 @@ font_topaz_80col_petscii_western:
 	.byte	%00000101
 	.byte	%01100110
 	.byte	%00010001
-	.byte	%01110111
+	.byte	%00110011
 	.byte	%01110111
 	.byte	%00000000
 
@@ -221,8 +221,8 @@ font_topaz_80col_petscii_western:
 
 	.byte	%00100001
 	.byte	%01010011
-	.byte	%01110011
 	.byte	%01110101
+	.byte	%01110001
 	.byte	%01010001
 	.byte	%01010001
 	.byte	%00100001
@@ -239,11 +239,11 @@ font_topaz_80col_petscii_western:
 
 	.byte	%00010111
 	.byte	%00110100
-	.byte	%00110110
-	.byte	%01010001
+	.byte	%01010110
 	.byte	%01110001
+	.byte	%00010001
 	.byte	%00010101
-	.byte	%00010110
+	.byte	%00010010
 	.byte	%00000000
 
 	.byte	%00100111
@@ -258,10 +258,10 @@ font_topaz_80col_petscii_western:
 	.byte	%00100010
 	.byte	%01010101
 	.byte	%01010101
-	.byte	%00100111
+	.byte	%00100011
 	.byte	%01010001
-	.byte	%01010010
-	.byte	%00100100
+	.byte	%01010001
+	.byte	%00100010
 	.byte	%00000000
 
 	.byte	%00000000
@@ -295,7 +295,7 @@ font_topaz_80col_petscii_western:
 	.byte	%01010000
 	.byte	%01110110
 	.byte	%01010001
-	.byte	%01110111
+	.byte	%01110011
 	.byte	%01000101
 	.byte	%00100111
 	.byte	%00000000
@@ -454,11 +454,11 @@ font_topaz_80col_petscii_western:
 	.byte	%00000000
 
 	.byte	%01100111
-	.byte	%01100100
+	.byte	%01010100
 	.byte	%01010100
 	.byte	%01010110
 	.byte	%01010100
-	.byte	%01100100
+	.byte	%01010100
 	.byte	%01100111
 	.byte	%00000000
 
@@ -519,8 +519,8 @@ font_topaz_80col_petscii_western:
 	.byte	%01100010
 	.byte	%01010101
 	.byte	%01010100
-	.byte	%01100110
-	.byte	%01100011
+	.byte	%01100010
+	.byte	%01100001
 	.byte	%01010101
 	.byte	%01010010
 	.byte	%00000000
@@ -656,7 +656,7 @@ font_topaz_80col_petscii_western:
 	.byte	%11101011
 	.byte	%10011001
 	.byte	%11101110
-	.byte	%10001000
+	.byte	%11001100
 	.byte	%10001000
 	.byte	%11111111
 
@@ -665,7 +665,7 @@ font_topaz_80col_petscii_western:
 	.byte	%11111010
 	.byte	%10011001
 	.byte	%11101110
-	.byte	%10001000
+	.byte	%11001100
 	.byte	%10001000
 	.byte	%11111111
 
@@ -797,8 +797,8 @@ font_topaz_80col_petscii_western:
 
 	.byte	%11011110
 	.byte	%10101100
-	.byte	%10001100
 	.byte	%10001010
+	.byte	%10001110
 	.byte	%10101110
 	.byte	%10101110
 	.byte	%11011110
@@ -815,11 +815,11 @@ font_topaz_80col_petscii_western:
 
 	.byte	%11101000
 	.byte	%11001011
-	.byte	%11001001
-	.byte	%10101110
+	.byte	%10101001
 	.byte	%10001110
+	.byte	%11101110
 	.byte	%11101010
-	.byte	%11101001
+	.byte	%11101101
 	.byte	%11111111
 
 	.byte	%11011000
@@ -834,10 +834,10 @@ font_topaz_80col_petscii_western:
 	.byte	%11011101
 	.byte	%10101010
 	.byte	%10101010
-	.byte	%11011000
+	.byte	%11011100
 	.byte	%10101110
-	.byte	%10101101
-	.byte	%11011011
+	.byte	%10101110
+	.byte	%11011101
 	.byte	%11111111
 
 	.byte	%11111111
@@ -871,7 +871,7 @@ font_topaz_80col_petscii_western:
 	.byte	%10101111
 	.byte	%10001001
 	.byte	%10101110
-	.byte	%10001000
+	.byte	%10001100
 	.byte	%10111010
 	.byte	%11011000
 	.byte	%11111111
@@ -1030,11 +1030,11 @@ font_topaz_80col_petscii_western:
 	.byte	%11111111
 
 	.byte	%10011000
-	.byte	%10011011
+	.byte	%10101011
 	.byte	%10101011
 	.byte	%10101001
 	.byte	%10101011
-	.byte	%10011011
+	.byte	%10101011
 	.byte	%10011000
 	.byte	%11111111
 
@@ -1095,8 +1095,8 @@ font_topaz_80col_petscii_western:
 	.byte	%10011101
 	.byte	%10101010
 	.byte	%10101011
-	.byte	%10011001
-	.byte	%10011100
+	.byte	%10011101
+	.byte	%10011110
 	.byte	%10101010
 	.byte	%10101101
 	.byte	%11111111
