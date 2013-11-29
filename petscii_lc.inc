@@ -1,5 +1,4 @@
 ; map uc characters to the correct position in lc petscii table
-
 .charmap	$41, $61
 .charmap	$42, $62
 .charmap	$43, $63
@@ -26,3 +25,7 @@
 .charmap	$58, $78
 .charmap	$59, $79
 .charmap	$5a, $7a
+
+; keep ` in standard location
+.charmap	$60, $60
+

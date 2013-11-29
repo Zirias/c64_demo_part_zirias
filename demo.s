@@ -423,8 +423,7 @@ message3:	.asciiz "C64 Workbench and AmigaBASIC style Demo Disk."
 message4:	.asciiz "Release 0.3b, 2013-11-29"
 
 message5:	.asciiz "This demo started in 2006 and mimicks the style of the AmigaBASIC"
-message6:	.byte 	"demo ",$22,"Music",$22
-		.asciiz ". The ultimate goal is to make it look just like an Amiga."
+message6:	.asciiz	"demo `Music'. The ultimate goal is to make it look just like an Amiga."
 message7:	.asciiz "-- Press any key to start --"
 message8:	.asciiz "Also, any key will exit the demo."
 message9:	.asciiz "Contact: Felix Palmen <felix@palmen-it.de>"
