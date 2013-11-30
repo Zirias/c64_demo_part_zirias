@@ -9,7 +9,7 @@ LDFLAGS		= -Ln $(BINARY).lbl -m $(BINARY).map -C $(LINKCFG)
 
 BINARY		= demo
 MODULES		= gfx-core.o gfx-line.o soundtable.o snd_play.o ziri_ambi.o \
-			rasterfx.o text80.o font.o
+			rasterfx.o text80.o spritezone.o font.o
 
 DISKFILE	= ziri-demo
 DISKNAME	= zirias

@@ -5,6 +5,7 @@
 .include "vic.inc"
 .include "gfx.inc"
 .include "snd.inc"
+.include "spritezone.inc"
 
 .export raster_on
 .export raster_off
@@ -95,16 +96,20 @@ setparm:	sta	VIC_CTL1
 		ldx	SAVE_X
 		lda	SAVE_A
 		rti
-showsprites:	sta	SPRITE_SHOW
+zone0:		jsr	sprite_zone0
+		ldy	SAVE_Y
 		ldx	SAVE_X
 		lda	SAVE_A
 		rti
-sound_step:	lda	#>sound_task
-		pha
-		lda	#<sound_task
-		pha
-		lda	#0
-		pha
+zone1:		jsr	sprite_zone1
+		ldy	SAVE_Y
+		ldx	SAVE_X
+		lda	SAVE_A
+		rti
+sound_step:	jsr	snd_play
+		ldy	SAVE_Y
+		ldx	SAVE_X
+		lda	SAVE_A
 		rti
 keycheck:	lda	#>keycheck_task
 		pha
@@ -134,70 +139,62 @@ raster_on:
 		stx	key_pressed
 		; copy sprite data:
 sp_copy1:	lda	header,x
-		sta	$5000,x
+		sta	$5200,x
 		inx
 		bne	sp_copy1
 sp_copy2:	lda	header+$0100,x
-		sta	$5100,x
+		sta	$5300,x
 		inx
 		bne	sp_copy2
 
-		; set sprite-data vectors
-		ldy	#$47
-		tya
-		ldx	#7
-sp_pointer:	sta	$5ff8,x
-		dey
-		tya
-		dex
-		bpl	sp_pointer
-
-		; configure sprites in VIC
+		; configure sprites
 		lda	#$70
-		sta	SPRITE_0_X
+		sta	sprite_1_0_x
 		lda	#$88
-		sta	SPRITE_1_X
+		sta	sprite_1_1_x
 		lda	#$a0
-		sta	SPRITE_2_X
+		sta	sprite_1_2_x
 		lda	#$b8
-		sta	SPRITE_3_X
+		sta	sprite_1_3_x
 		lda	#$d0
-		sta	SPRITE_4_X
+		sta	sprite_1_4_x
 		lda	#$e8
-		sta	SPRITE_5_X
+		sta	sprite_1_5_x
 		lda	#$00
-		sta	SPRITE_6_X
+		sta	sprite_1_6_x
 		lda	#$18
-		sta	SPRITE_7_X
+		sta	sprite_1_7_x
 		lda	#$c0
-		sta	SPRITE_X_HB
+		sta	sprite_1_x_h
 		lda	#0
-		sta	SPRITE_MCOL_1
-		sta	SPRITE_DBL_X
-		sta	SPRITE_DBL_Y
-		sta	SPRITE_SHOW
-		lda	#7
-		sta	SPRITE_MCOL_2
-		lda	#12
-		sta	SPRITE_0_COL
-		sta	SPRITE_1_COL
-		sta	SPRITE_2_COL
-		sta	SPRITE_3_COL
-		sta	SPRITE_4_COL
-		sta	SPRITE_5_COL
-		sta	SPRITE_6_COL
-		sta	SPRITE_7_COL
-		lda	#0
-		sta	SPRITE_0_Y
-		sta	SPRITE_1_Y
-		sta	SPRITE_2_Y
-		sta	SPRITE_3_Y
-		sta	SPRITE_4_Y
-		sta	SPRITE_5_Y
-		sta	SPRITE_6_Y
-		sta	SPRITE_7_Y
+		sta	sprite_1_mcol_1
+		sta	sprite_1_dbl_x
+		sta	sprite_1_dbl_y
+		sta	sprite_0_show
 		lda	#$ff
-		sta	SPRITE_MULTI
+		sta	sprite_1_show
+		lda	#7
+		sta	sprite_1_mcol_2
+		lda	#12
+		sta	sprite_1_0_col
+		sta	sprite_1_1_col
+		sta	sprite_1_2_col
+		sta	sprite_1_3_col
+		sta	sprite_1_4_col
+		sta	sprite_1_5_col
+		sta	sprite_1_6_col
+		sta	sprite_1_7_col
+		lda	#0
+		sta	sprite_1_0_y
+		sta	sprite_1_1_y
+		sta	sprite_1_2_y
+		sta	sprite_1_3_y
+		sta	sprite_1_4_y
+		sta	sprite_1_5_y
+		sta	sprite_1_6_y
+		sta	sprite_1_7_y
+		lda	#$ff
+		sta	sprite_1_multi
 		lda	#$f8
 		sta	flash_offset
 		lda	#1
@@ -339,46 +336,39 @@ sprites_task:	; do flashing first
 		stx	flash_counter
 		ldx	flash_offset
 		lda	#12
-		sta	SPRITE_0_COL-$f8,x
+		sta	sprite_1_0_col-$f8,x
 		inx
 		bne	spfok
 		ldx	#$f8
 spfok:		lda	#1
-		sta	SPRITE_0_COL-$f8,x
+		sta	sprite_1_0_col-$f8,x
 		stx	flash_offset
 		; now move sprites
-spmove:		lda	SPRITE_X_HB
+spmove:		lda	sprite_1_x_h
 		ldx	#14
 spm_while:	asl
 		tay
 		bcc	spm_l
-		lda	SPRITE_0_X,x
+		lda	sprite_1_0_x,x
 		bne	spm_hd
 		lda	#$ff
-		sta	SPRITE_0_X,x
+		sta	sprite_1_0_x,x
 		bmi	spm_next
-spm_hd:		dec	SPRITE_0_X,x
+spm_hd:		dec	sprite_1_0_x,x
 		iny
 		bne	spm_next
-spm_l:		lda	SPRITE_0_X,x
+spm_l:		lda	sprite_1_0_x,x
 		bne	spm_ld
 		lda	#$90
-		sta	SPRITE_0_X,x
+		sta	sprite_1_0_x,x
 		iny
 		bne	spm_next
-spm_ld:		dec	SPRITE_0_X,x
+spm_ld:		dec	sprite_1_0_x,x
 spm_next:	tya
 		dex
 		dex
 		bpl	spm_while
-		sta	SPRITE_X_HB
-		ldy	SAVE_Y
-		ldx	SAVE_X
-		lda	SAVE_A
-		rti
-
-sound_task:
-		jsr	snd_play
+		sta	sprite_1_x_h
 		ldy	SAVE_Y
 		ldx	SAVE_X
 		lda	SAVE_A
@@ -440,7 +430,7 @@ raster_action_0:
 		.byte setbg-actions
 
 raster_data_1:
-		.byte 0
+		.byte $ff
 		.byte 6
 		.byte 10
 		.byte 14
@@ -504,7 +494,7 @@ raster_switch_1:
 		.byte $80
 
 raster_action_1:
-		.byte showsprites-actions
+		.byte zone0-actions
 		.byte setcolor-actions
 		.byte setcolor-actions
 		.byte setcolor-actions
@@ -513,7 +503,7 @@ raster_action_1:
 		.byte resizer-actions
 		.byte movesprites-actions
 		.byte keycheck-actions
-		.byte showsprites-actions
+		.byte zone1-actions
 		.byte setparm-actions
 		.byte setbg-actions
 		.byte setbg-actions
