@@ -10,6 +10,7 @@ tbllen		= 195
 .include	"vic.inc"
 .include	"snd.inc"
 .include	"text80.inc"
+.include	"sprites.inc"
 .include	"petscii_lc.inc"
 
 .import ziri_ambi
@@ -72,6 +73,10 @@ tbllen		= 195
 		lda	#1
 		ldx	#6
 		jsr	gfx_setcolor
+
+		; top-border sprites and cursor
+		jsr	sprites_topborder
+		jsr	sprites_cursor
 
 		; raster effects:
 		jsr	raster_on
@@ -188,6 +193,9 @@ waitkey:	lda	key_pressed
 
 		; ambigram:
 		jsr	ziri_ambi
+
+		; sprites for marquee
+		jsr	sprites_marquee
 
 		; more raster effects
 		jsr	raster_phase1
