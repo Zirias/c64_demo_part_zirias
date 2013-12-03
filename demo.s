@@ -340,6 +340,8 @@ cont1b:		sty	to1
 out:		jsr	raster_off
 		jsr	gfx_done
 		jsr	snd_stop
+		lda	#0
+		sta	SPRITE_SHOW
 		lda	border
 		sta	BORDER_COLOR
 eat_keys:	jsr	GETKB

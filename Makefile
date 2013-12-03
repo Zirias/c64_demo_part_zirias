@@ -1,5 +1,5 @@
 SYS		= c64
-LINKCFG		= ld65.cfg
+LINKCFG		= c64-asm.cfg
 AS		= ca65
 LD		= ld65
 C1541		= c1541
@@ -24,6 +24,10 @@ HCFLAGS		= -O2 -g0
 TOOLS		= tools/bmp2c64
 
 bmp2c64_OBJS	= tools/bmp2c64.o
+
+ifdef DBG_RASTER
+	AFLAGS += -DDBG_RASTER=1
+endif
 
 all:	$(OBJS)
 	$(LD) -o $(BINARY) $(LDFLAGS) $(OBJS)

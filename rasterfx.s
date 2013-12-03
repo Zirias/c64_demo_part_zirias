@@ -27,219 +27,138 @@ bg_save:	.res	1
 flash_offset:	.res	1
 flash_counter:	.res	1
 key_pressed:	.res	1
+raster_table:	.res	255
+tbl_base = key_pressed
 
-.segment "ALGNCODE"
-.align $100
+.code
 
-raster_main:
+; common entry code for every IRQ
+; avoid any branching before payload
+raster_top:
 		sta	SAVE_A
 		stx	SAVE_X
-		sty	SAVE_Y
-		lda	#<raster_stable
-		sta	$fffe
-		inc	VIC_RASTER
-		sta	VIC_IRR
-		ldy	TBL_OFFSET		; 3
-		dey				; 2
-		bpl	offset_ok		; 2
-rstart		= *+1
-		ldy	#raster_start_0		; 2
-rswitch		= *+1
-offset_ok:	lda	raster_switch_0,y
-		eor	VIC_CTL1
-		sta	VIC_CTL1
-		tsx
-		cli
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-raster_stable:	txs
-		sty	TBL_OFFSET
-raction		= *+1
-		lda	raster_action_0,y
-		sta	branch_act+1
-rdata		= *+1
-		lda	raster_data_0,y	; 4
-rlines		= *+1
-		ldx	raster_lines_0,y
-		stx	VIC_RASTER
-		ldy	SAVE_Y
-		inc	VIC_IRR
-		ldx	#<raster_main	; #0, aligned
-		stx	$fffe
-		nop
-branch_act:	beq	actions		; bra
-actions:
-setcolor:	sta	BG_COLOR_0
-		sta	BORDER_COLOR
-raster_done:	ldx	SAVE_X
-		lda	SAVE_A
-		rti
-setbg:		sta	BG_COLOR_0
-		ldx	SAVE_X
-		lda	SAVE_A
-		rti
-linebg:		ldx	BG_COLOR_0
-		sta	BG_COLOR_0
-		txa
-		ldx	#$a
+		ldx	TBL_OFFSET
 		dex
+		lda	tbl_base,x
+		sta	raster_payload
+		dex
+		lda	tbl_base,x
+		sta	raster_payload+1
+raster_payload = *+1
+		jmp	raster_bottom
+
+; payload for changing background color
+raster_bgcol:
+		dex
+		lda	tbl_base,x
+		nop
+		nop
+		nop
+		nop
+.ifdef DBG_RASTER
+		sta	BORDER_COLOR
+.else
+		sta	BG_COLOR_0
+.endif
+		jmp	raster_bottom
+
+; payload for changing background and border color
+raster_col:
+		nop
+		nop
+		nop
+		dex
+		lda	tbl_base,x
+		sta	BG_COLOR_0
+		nop
+		sta	BORDER_COLOR
+		jmp	raster_bottom
+
+; payload for changing bg color in 2 consecutive rasterlines
+raster_bgline:
+		dex
+		lda	tbl_base,x
+		nop
+		nop
+		nop
+		nop
+.ifdef DBG_RASTER
+		sta	BORDER_COLOR
+.else
+		sta	BG_COLOR_0
+.endif
+		sty	SAVE_Y
+		ldy	#$9
+		dey
 		bne	*-1
-		ldx	SAVE_X
+		nop
+		dex
+		lda	tbl_base,x
+.ifdef DBG_RASTER
+		sta	BORDER_COLOR
+.else
 		sta	BG_COLOR_0
-		lda	SAVE_A
-		rti
-setborder:	sta	BORDER_COLOR
-		ldx	SAVE_X
-		lda	SAVE_A
-		rti
-setparm:	sta	VIC_CTL1
-		ldx	SAVE_X
-		lda	SAVE_A
-		rti
-zone0:		jsr	sprite_zone0
+.endif
 		ldy	SAVE_Y
-		ldx	SAVE_X
-		lda	SAVE_A
-		rti
-zone1:		jsr	sprite_zone1
-		ldy	SAVE_Y
-		ldx	SAVE_X
-		lda	SAVE_A
-		rti
-sound_step:	jsr	snd_play
-		ldy	SAVE_Y
-		ldx	SAVE_X
-		lda	SAVE_A
-		rti
-keycheck:	lda	#>keycheck_task
-		pha
-		lda	#<keycheck_task
-		pha
-		lda	#0
-		pha
-		rti
-resizer:	lda	#>resizer_task
-		pha
-		lda	#<resizer_task
-		pha
-		lda	#0
-		pha
-		rti
-movesprites:	lda	#>sprites_task
-		pha
-		lda	#<sprites_task
-		pha
-		lda	#0
-		pha
-		rti
+		jmp	raster_bottom
 
-raster_on:
-		ldx	#0
-		stx	TBL_OFFSET
-		stx	key_pressed
-
-		; initialize marquee flashing
-		lda	#$f8
-		sta	flash_offset
-		lda	#1
-		sta	flash_counter
-
-		; install raster-irq-routine
-		lda	BG_COLOR_0
-		sta	bg_save
-		lda	raster_done-actions
-		sta	branch_act+1
-		sei
-		lda	#%01111111
-		sta	$dc0d
-		lda	$dc0d
-		lda	#%00000001
-		sta	VIC_IRM
-		sta	VIC_IRR
-		lda	#30
-		sta	VIC_RASTER
+; payload for switching to 24 rows text mode
+raster_24row:
+		nop
+		nop
+		nop
 		lda	VIC_CTL1
-		and	#%01111111
+		and	#%11010111
 		sta	VIC_CTL1
-		lda	#$35
-		sta	$01
-		lda	#<raster_main
-		ldx	#>raster_main
-		sta	$fffe
-		stx	$ffff
+		jmp	raster_bottom
 
-		; set pointers to phase 0
-		lda	#raster_start_0
-		sta	rstart
-		lda	#<raster_switch_0
-		sta	rswitch
-		lda	#>raster_switch_0
-		sta	rswitch+1
-		lda	#<raster_action_0
-		sta	raction
-		lda	#>raster_action_0
-		sta	raction+1
-		lda	#<raster_data_0
-		sta	rdata
-		lda	#>raster_data_0
-		sta	rdata+1
-		lda	#<raster_lines_0
-		sta	rlines
-		lda	#>raster_lines_0
-		sta	rlines+1
-		cli
-		rts
-
-raster_phase1:
-		sei
-		ldx	#0
-		stx	TBL_OFFSET
-		lda	#30
-		sta	VIC_RASTER
+; payload for switching to 25 rows hires mode
+raster_25row:
+		nop
+		nop
+		nop
 		lda	VIC_CTL1
-		and	#%01111111
+		ora	#%00101000
 		sta	VIC_CTL1
-		lda	#raster_start_1
-		sta	rstart
-		lda	#<raster_switch_1
-		sta	rswitch
-		lda	#>raster_switch_1
-		sta	rswitch+1
-		lda	#<raster_action_1
-		sta	raction
-		lda	#>raster_action_1
-		sta	raction+1
-		lda	#<raster_data_1
-		sta	rdata
-		lda	#>raster_data_1
-		sta	rdata+1
-		lda	#<raster_lines_1
-		sta	rlines
-		lda	#>raster_lines_1
-		sta	rlines+1
-		cli
-		rts
-raster_off:
-		sei
-		lda	#0
-		sta	VIC_IRM
-		sta	VIC_IRR
-		lda	#%00111011
-		sta	VIC_CTL1
-		lda	#$37
-		sta	$01
-		lda	#%10000011
-		sta	$dc0d
-		cli
-		lda	bg_save
-		sta	BG_COLOR_0
-		rts
+		jmp	raster_bottom
 
-keycheck_task:
+; payload for switching to sprite zone 0
+raster_zone0:
+		sty	SAVE_Y
+		stx	TBL_OFFSET
+		jsr	sprite_zone0
+		ldx	TBL_OFFSET
+		ldy	SAVE_Y
+		jmp	raster_bottom
+
+; payload for switching to sprite zone 1
+raster_zone1:
+		sty	SAVE_Y
+		stx	TBL_OFFSET
+		jsr	sprite_zone1
+		ldx	TBL_OFFSET
+		ldy	SAVE_Y
+		jmp	raster_bottom
+
+; payload for playing music
+raster_sound:
+		sty	SAVE_Y
+		stx	TBL_OFFSET
+.ifdef DBG_RASTER
+		lda	#0
+		sta	BORDER_COLOR
+.endif
+		jsr	snd_play
+.ifdef DBG_RASTER
+		lda	#6
+		sta	BORDER_COLOR
+.endif
+		ldx	TBL_OFFSET
+		ldy	SAVE_Y
+		jmp	raster_bottom
+
+; payload for checking the keyboard
+raster_keycheck:
 		lda	key_pressed
 		bne	key_done
 		lda	#0
@@ -252,11 +171,10 @@ keycheck_task:
 		cmp	$dc01
 		beq	key_done
 		sta	key_pressed
-key_done:	ldx	SAVE_X
-		lda	SAVE_A
-		rti
+key_done:	jmp	raster_bottom
 
-resizer_task:
+; payload for drawing window resizer
+raster_resizer:
 		lda	#$ff
 		sta	$7f38
 		sta	$7f3f
@@ -271,11 +189,16 @@ resizer_task:
 		sta	$7f3b
 		lda	#$e1
 		sta	$7f3e
-		ldx	SAVE_X
-		lda	SAVE_A
-		rti
+		jmp	raster_bottom
 
-sprites_task:	; do flashing first
+; payload for animating the marquee
+raster_marquee:
+		sty	SAVE_Y
+		stx	TBL_OFFSET
+.ifdef DBG_RASTER
+		lda	#2
+		sta	BORDER_COLOR
+.endif
 		ldx	flash_counter
 		dex
 		stx	flash_counter
@@ -317,148 +240,257 @@ spm_next:	tya
 		dex
 		bpl	spm_while
 		sta	sprite_1_x_h
+.ifdef DBG_RASTER
+		lda	#6
+		sta	BORDER_COLOR
+.endif
 		ldy	SAVE_Y
+		ldx	TBL_OFFSET
+		;jmp	raster_bottom
+
+; common exit code for every IRQ
+raster_bottom:
+		lda	#$ff
+		sta	VIC_IRR
+		dex
+		bne	tbl_offset_ok
+tbl_size = *+1
+		ldx	#0
+tbl_offset_ok:
+		lda	tbl_base,x
+		sta	VIC_RASTER
+		dex
+		lda	tbl_base,x
+		eor	VIC_CTL1
+		sta	VIC_CTL1
+		stx	TBL_OFFSET
 		ldx	SAVE_X
 		lda	SAVE_A
 		rti
 
+; activate raster IRQ using table for phase 0
+raster_on:
+		lda	#0
+		sta	key_pressed
+
+		; initialize marquee flashing
+		lda	#$f8
+		sta	flash_offset
+		lda	#1
+		sta	flash_counter
+
+		; load table for phase 0
+		ldx	#raster_0_tbl_size
+		stx	tbl_size
+		stx	TBL_OFFSET
+		ldy	#0
+phase0_loop:	lda	raster_0_tbl,y
+		sta	tbl_base,x
+		iny
+		dex
+		bne	phase0_loop
+
+		; install raster-irq-routine
+		lda	BG_COLOR_0
+		sta	bg_save
+		sei
+		lda	#%01111111
+		sta	$dc0d
+		lda	$dc0d
+		lda	#%00000001
+		sta	VIC_IRM
+		sta	VIC_IRR
+		lda	raster_0_tbl
+		sta	VIC_RASTER
+		lda	VIC_CTL1
+		and	#%01111111
+		sta	VIC_CTL1
+		lda	#$35
+		sta	$01
+
+		lda	#<raster_top
+		sta	$fffe
+		lda	#>raster_top
+		sta	$ffff
+		dec	TBL_OFFSET
+		cli
+		rts
+
+; switch to raster table for phase 1
+raster_phase1:
+		sei
+		lda	raster_1_tbl
+		sta	VIC_RASTER
+		lda	VIC_CTL1
+		and	#%01111111
+		sta	VIC_CTL1
+
+		; load table for phase 1
+		ldx	#raster_1_tbl_size
+		stx	tbl_size
+		stx	TBL_OFFSET
+		ldy	#0
+phase1_loop:	lda	raster_1_tbl,y
+		sta	tbl_base,x
+		iny
+		dex
+		bne	phase1_loop
+
+		lda	#<raster_top
+		sta	$fffe
+		lda	#>raster_top
+		sta	$ffff
+		dec	TBL_OFFSET
+		cli
+		rts
+
+; deactivate raster IRQ
+raster_off:
+		sei
+		lda	#0
+		sta	VIC_IRM
+		sta	VIC_IRR
+		lda	#%00111011
+		sta	VIC_CTL1
+		lda	#$37
+		sta	$01
+		lda	#%10000011
+		sta	$dc0d
+		cli
+		lda	bg_save
+		sta	BG_COLOR_0
+		rts
+
 .rodata
 
-raster_data_0:
-		.byte %00010011
-		.byte 0
-		.byte 0
-		.byte %00111011
-		.byte 6
+; raster tables
+; entry format:
+;	.byte	[rasterline]
+;	.byte	[ctl-eor]		// use $80 to flip bit 9 of rasterline
+;	.word	[payload]		// payload address
+;	[.byte	[arg1], [arg2], ...]	// arguments for payload
+
+; phase 0
+
+raster_0_tbl:
+		.byte 26, $80
+		.word raster_bgcol
 		.byte 1
+
+		.byte 36, $00
+		.word raster_bgline
+		.byte 6, 1
+
+		.byte 39, $00
+		.word raster_bgcol
 		.byte 6
+
+		.byte 41, $00
+		.word raster_bgcol
 		.byte 1
+
+		.byte 43, $00
+		.word raster_bgcol
 		.byte 6
-		.byte 6
+
+		.byte 45, $00
+		.word raster_bgcol
 		.byte 1
-raster_start_0 = *-raster_data_0-1
 
-raster_lines_0:
-		.byte 26
-		.byte 249
-		.byte 246
-		.byte 80
-		.byte 49
-		.byte 47
-		.byte 45
-		.byte 43
-		.byte 41
-		.byte 39
-		.byte 36
-
-raster_switch_0:
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-
-raster_action_0:
-		.byte setparm-actions
-		.byte resizer-actions
-		.byte keycheck-actions
-		.byte setparm-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte linebg-actions
-		.byte setbg-actions
-
-raster_data_1:
-		.byte $ff
+		.byte 47, $00
+		.word raster_bgcol
 		.byte 6
+
+		.byte 50, $00
+		.word raster_25row
+
+		.byte 52, $00
+		.word raster_zone1
+
+		.byte 80, $00
+		.word raster_keycheck
+
+		.byte 243, $00
+		.word raster_resizer
+
+		.byte 250, $00
+		.word raster_24row
+
+		.byte 0, $80
+		.word raster_zone0
+
+raster_0_tbl_size = *-raster_0_tbl
+
+; phase 1
+
+raster_1_tbl:
+		.byte 26, $80
+		.word raster_bgcol
+		.byte 1
+
+		.byte 36, $00
+		.word raster_bgline
+		.byte 6, 1
+
+		.byte 39, $00
+		.word raster_bgcol
+		.byte 6
+
+		.byte 41, $00
+		.word raster_bgcol
+		.byte 1
+
+		.byte 43, $00
+		.word raster_bgcol
+		.byte 6
+
+		.byte 45, $00
+		.word raster_bgcol
+		.byte 1
+
+		.byte 47, $00
+		.word raster_bgcol
+		.byte 6
+
+		.byte 50, $00
+		.word raster_25row
+
+		.byte 52, $00
+		.word raster_zone1
+
+		.byte 80, $00
+		.word raster_keycheck
+
+		.byte 100, $00
+		.word raster_marquee
+
+		.byte 120, $00
+		.word raster_sound
+
+		.byte 243, $00
+		.word raster_resizer
+
+		.byte 250, $00
+		.word raster_24row
+
+		.byte 252, $00
+		.word raster_col
 		.byte 10
+
+		.byte 254, $00
+		.word raster_col
 		.byte 14
+
+		.byte 23, $80
+		.word raster_col
 		.byte 10
-		.byte %00010011
-		.byte 0
-		.byte 0
-		.byte 0
-		.byte $ff
-		.byte %00111011
-		.byte 6
-		.byte 1
-		.byte 6
-		.byte 1
-		.byte 6
-		.byte 6
-		.byte 1
-		.byte 0
-raster_start_1 = *-raster_data_1-1
 
-raster_lines_1:
-		.byte 31
-		.byte 26
-		.byte 23
-		.byte 21
-		.byte 253
-		.byte 251
-		.byte 249
-		.byte 246
-		.byte 100
-		.byte 80
-		.byte 70
-		.byte 49
-		.byte 47
-		.byte 45
-		.byte 43
-		.byte 41
-		.byte 39
-		.byte 36
-		.byte 26
+		.byte 25, $00
+		.word raster_col
+		.byte 6
 
-raster_switch_1:
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $80
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $00
-		.byte $80
+		.byte 27, $00
+		.word raster_zone0
 
-raster_action_1:
-		.byte zone0-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setcolor-actions
-		.byte setparm-actions
-		.byte resizer-actions
-		.byte movesprites-actions
-		.byte keycheck-actions
-		.byte zone1-actions
-		.byte setparm-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte setbg-actions
-		.byte linebg-actions
-		.byte setbg-actions
-		.byte sound_step-actions
+raster_1_tbl_size = *-raster_1_tbl
 

@@ -23,7 +23,7 @@ cr_copy:	lda	cursor_sprite,x
 		bpl	cr_copy
 		lda	#$1c
 		sta	sprite_1_0_x
-		lda	#$34
+		lda	#$52
 		sta	sprite_1_0_y
 		lda	#0
 		sta	sprite_1_x_h
