@@ -65,4 +65,4 @@ mrproper:	clean
 
 .PHONY:	disk all clean mrproper
 
-# vim: et:si:ts=8:sts=8:sw=8
+# vim: noet:si:ts=8:sts=8:sw=8
