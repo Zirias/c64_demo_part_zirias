@@ -4,6 +4,8 @@
 ; Felix Palmen <felix@palmen-it.de> -- 2013-11-29
 ;
 
+.include "spritezone.inc"
+
 .export T80_DRAWPAGE
 .export T80_ROW
 .export T80_COL
@@ -14,6 +16,9 @@
 
 .export	t80_putc
 .export t80_print
+.export t80_print_cursor
+.export t80_crlf
+.export t80_crlf_cursor
 
 T80_DRAWPAGE	= $8b
 
@@ -195,12 +200,50 @@ loop6:		lda	(PUTS_L),y
 t80_print:
 		ldy	#0
 		lda	(T80_STRING_L),y
-		bne	putnext
+		bne	p_putnext
 		rts
-putnext:	jsr	t80_putc
+p_putnext:	jsr	t80_putc
 		inc	T80_COL
 		inc	T80_STRING_L
 		bne	t80_print
 		inc	T80_STRING_H
 		bne	t80_print
+		rts
+
+; print a string and handle cursor position (sprite 0 in zone 1)
+; like t80_print
+t80_print_cursor:
+		ldy	#0
+		lda	(T80_STRING_L),y
+		bne	pc_putnext
+		rts
+pc_putnext:	jsr	t80_putc
+		inc	T80_COL
+		ldx	sprite_1_0_x
+		inx
+		inx
+		inx
+		inx
+		stx	sprite_1_0_x
+		inc	T80_STRING_L
+		bne	t80_print_cursor
+		inc	T80_STRING_H
+		bne	t80_print_cursor
+		rts
+
+t80_crlf:
+		inc	T80_ROW
+		lda	#1
+		sta	T80_COL
+		rts
+
+t80_crlf_cursor:
+		inc	T80_ROW
+		lda	#1
+		sta	T80_COL
+		lda	#$1c
+		sta	sprite_1_0_x
+		lda	sprite_1_0_y
+		adc	#8
+		sta	sprite_1_0_y
 		rts

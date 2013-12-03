@@ -93,83 +93,77 @@ tbllen		= 195
 		sta	T80_ROW
 		lda	#1
 		sta	T80_COL
+
 		lda	#<message1
 		sta	T80_STRING_L
 		lda	#>message1
 		sta	T80_STRING_H
 		jsr	t80_print
-		lda	#1
-		sta	T80_ROW
-		lda	#1
-		sta	T80_COL
+		jsr	t80_crlf
+
 		lda	#<message2
 		sta	T80_STRING_L
 		lda	#>message2
 		sta	T80_STRING_H
 		jsr	t80_print
-		lda	#2
-		sta	T80_ROW
-		lda	#1
-		sta	T80_COL
+		jsr	t80_crlf
+
 		lda	#<message3
 		sta	T80_STRING_L
 		lda	#>message3
 		sta	T80_STRING_H
 		jsr	t80_print
-		lda	#3
-		sta	T80_ROW
-		lda	#1
-		sta	T80_COL
+		jsr	t80_crlf
+
 		lda	#<message4
 		sta	T80_STRING_L
 		lda	#>message4
 		sta	T80_STRING_H
 		jsr	t80_print
-		lda	#7
-		sta	T80_ROW
-		lda	#1
-		sta	T80_COL
+		jsr	t80_crlf
+
+		; handle cursor from here
+		jsr	t80_crlf_cursor
+		jsr	t80_crlf_cursor
+
 		lda	#<message5
 		sta	T80_STRING_L
 		lda	#>message5
 		sta	T80_STRING_H
-		jsr	t80_print
-		lda	#8
-		sta	T80_ROW
-		lda	#1
-		sta	T80_COL
+		jsr	t80_print_cursor
+		jsr	t80_crlf_cursor
+
 		lda	#<message6
 		sta	T80_STRING_L
 		lda	#>message6
 		sta	T80_STRING_H
-		jsr	t80_print
-		lda	#12
-		sta	T80_ROW
-		lda	#3
-		sta	T80_COL
+		jsr	t80_print_cursor
+		jsr	t80_crlf_cursor
+		jsr	t80_crlf_cursor
+		jsr	t80_crlf_cursor
+
 		lda	#<message7
 		sta	T80_STRING_L
 		lda	#>message7
 		sta	T80_STRING_H
-		jsr	t80_print
-		lda	#15
-		sta	T80_ROW
-		lda	#1
-		sta	T80_COL
+		jsr	t80_print_cursor
+		jsr	t80_crlf_cursor
+		jsr	t80_crlf_cursor
+
 		lda	#<message8
 		sta	T80_STRING_L
 		lda	#>message8
 		sta	T80_STRING_H
-		jsr	t80_print
-		lda	#18
-		sta	T80_ROW
-		lda	#1
-		sta	T80_COL
+		jsr	t80_print_cursor
+		jsr	t80_crlf_cursor
+		jsr	t80_crlf_cursor
+
 		lda	#<message9
 		sta	T80_STRING_L
 		lda	#>message9
 		sta	T80_STRING_H
-		jsr	t80_print
+		jsr	t80_print_cursor
+		jsr	t80_crlf_cursor
 
 		; clear key
 		lda	#0
@@ -434,7 +428,7 @@ message4:	.asciiz "Release 0.4b, 2013-11-29"
 
 message5:	.asciiz "This demo started in 2006 and mimicks the style of the AmigaBASIC"
 message6:	.asciiz	"demo `Music'. The ultimate goal is to make it look just like an Amiga."
-message7:	.asciiz "-- Press any key to start --"
+message7:	.asciiz "  -- Press any key to start --"
 message8:	.asciiz "Also, any key will exit the demo."
 message9:	.asciiz "Contact: Felix Palmen <felix@palmen-it.de>"
 

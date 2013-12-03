@@ -8,4 +8,7 @@
 
 .import t80_putc
 .import t80_print
+.import t80_print_cursor
+.import t80_crlf
+.import t80_crlf_cursor
 
