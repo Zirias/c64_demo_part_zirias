@@ -149,6 +149,8 @@ tbllen		= 195
 		jsr	t80_print_cursor
 		jsr	t80_crlf_cursor
 		jsr	t80_crlf_cursor
+		jsr	t80_crlf_cursor
+		jsr	t80_crlf_cursor
 
 		lda	#<message8
 		sta	T80_STRING_L

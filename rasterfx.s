@@ -373,31 +373,31 @@ raster_off:
 ; phase 0
 
 raster_0_tbl:
-		.byte 26, $80
+		.byte 27, $80
 		.word raster_bgcol
 		.byte 1
 
-		.byte 36, $00
+		.byte 37, $00
 		.word raster_bgline
 		.byte 6, 1
 
-		.byte 39, $00
+		.byte 40, $00
 		.word raster_bgcol
 		.byte 6
 
-		.byte 41, $00
+		.byte 42, $00
 		.word raster_bgcol
 		.byte 1
 
-		.byte 43, $00
+		.byte 44, $00
 		.word raster_bgcol
 		.byte 6
 
-		.byte 45, $00
+		.byte 46, $00
 		.word raster_bgcol
 		.byte 1
 
-		.byte 47, $00
+		.byte 48, $00
 		.word raster_bgcol
 		.byte 6
 
@@ -424,31 +424,31 @@ raster_0_tbl_size = *-raster_0_tbl
 ; phase 1
 
 raster_1_tbl:
-		.byte 26, $80
+		.byte 27, $80
 		.word raster_bgcol
 		.byte 1
 
-		.byte 36, $00
+		.byte 37, $00
 		.word raster_bgline
 		.byte 6, 1
 
-		.byte 39, $00
+		.byte 40, $00
 		.word raster_bgcol
 		.byte 6
 
-		.byte 41, $00
+		.byte 42, $00
 		.word raster_bgcol
 		.byte 1
 
-		.byte 43, $00
+		.byte 44, $00
 		.word raster_bgcol
 		.byte 6
 
-		.byte 45, $00
+		.byte 46, $00
 		.word raster_bgcol
 		.byte 1
 
-		.byte 47, $00
+		.byte 48, $00
 		.word raster_bgcol
 		.byte 6
 
