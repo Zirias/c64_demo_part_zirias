@@ -10,7 +10,7 @@ LDFLAGS		= -Ln $(BINARY).lbl -m $(BINARY).map -C $(LINKCFG)
 BINARY		= demo
 MODULES		= gfx-core.o gfx-line.o soundtable.o snd_play.o ziri_ambi.o \
 			rasterfx.o text80.o font.o sprites.o spritezone.o \
-			marquee_sprites.o
+			marquee_sprites.o topborder_sprites.o
 
 DISKFILE	= ziri-demo
 DISKNAME	= zirias
@@ -50,7 +50,34 @@ tools/%.o:	tools/%.c
 
 font.s:		res/font_topaz_80col_petscii_western.bmp $(TOOLS)
 	-if [ -x tools/bmp2c64 ]; then tools/bmp2c64 $< >font.s; fi
-	
+
+topborder_sprites.s: $(TOOLS) \
+		res/sprite_black_r.bmp \
+		res/sprite_blue_r.bmp \
+		res/sprite_blue_l3.bmp \
+		res/sprite_blue_0_l2.bmp \
+		res/sprite_blue_0_l1.bmp \
+		res/sprite_white_r.bmp \
+		res/sprite_white_l2.bmp \
+		res/sprite_white_l1.bmp \
+		res/sprite_blue_1_l2.bmp \
+		res/sprite_blue_1_l1.bmp
+	-if [ -x tools/bmp2c64 ]; then \
+	    echo '.export topborder_sprites' >topborder_sprites.s; \
+	    echo '.rodata' >>topborder_sprites.s; \
+	    echo 'topborder_sprites:' >>topborder_sprites.s; \
+	    tools/bmp2c64 res/sprite_black_r.bmp >>topborder_sprites.s; \
+	    tools/bmp2c64 res/sprite_blue_r.bmp >>topborder_sprites.s; \
+	    tools/bmp2c64 res/sprite_blue_l3.bmp >>topborder_sprites.s; \
+	    tools/bmp2c64 res/sprite_blue_0_l2.bmp >>topborder_sprites.s; \
+	    tools/bmp2c64 res/sprite_blue_0_l1.bmp >>topborder_sprites.s; \
+	    tools/bmp2c64 res/sprite_white_r.bmp >>topborder_sprites.s; \
+	    tools/bmp2c64 res/sprite_white_l2.bmp >>topborder_sprites.s; \
+	    tools/bmp2c64 res/sprite_white_l1.bmp >>topborder_sprites.s; \
+	    tools/bmp2c64 res/sprite_blue_1_l2.bmp >>topborder_sprites.s; \
+	    tools/bmp2c64 res/sprite_blue_1_l1.bmp >>topborder_sprites.s; \
+	fi
+
 clean:
 	rm -f $(BINARY)
 	rm -f *.o
@@ -62,6 +89,7 @@ clean:
 
 mrproper:	clean
 	rm -f font.s
+	rm -f topborder_sprites.s
 
 .PHONY:	disk all clean mrproper
 
