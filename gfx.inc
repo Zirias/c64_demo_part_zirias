@@ -8,7 +8,8 @@
 
 .include "gfx-vars.inc"
 
-MODE_DEL	= $20
-MODE_SET	= $40
-MODE_INV	= $80
+MODE_DEL        = $20
+MODE_SET        = $40
+MODE_INV        = $80
 
+; vim: ft=asm:et:si:ts=8:sts=8:sw=8

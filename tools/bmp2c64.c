@@ -36,21 +36,21 @@ enum gfxtype
 #pragma pack(1)
 struct bmphdr
 {
-    uint16_t	bfType;
-    uint32_t	bfSize;
-    uint32_t	bfReserved;
-    uint32_t	bfOffBits;
-    uint32_t	biSize;
-    uint32_t	biWidth;
-    int32_t	biHeight;
-    uint16_t	biPlanes;
-    uint16_t	biBitCount;
-    uint32_t	biCompression;
-    uint32_t	biSizeImage;
-    int32_t	biXPelsPerMeter;
-    int32_t	biYPelsPerMeter;
-    uint32_t	biClrUsed;
-    uint32_t	biClrImportant;
+    uint16_t    bfType;
+    uint32_t    bfSize;
+    uint32_t    bfReserved;
+    uint32_t    bfOffBits;
+    uint32_t    biSize;
+    uint32_t    biWidth;
+    int32_t     biHeight;
+    uint16_t    biPlanes;
+    uint16_t    biBitCount;
+    uint32_t    biCompression;
+    uint32_t    biSizeImage;
+    int32_t     biXPelsPerMeter;
+    int32_t     biYPelsPerMeter;
+    uint32_t    biClrUsed;
+    uint32_t    biClrImportant;
 };
 #pragma pack(pop)
 
@@ -70,10 +70,10 @@ static int readhdr(int fd)
 
     while (n != 0)
     {
-	ssize_t r = read(fd, p, n);
-	if (!r) return -1;
-	n -= r;
-	p += r;
+        ssize_t r = read(fd, p, n);
+        if (!r) return -1;
+        n -= r;
+        p += r;
     }
     return 0;
 }
@@ -82,32 +82,32 @@ static void checkbmp()
 {
     type = GFX_UNKNOWN;
     if (hdr.bfType != 0x4D42) return;
-    if (hdr.biBitCount != 1) return;	    // only hires for now
+    if (hdr.biBitCount != 1) return;        // only hires for now
 
     height = hdr.biHeight;
     if (height > 0)
     {
-	bottomup = 1;
+        bottomup = 1;
     }
     else
     {
-	bottomup = 0;
-	height = -height;
+        bottomup = 0;
+        height = -height;
     }
     switch (hdr.biWidth)
     {
-	case 320:
-	    if (height == 200) type = GFX_IMAGE;
-	    break;
-	case 256:
-	    if (height == 64) type = GFX_FONT_40;
-	    break;
-	case 128:
-	    if (height == 64) type = GFX_FONT_80;
-	    break;
-	case 24:
-	    if (height == 21) type = GFX_SPRITE;
-	    break;
+        case 320:
+            if (height == 200) type = GFX_IMAGE;
+            break;
+        case 256:
+            if (height == 64) type = GFX_FONT_40;
+            break;
+        case 128:
+            if (height == 64) type = GFX_FONT_80;
+            break;
+        case 24:
+            if (height == 21) type = GFX_SPRITE;
+            break;
     }
     bitmapsize = hdr.biWidth / 8 * height;
 }
@@ -123,15 +123,15 @@ static void readbmp(int fd)
     size_t n = bitmapsize;
     while (n != 0)
     {
-	ssize_t r = read(fd, p, n);
-	if (!r)
-	{
-	    free(bitmap);
-	    bitmap = 0;
-	    return;
-	}
-	n -= r;
-	p += r;
+        ssize_t r = read(fd, p, n);
+        if (!r)
+        {
+            free(bitmap);
+            bitmap = 0;
+            return;
+        }
+        n -= r;
+        p += r;
     }
 }
 
@@ -151,15 +151,15 @@ static void converttoblocks()
 
     if (bottomup)
     {
-	linestep = -cols;
-	rowstep = -hdr.biWidth;
-	p = bitmap + bitmapsize + linestep;
+        linestep = -cols;
+        rowstep = -hdr.biWidth;
+        p = bitmap + bitmapsize + linestep;
     }
     else
     {
-	linestep = cols;
-	rowstep = hdr.biWidth;
-	p = bitmap;
+        linestep = cols;
+        rowstep = hdr.biWidth;
+        p = bitmap;
     }
 
     int inverted = (*p & 1<<7);
@@ -167,22 +167,22 @@ static void converttoblocks()
     int i,j,k;
     for (i = rows; i > 0; --i)
     {
-	char *pl = p;
-	for (j = cols; j > 0; --j)
-	{
-	    char *pc = pl;
-	    for (k = 8; k > 0; --k)
-	    {
-		if (inverted)
-		    *q++ = ~*pc;
-		else
-		    *q++ = *pc;
+        char *pl = p;
+        for (j = cols; j > 0; --j)
+        {
+            char *pc = pl;
+            for (k = 8; k > 0; --k)
+            {
+                if (inverted)
+                    *q++ = ~*pc;
+                else
+                    *q++ = *pc;
 
-		pc += linestep;
-	    }
-	    ++pl;
-	}
-	p += rowstep;
+                pc += linestep;
+            }
+            ++pl;
+        }
+        p += rowstep;
     }
 }
 
@@ -194,11 +194,11 @@ static void convertbmp()
     c64bitmap = p;
     if (type == GFX_SPRITE)
     {
-	converttosprite();
+        converttosprite();
     }
     else
     {
-	converttoblocks();
+        converttoblocks();
     }
     free(bitmap);
     bitmap = 0;
@@ -228,13 +228,14 @@ static void formatfont(const char *name)
     printf(".export %s\n\n.rodata\n\n%s:\n", name, name);
     for (i = 0; i < bitmapsize; ++i)
     {
-	tobinstring(bin, *p++);
-	printf("\t.byte\t%%%s\n", bin);
-	if (!--c)
-	{
-	    c = 8;
-	    printf("\n");
-	}
+        tobinstring(bin, *p++);
+        printf("                .byte   %%%s\n", bin);
+        if (!--c)
+        {
+            c = 8;
+            printf("\n");
+        }
+        printf("; vim: et:si:ts=8:sts=8:sw=8");
     }
 }
 
@@ -244,61 +245,64 @@ int main(int argc, char **argv)
 
     if (argc != 2)
     {
-	fprintf(stderr, "Usage: %s <file.bmp>.\n", argv[0]);
-	return -1;
+        fprintf(stderr, "Usage: %s <file.bmp>.\n", argv[0]);
+        return -1;
     }
     if ((fd = open(argv[1], O_RDONLY)) < 0)
     {
-	fprintf(stderr, "Error opening `%s'.\n", argv[1]);
-	return -1;
+        fprintf(stderr, "Error opening `%s'.\n", argv[1]);
+        return -1;
     }
     if (readhdr(fd) < 0)
     {
-	fprintf(stderr, "`%s' is not a BMP file.\n", argv[1]);
-	close(fd);
-	return -1;
+        fprintf(stderr, "`%s' is not a BMP file.\n", argv[1]);
+        close(fd);
+        return -1;
     }
     checkbmp();
     if (type == GFX_UNKNOWN)
     {
-	fprintf(stderr, "`%s' is not a BMP file or\n does not contain a known C64 gfx type.\n"
-		"Supported types:\n"
-		"  hires bitmap (320x200x1)\n"
-		"  40 char font (256x64x1)\n"
-		"  80 char font (128x64x1)\n"
-		"  hires sprite (24x21x1)\n", argv[1]);
-	close(fd);
-	return -1;
+        fprintf(stderr, "`%s' is not a BMP file or\n does not contain a known C64 gfx type.\n"
+                "Supported types:\n"
+                "  hires bitmap (320x200x1)\n"
+                "  40 char font (256x64x1)\n"
+                "  80 char font (128x64x1)\n"
+                "  hires sprite (24x21x1)\n", argv[1]);
+        close(fd);
+        return -1;
     }
     readbmp(fd);
     close(fd);
 
     if (!bitmap)
     {
-	fprintf(stderr, "Error reading `%s' -- corrupted file.\n", argv[1]);
-	return -1;
+        fprintf(stderr, "Error reading `%s' -- corrupted file.\n", argv[1]);
+        return -1;
     }
 
     char *name = basename(argv[1]);
     char *ext = name + strlen(name) - 4;
     if (*ext == '.')
     {
-	*ext = '\0';
+        *ext = '\0';
     }
 
     convertbmp();
     switch (type)
     {
-	case GFX_IMAGE:
-	    break;
-	case GFX_FONT_40:
-	case GFX_FONT_80:
-	    formatfont(name);
-	    break;
-	case GFX_SPRITE:
-	    break;
+        case GFX_IMAGE:
+            break;
+        case GFX_FONT_40:
+        case GFX_FONT_80:
+            formatfont(name);
+            break;
+        case GFX_SPRITE:
+            break;
     }
 
     free(c64bitmap);
     return 0;
 }
+
+/* vim: et:si:ts=8:sts=4:sw=4
+*/

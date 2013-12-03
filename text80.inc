@@ -12,3 +12,4 @@
 .import t80_crlf
 .import t80_crlf_cursor
 
+; vim: ft=asm:et:si:ts=8:sts=8:sw=8
