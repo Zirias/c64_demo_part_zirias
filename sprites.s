@@ -1,4 +1,5 @@
 .include "spritezone.inc"
+.include "vic.inc"
 
 .export	sprites_topborder
 .export sprites_cursor
@@ -16,6 +17,7 @@ sprites_topborder:
 sprites_cursor:
 		lda	#0
 		sta	sprite_1_show
+		sta	SPRITE_SHOW
 		ldx	#$3f
 cr_copy:	lda	cursor_sprite,x
 		sta	$5200,x
@@ -40,6 +42,7 @@ cr_copy:	lda	cursor_sprite,x
 sprites_marquee:
 		ldx	#0
 		stx	sprite_1_show
+		stx	SPRITE_SHOW
 mq_copy1:	lda	marquee_sprites,x
 		sta	$5200,x
 		inx
