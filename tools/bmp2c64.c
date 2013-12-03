@@ -59,6 +59,7 @@ static enum gfxtype type;
 int bottomup;
 int height;
 
+size_t rowsize;
 size_t bitmapsize;
 char *bitmap;
 char *c64bitmap;
@@ -109,7 +110,10 @@ static void checkbmp()
             if (height == 21) type = GFX_SPRITE;
             break;
     }
-    bitmapsize = hdr.biWidth / 8 * height;
+    rowsize = hdr.biWidth;
+    int padding = rowsize % 32;
+    if (padding) rowsize = rowsize - padding + 32;
+    bitmapsize = rowsize / 8 * height;
 }
 
 static void readbmp(int fd)
@@ -137,6 +141,23 @@ static void readbmp(int fd)
 
 static void converttosprite()
 {
+    int l,c;
+    char *p;
+
+    char *q = c64bitmap;
+    int inverted = bottomup ? *(bitmap+80) & 1<<7 : *bitmap & 1<<7;
+
+    for (l = 0; l < 21; ++l)
+    {
+	p = bottomup ? bitmap + 4 * (20 - l) : bitmap + 4 * l;
+	for (c = 0; c<3; ++c)
+	{
+	    if (inverted)
+		*q++ = ~*p++;
+	    else
+		*q++ = *p++;
+	}
+    }
 }
 
 static void converttoblocks()
@@ -151,14 +172,14 @@ static void converttoblocks()
 
     if (bottomup)
     {
-        linestep = -cols;
-        rowstep = -hdr.biWidth;
+        linestep = -rowsize / 8;
+        rowstep = -rowsize;
         p = bitmap + bitmapsize + linestep;
     }
     else
     {
-        linestep = cols;
-        rowstep = hdr.biWidth;
+        linestep = rowsize / 8;
+        rowstep = rowsize;
         p = bitmap;
     }
 
@@ -218,6 +239,27 @@ static void tobinstring(char *buf, char val)
     *p = '\0';
 }
 
+static void formatsprite(const char *name)
+{
+    char bin0[9];
+    char bin1[9];
+    char bin2[9];
+    char *p = c64bitmap;
+    int l;
+
+    printf(".export %s\n\n.rodata\n\n%s:\n", name, name);
+
+    for (l = 0; l < 21; ++l)
+    {
+	tobinstring(bin0, *p++);
+	tobinstring(bin1, *p++);
+	tobinstring(bin2, *p++);
+        printf("                .byte   %%%s,%%%s,%%%s\n",
+		bin0, bin1, bin2);
+    }
+    printf("                .byte   0\n\n");
+}
+
 static void formatfont(const char *name)
 {
     int c = 8;
@@ -235,8 +277,8 @@ static void formatfont(const char *name)
             c = 8;
             printf("\n");
         }
-        printf("; vim: et:si:ts=8:sts=8:sw=8");
     }
+    printf("; vim: et:si:ts=8:sts=8:sw=8");
 }
 
 int main(int argc, char **argv)
@@ -297,6 +339,7 @@ int main(int argc, char **argv)
             formatfont(name);
             break;
         case GFX_SPRITE:
+	    formatsprite(name);
             break;
     }
 
