@@ -44,7 +44,7 @@ tools/%.o:	tools/%.c
 	$(AS) -o$@ $(AFLAGS) $<
 
 font.s:		res/font_topaz_80col_petscii_western.bmp $(TOOLS)
-	-tools/bmp2c64 $< >font.s
+	-if [ -x tools/bmp2c64 ]; then tools/bmp2c64 $< >font.s; fi
 	
 clean:
 	rm -f $(BINARY)
