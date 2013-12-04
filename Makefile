@@ -19,15 +19,12 @@ loader_OBJS	= c64startup.o loader.o gfx-core.o gfx-line.o soundtable.o \
 loader_LDFLAGS	= -Ln loader.lbl -m loader.map -C c64-asm.cfg
 
 kickstart_OBJS	=
-kickstart_LINKCFG =
 kickstart_LDFLAGS = -Ln kickstart.lbl -m kickstart.map -C c64-asm.cfg
 
 amigados_OBJS	=
-amigados_LINKCFG =
 amigados_LDFLAGS = -Ln amigados.lbl -m amigados.map -C c64-asm.cfg
 
 music_OBJS	=
-music_LINKCFG	=
 music_LDFLAGS	= -Ln music.lbl -m music.map -C c64-asm.cfg
 
 all:	$(BINARIES)
