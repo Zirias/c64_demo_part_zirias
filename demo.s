@@ -192,6 +192,7 @@ waitkey:        lda     key_pressed
 
                 ; sprites for marquee
                 jsr     sprites_marquee
+		jsr	sprites_topborder1
 
                 ; more raster effects
                 jsr     raster_phase1

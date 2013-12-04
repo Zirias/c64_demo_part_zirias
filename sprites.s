@@ -2,6 +2,7 @@
 .include "vic.inc"
 
 .export sprites_topborder
+.export sprites_topborder1
 .export sprites_cursor
 .export sprites_marquee
 
@@ -13,12 +14,12 @@
 sprites_topborder:
                 lda     #0
                 sta     sprite_0_show
-                stx     SPRITE_SHOW
+                sta     SPRITE_SHOW
 tb_copy1:       lda     topborder_sprites,x
                 sta     $5000,x
                 inx
                 bne     tb_copy1
-tb_copy2:       lda     topborder_sprites+$0100,x
+tb_copy2:       lda     topborder_sprites+$100,x
                 sta     $5100,x
                 inx
                 bne     tb_copy2
@@ -34,7 +35,7 @@ tb_copy2:       lda     topborder_sprites+$0100,x
                 lda     #$18
                 sta     sprite_0_4_x
                 sta     sprite_0_7_x
-                lda     #$24
+                lda     #$23
                 sta     sprite_0_6_x
                 lda     #%00100011
                 sta     sprite_0_x_h
@@ -67,6 +68,21 @@ tb_copy2:       lda     topborder_sprites+$0100,x
                 lda     #$ff
                 sta     sprite_0_show
                 rts
+
+sprites_topborder1:
+		lda	#0
+		sta	sprite_0_show
+		sta	SPRITE_SHOW
+		ldx	#$80
+tb1_copy:	lda	topborder_sprites+$200,x
+		sta	$50c0,x
+		dex
+		bpl	tb1_copy
+		lda	#$25
+		sta	sprite_0_6_x
+                lda     #$ff
+                sta     sprite_0_show
+		rts
 
 sprites_cursor:
                 lda     #0
