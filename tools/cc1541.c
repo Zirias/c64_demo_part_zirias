@@ -280,7 +280,7 @@ filedone_common:    files[nrFiles].sectorInterleave=sectorInterleave;
     int bam=linearSector(18,0)*256;
     d64image[bam+0x00]=18;
     d64image[bam+0x01]=1;
-    d64image[bam+0x02]=0x41;
+    d64image[bam+0x02]=0x40; /* write protection, default 0x41 */
 
     int t;
     for (t=1;t<=nrTracks;t++)
