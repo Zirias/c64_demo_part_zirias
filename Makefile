@@ -1,36 +1,68 @@
 SYS		= c64
-LINKCFG		= c64-asm.cfg
 AS		= ca65
 LD		= ld65
 
 AFLAGS		= -t $(SYS) -g
-LDFLAGS		= -Ln $(BINARY).lbl -m $(BINARY).map -C $(LINKCFG)
-
-BINARY		= demo
-MODULES		= gfx-core.o gfx-line.o soundtable.o snd_play.o ziri_ambi.o \
-			rasterfx.o text80.o font.o sprites.o spritezone.o \
-			marquee_sprites.o topborder_sprites.o
 
 DISKFILE	= ziri-demo
-DISKNAME	= 'C=64 WORKBENCH'
-PRGNAME		= 'ZIRIAS'
-DISKID		= 'AMIGA'
-
-OBJS		= c64startup.o $(BINARY).o $(MODULES)
 
 HCC		= gcc
 HCFLAGS		= -O2 -g0
-TOOLS		= tools/bmp2c64 tools/cc1541
+HTOOLS		= tools/bmp2c64 tools/cc1541
 
-all:	$(OBJS)
-	$(LD) -o $(BINARY) $(LDFLAGS) $(OBJS)
+BINARIES	= loader kickstart amigados music
+
+loader_OBJS	= c64startup.o loader.o gfx-core.o gfx-line.o soundtable.o \
+		  	snd_play.o ziri_ambi.o rasterfx.o text80.o font.o \
+			sprites.o spritezone.o marquee_sprites.o \
+			topborder_sprites.o
+loader_LDFLAGS	= -Ln loader.lbl -m loader.map -C c64-asm.cfg
+
+kickstart_OBJS	=
+kickstart_LINKCFG =
+kickstart_LDFLAGS = -Ln kickstart.lbl -m kickstart.map -C c64-asm.cfg
+
+amigados_OBJS	=
+amigados_LINKCFG =
+amigados_LDFLAGS = -Ln amigados.lbl -m amigados.map -C c64-asm.cfg
+
+music_OBJS	=
+music_LINKCFG	=
+music_LDFLAGS	= -Ln music.lbl -m music.map -C c64-asm.cfg
+
+all:	$(BINARIES)
+
+loader:	$(loader_OBJS)
+	$(LD) -oloader $(loader_LDFLAGS) $(loader_OBJS)
+
+kickstart:
+	touch kickstart
+
+amigados:
+	touch amigados
+
+music:
+	touch music
 
 disk:	all tools/cc1541
 	mkdir -p disks
 	tools/cc1541 -x \
-		-n$(DISKNAME) -i$(DISKID) \
+		-n'C=64 WORKBENCH' -i'AMIGA' \
 		-d \
-		-f$(PRGNAME) -w$(BINARY) \
+		-f'  DEMO: MUSIC   ' -d \
+		-f'                ' -d \
+		-f'  RELEASE 0.5B  ' -d \
+		-f'  2013/12/04    ' -d \
+		-f'  BY ZIRIAS     ' -d \
+		-d \
+		-f'  BOOTLOADER    ' -wloader \
+		-d \
+		-f'                ' -d \
+		-f'C64 AMIGA FILES:' -d \
+		-d \
+		-f'KICKSTART       ' -u -wkickstart \
+		-f'AMIGADOS        ' -u -wamigados \
+		-f'MUSIC           ' -u -wmusic \
 		-d \
 		disks/$(DISKFILE).d64
 
@@ -77,18 +109,20 @@ topborder_sprites.s: tools/bmp2c64 \
 	fi
 
 clean:
-	rm -f $(BINARY)
+	rm -f $(BINARIES)
 	rm -f *.o
 	rm -f *.map
 	rm -f *.lbl
 	rm -fr disks
 	rm -f tools/*.o
-	rm -f $(TOOLS)
+	rm -f $(HTOOLS)
 
 mrproper:	clean
 	rm -f font.s
 	rm -f topborder_sprites.s
 
 .PHONY:	disk all clean mrproper
+
+.SUFFIXES:
 
 # vim: noet:si:ts=8:sts=8:sw=8
