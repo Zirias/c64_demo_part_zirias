@@ -5,12 +5,66 @@
 .export sprites_cursor
 .export sprites_marquee
 
+.import topborder_sprites
 .import marquee_sprites
 
 .code
 
 sprites_topborder:
                 lda     #0
+                sta     sprite_0_show
+                stx     SPRITE_SHOW
+tb_copy1:       lda     topborder_sprites,x
+                sta     $5000,x
+                inx
+                bne     tb_copy1
+tb_copy2:       lda     topborder_sprites+$0100,x
+                sta     $5100,x
+                inx
+                bne     tb_copy2
+                lda     #$3e
+                sta     sprite_0_0_x
+                sta     sprite_0_1_x
+		lda	#$29
+                sta     sprite_0_5_x
+		lda	#$48
+                sta     sprite_0_2_x
+                lda     #$30
+                sta     sprite_0_3_x
+                lda     #$18
+                sta     sprite_0_4_x
+                sta     sprite_0_7_x
+                lda     #$24
+                sta     sprite_0_6_x
+                lda     #%00100011
+                sta     sprite_0_x_h
+		lda	#0
+                sta     sprite_0_dbl_y
+                sta     sprite_0_0_col
+                sta     sprite_0_layer
+                sta     sprite_0_multi
+		lda	#%00100000
+                sta     sprite_0_dbl_x
+                lda     #6
+                sta     sprite_0_1_col
+                sta     sprite_0_2_col
+                sta     sprite_0_3_col
+                sta     sprite_0_4_col
+		lda	#1
+                sta     sprite_0_5_col
+                sta     sprite_0_6_col
+                sta     sprite_0_7_col
+                lda     #27
+                sta     sprite_0_0_y
+                sta     sprite_0_1_y
+                sta     sprite_0_2_y
+                sta     sprite_0_3_y
+                sta     sprite_0_4_y
+		lda	#29
+                sta     sprite_0_5_y
+                sta     sprite_0_6_y
+                sta     sprite_0_7_y
+                lda     #$ff
                 sta     sprite_0_show
                 rts
 

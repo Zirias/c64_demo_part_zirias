@@ -47,21 +47,6 @@ raster_top:
 raster_payload = *+1
                 jmp     raster_bottom
 
-; payload for changing background color
-raster_bgcol:
-                dex
-                lda     tbl_base,x
-                nop
-                nop
-                nop
-                nop
-.ifdef DBG_RASTER
-                sta     BORDER_COLOR
-.else
-                sta     BG_COLOR_0
-.endif
-                jmp     raster_bottom
-
 ; payload for changing background and border color
 raster_col:
                 nop
@@ -72,34 +57,6 @@ raster_col:
                 sta     BG_COLOR_0
                 nop
                 sta     BORDER_COLOR
-                jmp     raster_bottom
-
-; payload for changing bg color in 2 consecutive rasterlines
-raster_bgline:
-                dex
-                lda     tbl_base,x
-                nop
-                nop
-                nop
-                nop
-.ifdef DBG_RASTER
-                sta     BORDER_COLOR
-.else
-                sta     BG_COLOR_0
-.endif
-                sty     SAVE_Y
-                ldy     #$9
-                dey
-                bne     *-1
-                nop
-                dex
-                lda     tbl_base,x
-.ifdef DBG_RASTER
-                sta     BORDER_COLOR
-.else
-                sta     BG_COLOR_0
-.endif
-                ldy     SAVE_Y
                 jmp     raster_bottom
 
 ; payload for switching to 24 rows text mode
@@ -114,9 +71,6 @@ raster_24row:
 
 ; payload for switching to 25 rows hires mode
 raster_25row:
-                nop
-                nop
-                nop
                 lda     VIC_CTL1
                 ora     #%00101000
                 sta     VIC_CTL1
@@ -144,15 +98,7 @@ raster_zone1:
 raster_sound:
                 sty     SAVE_Y
                 stx     TBL_OFFSET
-.ifdef DBG_RASTER
-                lda     #0
-                sta     BORDER_COLOR
-.endif
                 jsr     snd_play
-.ifdef DBG_RASTER
-                lda     #6
-                sta     BORDER_COLOR
-.endif
                 ldx     TBL_OFFSET
                 ldy     SAVE_Y
                 jmp     raster_bottom
@@ -195,10 +141,6 @@ raster_resizer:
 raster_marquee:
                 sty     SAVE_Y
                 stx     TBL_OFFSET
-.ifdef DBG_RASTER
-                lda     #2
-                sta     BORDER_COLOR
-.endif
                 ldx     flash_counter
                 dex
                 stx     flash_counter
@@ -240,13 +182,91 @@ spm_next:       tya
                 dex
                 bpl     spm_while
                 sta     sprite_1_x_h
-.ifdef DBG_RASTER
-                lda     #6
-                sta     BORDER_COLOR
-.endif
                 ldy     SAVE_Y
                 ldx     TBL_OFFSET
-                ;jmp    raster_bottom
+                jmp    raster_bottom
+
+; payload for start of the Amiga screen bar
+raster_screen:
+		lda	#1
+		nop
+		nop
+		nop
+		nop
+		nop
+		sta	BG_COLOR_0
+		jmp	raster_bottom
+
+; payload for window border, this has to be stabilized
+raster_border:
+		stx	TBL_OFFSET
+		inc	VIC_RASTER
+		lda	#$ff
+		sta	VIC_IRR
+		lda	#<raster_wintop
+		sta	$fffe
+		lda	#>raster_wintop
+		sta	$ffff
+                sty     SAVE_Y
+		tsx
+		cli
+		nop
+		nop
+		nop
+		nop
+		nop
+		nop
+
+; stabilized top of the window border
+raster_wintop:
+		txs
+		lda	#<raster_top
+		sta	$fffe
+		lda	#>raster_top
+		sta	$ffff
+		ldx	TBL_OFFSET
+                ldy     #$3
+                dey
+                bne     *-1
+		lda	#6
+		sta	BG_COLOR_0
+                ldy     #$8
+                dey
+                bne     *-1
+		lda	#1
+		sta	BG_COLOR_0
+                ldy     #$f
+                dey
+                bne     *-1
+		lda	#6
+		sta	BG_COLOR_0
+                ldy     #$10
+                dey
+                bne     *-1
+                nop
+		lda	#1
+		sta	BG_COLOR_0
+                ldy     #$10
+                dey
+                bne     *-1
+		nop
+		nop
+		lda	#6
+		sta	BG_COLOR_0
+                ldy     #$f
+                dey
+                bne     *-1
+                nop
+		lda	#1
+		nop
+		nop
+		sta	BG_COLOR_0
+                ldy     #$10
+                dey
+                bne     *-1
+		lda	#6
+		sta	BG_COLOR_0
+		ldy	SAVE_Y
 
 ; common exit code for every IRQ
 raster_bottom:
@@ -374,32 +394,10 @@ raster_off:
 
 raster_0_tbl:
                 .byte 27, $80
-                .word raster_bgcol
-                .byte 1
+                .word raster_screen
 
-                .byte 37, $00
-                .word raster_bgline
-                .byte 6, 1
-
-                .byte 40, $00
-                .word raster_bgcol
-                .byte 6
-
-                .byte 42, $00
-                .word raster_bgcol
-                .byte 1
-
-                .byte 44, $00
-                .word raster_bgcol
-                .byte 6
-
-                .byte 46, $00
-                .word raster_bgcol
-                .byte 1
-
-                .byte 48, $00
-                .word raster_bgcol
-                .byte 6
+                .byte 35, $00
+                .word raster_border
 
                 .byte 50, $00
                 .word raster_25row
@@ -416,7 +414,7 @@ raster_0_tbl:
                 .byte 250, $00
                 .word raster_24row
 
-                .byte 0, $80
+                .byte 27, $80
                 .word raster_zone0
 
 raster_0_tbl_size = *-raster_0_tbl
@@ -425,32 +423,10 @@ raster_0_tbl_size = *-raster_0_tbl
 
 raster_1_tbl:
                 .byte 27, $80
-                .word raster_bgcol
-                .byte 1
+                .word raster_screen
 
-                .byte 37, $00
-                .word raster_bgline
-                .byte 6, 1
-
-                .byte 40, $00
-                .word raster_bgcol
-                .byte 6
-
-                .byte 42, $00
-                .word raster_bgcol
-                .byte 1
-
-                .byte 44, $00
-                .word raster_bgcol
-                .byte 6
-
-                .byte 46, $00
-                .word raster_bgcol
-                .byte 1
-
-                .byte 48, $00
-                .word raster_bgcol
-                .byte 6
+                .byte 35, $00
+                .word raster_border
 
                 .byte 50, $00
                 .word raster_25row

@@ -25,10 +25,6 @@ TOOLS		= tools/bmp2c64
 
 bmp2c64_OBJS	= tools/bmp2c64.o
 
-ifdef DBG_RASTER
-	AFLAGS += -DDBG_RASTER=1
-endif
-
 all:	$(OBJS)
 	$(LD) -o $(BINARY) $(LDFLAGS) $(OBJS)
 
