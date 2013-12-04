@@ -2,7 +2,6 @@ SYS		= c64
 LINKCFG		= c64-asm.cfg
 AS		= ca65
 LD		= ld65
-C1541		= c1541
 
 AFLAGS		= -t $(SYS) -g
 LDFLAGS		= -Ln $(BINARY).lbl -m $(BINARY).map -C $(LINKCFG)
@@ -13,41 +12,44 @@ MODULES		= gfx-core.o gfx-line.o soundtable.o snd_play.o ziri_ambi.o \
 			marquee_sprites.o topborder_sprites.o
 
 DISKFILE	= ziri-demo
-DISKNAME	= zirias
-PRGNAME		= zirias
-DISKID		= zz
+DISKNAME	= 'C=64 WORKBENCH'
+PRGNAME		= 'ZIRIAS'
+DISKID		= 'AMIGA'
 
 OBJS		= c64startup.o $(BINARY).o $(MODULES)
 
 HCC		= gcc
 HCFLAGS		= -O2 -g0
-TOOLS		= tools/bmp2c64
-
-bmp2c64_OBJS	= tools/bmp2c64.o
+TOOLS		= tools/bmp2c64 tools/cc1541
 
 all:	$(OBJS)
 	$(LD) -o $(BINARY) $(LDFLAGS) $(OBJS)
 
-disk:	all
+disk:	all tools/cc1541
 	mkdir -p disks
-	$(C1541) \
-		-format $(DISKNAME),$(DISKID) d64 disks/$(DISKFILE).d64 \
-		-attach disks/$(DISKFILE).d64 \
-		-write $(BINARY) $(PRGNAME).prg
+	tools/cc1541 -x \
+		-n$(DISKNAME) -i$(DISKID) \
+		-d \
+		-f$(PRGNAME) -w$(BINARY) \
+		-d \
+		disks/$(DISKFILE).d64
+
+tools/cc1541:	tools/cc1541.o
+	-$(HCC) -o$@ $^
 
 tools/bmp2c64:	tools/bmp2c64.o
 	-$(HCC) -o$@ $^
 
-tools/%.o:	tools/%.c
+%.o:		%.c
 	-$(HCC) -c -o$@ $(HCFLAGS) $<
 
 %.o:		%.s
 	$(AS) -o$@ $(AFLAGS) $<
 
-font.s:		res/font_topaz_80col_petscii_western.bmp $(TOOLS)
+font.s:		res/font_topaz_80col_petscii_western.bmp tools/bmp2c64
 	-if [ -x tools/bmp2c64 ]; then tools/bmp2c64 $< >font.s; fi
 
-topborder_sprites.s: $(TOOLS) \
+topborder_sprites.s: tools/bmp2c64 \
 		res/sprite_black_r.bmp \
 		res/sprite_blue_r.bmp \
 		res/sprite_blue_l3.bmp \
