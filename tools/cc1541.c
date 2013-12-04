@@ -69,22 +69,22 @@ void usage()
 {
     printf("Usage: cc1541 -niSsfw image.d64\n\n");
     printf("-n diskname   Disk name, default='default'\n");
-    printf("-i id	  Disk ID, default='lodis'\n");
+    printf("-i id         Disk ID, default='lodis'\n");
     printf("-S value      Default sector interleave, default=10\n");
     printf("-s value      Next file sector interleave, after each file\n");
-    printf("		  the interleave value falls back to the default value set by -S\n");
+    printf("              the interleave value falls back to the default value set by -S\n");
     printf("-f filename   Use filename as name when writing next file\n");
-    printf("-u		  Next file is USR (default: PRG)\n");
-    printf("-q		  Next file is SEQ (default: PRG)\n");
-    printf("-r		  Next file is REL (default: PRG)\n");
-    printf("-d		  Next file is DEL [not a real file] (default: PRG)\n");
-    printf("-p		  Next file is write-protected\n");
+    printf("-u            Next file is USR (default: PRG)\n");
+    printf("-q            Next file is SEQ (default: PRG)\n");
+    printf("-r            Next file is REL (default: PRG)\n");
+    printf("-d            Next file is DEL [not a real file] (default: PRG)\n");
+    printf("-p            Next file is write-protected\n");
     printf("-w localname  Write local file to disk, if filename is not set then the\n");
-    printf("		  local name is used. After file written filename is unset\n");
-    printf("-x		  Don't split files over track 18 hole (default split files)\n");
-    printf("-t		  Use track 18 to also store files (makes -x useless) (default no)\n");
-    printf("-4		  Use tracks 35-40 with SPEED DOS formatting\n");
-    printf("-5		  Use tracks 35-40 with DOLPHIN DOS formatting\n");
+    printf("              local name is used. After file written filename is unset\n");
+    printf("-x            Don't split files over track 18 hole (default split files)\n");
+    printf("-t            Use track 18 to also store files (makes -x useless) (default no)\n");
+    printf("-4            Use tracks 35-40 with SPEED DOS formatting\n");
+    printf("-5            Use tracks 35-40 with DOLPHIN DOS formatting\n");
     printf("\n");
     exit(1);
 }
