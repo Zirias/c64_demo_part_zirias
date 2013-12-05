@@ -21,21 +21,20 @@ OBJS		= c64startup.o $(BINARY).o $(MODULES)
 HCC		= gcc
 HCFLAGS		= -O2 -g0
 
-cc1541_EXTRA	=
-
 ifeq ($(OS),Windows_NT)
 
 EXE = .exe
 CMDSEP = &
 PSEP = \\
+CPF = copy /y
 RMF = del /f /q
 RMFR = -rd /s /q
-MDP = md
+MDP = -md
 XIF = if exist
 XTHEN = (
 XFI = )
 
-cc1541_EXTRA = tools\\popt.o
+cc1541_EXTRA = tools\\getopt.o
 HCFLAGS += -DWIN32=1
 
 else
@@ -43,12 +42,15 @@ else
 EXE =
 CMDSEP = ;
 PSEP = /
+CPF = cp -f
 RMF = rm -f
 RMFR = rm -fr
 MDP = mkdir -p
 XIF = if [ -x
 XTHEN = ]; then
 XFI = ; fi
+
+cc1541_EXTRA =
 
 endif
 
@@ -92,11 +94,10 @@ topborder_sprites.s: tools$(PSEP)bmp2c64$(EXE) \
 		res$(PSEP)sprite_white_l2.bmp \
 		res$(PSEP)sprite_white_l1.bmp \
 		res$(PSEP)sprite_blue_1_l2.bmp \
-		res$(PSEP)sprite_blue_1_l1.bmp
+		res$(PSEP)sprite_blue_1_l1.bmp \
+		topborder_sprites_head.s
 	$(XIF) tools$(PSEP)bmp2c64$(EXE) $(XTHEN) \
-	    echo '.export topborder_sprites' >topborder_sprites.s $(CMDSEP) \
-	    echo '.rodata' >>topborder_sprites.s $(CMDSEP) \
-	    echo 'topborder_sprites:' >>topborder_sprites.s $(CMDSEP) \
+	    $(CPF) topborder_sprites_head.s topborder_sprites.s $(CMDSEP) \
 	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_black_r.bmp >>topborder_sprites.s $(CMDSEP) \
 	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_blue_r.bmp >>topborder_sprites.s $(CMDSEP) \
 	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_blue_l3.bmp >>topborder_sprites.s $(CMDSEP) \

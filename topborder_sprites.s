@@ -1,6 +1,12 @@
 .export topborder_sprites
+
 .rodata
+
 topborder_sprites:
+
+; generated data to follow
+
+
 .export sprite_black_r
 
 .rodata

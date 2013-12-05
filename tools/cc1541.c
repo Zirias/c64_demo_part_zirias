@@ -24,8 +24,12 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef WIN32
+#include "getopt.h"
+#else
 #include <getopt.h>
 #include <unistd.h>
+#endif
 
 #define min(a,b) (((a)<(b))?(a):(b))
 #define _true 1
