@@ -172,7 +172,7 @@ static void converttoblocks()
 
     if (bottomup)
     {
-        linestep = -rowsize / 8;
+        linestep = -(rowsize / 8);
         rowstep = -rowsize;
         p = bitmap + bitmapsize + linestep;
     }

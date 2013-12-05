@@ -20,24 +20,56 @@ OBJS		= c64startup.o $(BINARY).o $(MODULES)
 
 HCC		= gcc
 HCFLAGS		= -O2 -g0
-TOOLS		= tools/bmp2c64 tools/cc1541
+
+cc1541_EXTRA	=
+
+ifeq ($(OS),Windows_NT)
+
+EXE = .exe
+CMDSEP = &
+PSEP = \\
+RMF = del /f /q
+RMFR = -rd /s /q
+MDP = md
+XIF = if exist
+XTHEN = (
+XFI = )
+
+cc1541_EXTRA = tools\\popt.o
+HCFLAGS += -DWIN32=1
+
+else
+
+EXE =
+CMDSEP = ;
+PSEP = /
+RMF = rm -f
+RMFR = rm -fr
+MDP = mkdir -p
+XIF = if [ -x
+XTHEN = ]; then
+XFI = ; fi
+
+endif
+
+TOOLS		= tools$(PSEP)bmp2c64$(EXE) tools$(PSEP)cc1541$(EXE)
 
 all:	$(OBJS)
 	$(LD) -o $(BINARY) $(LDFLAGS) $(OBJS)
 
-disk:	all tools/cc1541
-	mkdir -p disks
-	tools/cc1541 -x \
+disk:	all tools$(PSEP)cc1541$(EXE)
+	$(MDP) disks
+	tools$(PSEP)cc1541 -x \
 		-n$(DISKNAME) -i$(DISKID) \
 		-d \
 		-f$(PRGNAME) -w$(BINARY) \
 		-d \
-		disks/$(DISKFILE).d64
+		disks$(PSEP)$(DISKFILE).d64
 
-tools/cc1541:	tools/cc1541.o
+tools$(PSEP)cc1541$(EXE):	tools$(PSEP)cc1541.o $(cc1541_EXTRA)
 	-$(HCC) -o$@ $^
 
-tools/bmp2c64:	tools/bmp2c64.o
+tools$(PSEP)bmp2c64$(EXE):	tools$(PSEP)bmp2c64.o
 	-$(HCC) -o$@ $^
 
 %.o:		%.c
@@ -46,49 +78,52 @@ tools/bmp2c64:	tools/bmp2c64.o
 %.o:		%.s
 	$(AS) -o$@ $(AFLAGS) $<
 
-font.s:		res/font_topaz_80col_petscii_western.bmp tools/bmp2c64
-	-if [ -x tools/bmp2c64 ]; then tools/bmp2c64 $< >font.s; fi
+font.s:		res$(PSEP)font_topaz_80col_petscii_western.bmp tools$(PSEP)bmp2c64$(EXE)
+	$(XIF) tools$(PSEP)bmp2c64$(EXE) $(XTHEN) \
+		tools$(PSEP)bmp2c64 $< >font.s $(XFI)
 
-topborder_sprites.s: tools/bmp2c64 \
-		res/sprite_black_r.bmp \
-		res/sprite_blue_r.bmp \
-		res/sprite_blue_l3.bmp \
-		res/sprite_blue_0_l2.bmp \
-		res/sprite_blue_0_l1.bmp \
-		res/sprite_white_r.bmp \
-		res/sprite_white_l2.bmp \
-		res/sprite_white_l1.bmp \
-		res/sprite_blue_1_l2.bmp \
-		res/sprite_blue_1_l1.bmp
-	-if [ -x tools/bmp2c64 ]; then \
-	    echo '.export topborder_sprites' >topborder_sprites.s; \
-	    echo '.rodata' >>topborder_sprites.s; \
-	    echo 'topborder_sprites:' >>topborder_sprites.s; \
-	    tools/bmp2c64 res/sprite_black_r.bmp >>topborder_sprites.s; \
-	    tools/bmp2c64 res/sprite_blue_r.bmp >>topborder_sprites.s; \
-	    tools/bmp2c64 res/sprite_blue_l3.bmp >>topborder_sprites.s; \
-	    tools/bmp2c64 res/sprite_blue_0_l2.bmp >>topborder_sprites.s; \
-	    tools/bmp2c64 res/sprite_blue_0_l1.bmp >>topborder_sprites.s; \
-	    tools/bmp2c64 res/sprite_white_r.bmp >>topborder_sprites.s; \
-	    tools/bmp2c64 res/sprite_white_l2.bmp >>topborder_sprites.s; \
-	    tools/bmp2c64 res/sprite_white_l1.bmp >>topborder_sprites.s; \
-	    tools/bmp2c64 res/sprite_blue_1_l2.bmp >>topborder_sprites.s; \
-	    tools/bmp2c64 res/sprite_blue_1_l1.bmp >>topborder_sprites.s; \
-	fi
+topborder_sprites.s: tools$(PSEP)bmp2c64$(EXE) \
+		res$(PSEP)sprite_black_r.bmp \
+		res$(PSEP)sprite_blue_r.bmp \
+		res$(PSEP)sprite_blue_l3.bmp \
+		res$(PSEP)sprite_blue_0_l2.bmp \
+		res$(PSEP)sprite_blue_0_l1.bmp \
+		res$(PSEP)sprite_white_r.bmp \
+		res$(PSEP)sprite_white_l2.bmp \
+		res$(PSEP)sprite_white_l1.bmp \
+		res$(PSEP)sprite_blue_1_l2.bmp \
+		res$(PSEP)sprite_blue_1_l1.bmp
+	$(XIF) tools$(PSEP)bmp2c64$(EXE) $(XTHEN) \
+	    echo '.export topborder_sprites' >topborder_sprites.s $(CMDSEP) \
+	    echo '.rodata' >>topborder_sprites.s $(CMDSEP) \
+	    echo 'topborder_sprites:' >>topborder_sprites.s $(CMDSEP) \
+	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_black_r.bmp >>topborder_sprites.s $(CMDSEP) \
+	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_blue_r.bmp >>topborder_sprites.s $(CMDSEP) \
+	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_blue_l3.bmp >>topborder_sprites.s $(CMDSEP) \
+	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_blue_0_l2.bmp >>topborder_sprites.s $(CMDSEP) \
+	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_blue_0_l1.bmp >>topborder_sprites.s $(CMDSEP) \
+	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_white_r.bmp >>topborder_sprites.s $(CMDSEP) \
+	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_white_l2.bmp >>topborder_sprites.s $(CMDSEP) \
+	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_white_l1.bmp >>topborder_sprites.s $(CMDSEP) \
+	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_blue_1_l2.bmp >>topborder_sprites.s $(CMDSEP) \
+	    tools$(PSEP)bmp2c64 res$(PSEP)sprite_blue_1_l1.bmp >>topborder_sprites.s \
+	$(XFI)
 
 clean:
-	rm -f $(BINARY)
-	rm -f *.o
-	rm -f *.map
-	rm -f *.lbl
-	rm -fr disks
-	rm -f tools/*.o
-	rm -f $(TOOLS)
+	$(RMF) $(BINARY)
+	$(RMF) *.o
+	$(RMF) *.map
+	$(RMF) *.lbl
+	$(RMFR) disks
+	$(RMF) tools$(PSEP)*.o
+	$(RMF) $(TOOLS)
 
 mrproper:	clean
-	rm -f font.s
-	rm -f topborder_sprites.s
+	$(RMF) font.s
+	$(RMF) topborder_sprites.s
 
 .PHONY:	disk all clean mrproper
+
+.SUFFIXES:
 
 # vim: noet:si:ts=8:sts=8:sw=8
