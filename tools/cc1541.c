@@ -4,7 +4,7 @@
  *
  * This is taken from http://csdb.dk/release/?id=69964 2013-12-04
  * Original Author: JackAsser (http://csdb.dk/scener/?id=4320)
- * 
+ *
  * Modifications to original version:
  *
  * - make it plain C, so there's no C++ compiler needed (in fact, it was just
@@ -12,8 +12,9 @@
  * - fix potential memory leak when giving 2 filenames before writing file
  *   to disk
  * - add options to control filetype (PRG, USR, SEQ, REL, DEL) and
- *   file write protection
+ *   write protection
  * - generally create write-protected disks for now (DOS-Version 0x40 in BAM)
+ * - start writing files at track 17, better loading speed for first files
  *
  * Modified by Felix Palmen <felix@palmen-it.de>
  *
@@ -24,12 +25,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef WIN32
-#include "getopt.h"
-#else
 #include <getopt.h>
 #include <unistd.h>
-#endif
 
 #define min(a,b) (((a)<(b))?(a):(b))
 #define _true 1
@@ -205,7 +202,7 @@ int main(int argc, char** argv)
 		break;
 	    case 'S':
 		defaultSectorInterleave=atoi(optarg);
-		sectorInterleave=defaultSectorInterleave;		
+		sectorInterleave=defaultSectorInterleave;
 		break;
 	    case 's':
 		sectorInterleave=atoi(optarg);
@@ -242,33 +239,30 @@ int main(int argc, char** argv)
 		    fprintf(stderr, "File '%s' not found, skipping...\n", optarg);
 		}
 		if (filename==NULL)
-                {
 		    files[nrFiles].filename=files[nrFiles].localname;
-                }
 		else
-                {
-		    files[nrFiles].filename=filename;
-                }
+		files[nrFiles].filename=filename;
+
 filedone_common:
-                files[nrFiles].sectorInterleave=sectorInterleave;
-                files[nrFiles].nrSectors=0;
-                files[nrFiles].type=type;
+		files[nrFiles].sectorInterleave=sectorInterleave;
+		files[nrFiles].nrSectors=0;
+		files[nrFiles].type=type;
 
-                nrFiles++;
+		nrFiles++;
 
-                filename=NULL;
-                sectorInterleave=defaultSectorInterleave;
-                type=FT_PRG;
-                break;
-            case 'x':
-                track18split=_false;
-                break;
-            case 't':
-                usetrack18=_true;
-                break;
-            default:
-                usage();
-        }
+		filename=NULL;
+		sectorInterleave=defaultSectorInterleave;
+		type=FT_PRG;
+		break;
+	    case 'x':
+		track18split=_false;
+		break;
+	    case 't':
+		usetrack18=_true;
+		break;
+	    default:
+		usage();
+	}
     }
 
     if (optind!=argc-1)
@@ -336,7 +330,7 @@ filedone_common:
     }
 
     // Write files and mark sectors in BAM
-    int track=1;
+    int track=17;
     int sector=0;
     int bytes2write=0;
     int lastTrack=track;
@@ -381,9 +375,10 @@ filedone_common:
 		    }
 		}
 
-		if (!found)				
+		if (!found)
 		{
-		    track++;
+		    if (track == 1) track = 19;
+		    else if (track < 18) track--; else track++;
 		    sector=0;
 		    if (!usetrack18)
 		    {
