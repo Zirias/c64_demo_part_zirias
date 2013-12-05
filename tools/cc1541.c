@@ -237,31 +237,34 @@ int main(int argc, char** argv)
 		{
 		    fprintf(stderr, "File '%s' not found, skipping...\n", optarg);
 		}
-		if (filename==NULL)				
+		if (filename==NULL)
+                {
 		    files[nrFiles].filename=files[nrFiles].localname;
+                }
 		else
+                {
 		    files[nrFiles].filename=filename;
+                }
+filedone_common:
+                files[nrFiles].sectorInterleave=sectorInterleave;
+                files[nrFiles].nrSectors=0;
+                files[nrFiles].type=type;
 
-filedone_common:    files[nrFiles].sectorInterleave=sectorInterleave;				
-		    files[nrFiles].nrSectors=0;
+                nrFiles++;
 
-		    files[nrFiles].type=type;
-
-		    nrFiles++;
-
-		    filename=NULL;
-		    sectorInterleave=defaultSectorInterleave;
-		    type=FT_PRG;
-		    break;
-	    case 'x':
-		    track18split=_false;
-		    break;
-	    case 't':
-		    usetrack18=_true;
-		    break;
-	    default:
-		    usage();
-	}
+                filename=NULL;
+                sectorInterleave=defaultSectorInterleave;
+                type=FT_PRG;
+                break;
+            case 'x':
+                track18split=_false;
+                break;
+            case 't':
+                usetrack18=_true;
+                break;
+            default:
+                usage();
+        }
     }
 
     if (optind!=argc-1)
