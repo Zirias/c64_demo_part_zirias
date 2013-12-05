@@ -4,7 +4,7 @@
  *
  * This is taken from http://csdb.dk/release/?id=69964 2013-12-04
  * Original Author: JackAsser (http://csdb.dk/scener/?id=4320)
- * 
+ *
  * Modifications to original version:
  *
  * - make it plain C, so there's no C++ compiler needed (in fact, it was just
@@ -13,7 +13,7 @@
  *   to disk
  * - add options to control filetype (PRG, USR, SEQ, REL, DEL) and
  *   write protection
- * 
+ *
  * Modified by Felix Palmen <felix@palmen-it.de>
  *
  */
@@ -199,7 +199,7 @@ int main(int argc, char** argv)
 		break;
 	    case 'S':
 		defaultSectorInterleave=atoi(optarg);
-		sectorInterleave=defaultSectorInterleave;		
+		sectorInterleave=defaultSectorInterleave;
 		break;
 	    case 's':
 		sectorInterleave=atoi(optarg);
@@ -235,30 +235,30 @@ int main(int argc, char** argv)
 		{
 		    fprintf(stderr, "File '%s' not found, skipping...\n", optarg);
 		}
-		if (filename==NULL)				
+		if (filename==NULL)
 		    files[nrFiles].filename=files[nrFiles].localname;
 		else
-		    files[nrFiles].filename=filename;
+		files[nrFiles].filename=filename;
 
-filedone_common:    files[nrFiles].sectorInterleave=sectorInterleave;				
-		    files[nrFiles].nrSectors=0;
+filedone_common:
+		files[nrFiles].sectorInterleave=sectorInterleave;
+		files[nrFiles].nrSectors=0;
+		files[nrFiles].type=type;
 
-		    files[nrFiles].type=type;
+		nrFiles++;
 
-		    nrFiles++;
-
-		    filename=NULL;
-		    sectorInterleave=defaultSectorInterleave;
-		    type=FT_PRG;
-		    break;
+		filename=NULL;
+		sectorInterleave=defaultSectorInterleave;
+		type=FT_PRG;
+		break;
 	    case 'x':
-		    track18split=_false;
-		    break;
+		track18split=_false;
+		break;
 	    case 't':
-		    usetrack18=_true;
-		    break;
+		usetrack18=_true;
+		break;
 	    default:
-		    usage();
+		usage();
 	}
     }
 
@@ -372,7 +372,7 @@ filedone_common:    files[nrFiles].sectorInterleave=sectorInterleave;
 		    }
 		}
 
-		if (!found)				
+		if (!found)
 		{
 		    track++;
 		    sector=0;
