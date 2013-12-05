@@ -13,6 +13,7 @@
  *   to disk
  * - add options to control filetype (PRG, USR, SEQ, REL, DEL) and
  *   write protection
+ * - start writing files at track 17, better loading speed for first files
  *
  * Modified by Felix Palmen <felix@palmen-it.de>
  *
@@ -327,7 +328,7 @@ filedone_common:
     }
 
     // Write files and mark sectors in BAM
-    int track=1;
+    int track=17;
     int sector=0;
     int bytes2write=0;
     int lastTrack=track;
@@ -374,7 +375,8 @@ filedone_common:
 
 		if (!found)
 		{
-		    track++;
+		    if (track == 1) track = 19;
+		    else if (track < 18) track--; else track++;
 		    sector=0;
 		    if (!usetrack18)
 		    {
