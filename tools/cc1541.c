@@ -9,11 +9,12 @@
  *
  * - make it plain C, so there's no C++ compiler needed (in fact, it was just
  *   plain C using a tiny bit of C++ syntax)
- * - fix potetial memory hole when giving 2 filenames before writing file
+ * - fix potential memory leak when giving 2 filenames before writing file
  *   to disk
  * - add options to control filetype (PRG, USR, SEQ, REL, DEL) and
- *   write protection
- * 
+ *   file write protection
+ * - generally create write-protected disks for now (DOS-Version 0x40 in BAM)
+ *
  * Modified by Felix Palmen <felix@palmen-it.de>
  *
  */
@@ -77,7 +78,8 @@ void usage()
     printf("-u            Next file is USR (default: PRG)\n");
     printf("-q            Next file is SEQ (default: PRG)\n");
     printf("-r            Next file is REL (default: PRG)\n");
-    printf("-d            Next file is DEL [not a real file] (default: PRG)\n");
+    printf("-d            Next file is DEL [not a real file, written immediately without");
+    printf("              -w option])\n");
     printf("-p            Next file is write-protected\n");
     printf("-w localname  Write local file to disk, if filename is not set then the\n");
     printf("              local name is used. After file written filename is unset\n");
