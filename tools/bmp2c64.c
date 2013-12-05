@@ -330,6 +330,9 @@ int main(int argc, char **argv)
     }
 
     convertbmp();
+#ifdef WIN32
+    setmode(fileno(stdout), O_BINARY);
+#endif
     switch (type)
     {
         case GFX_IMAGE:
