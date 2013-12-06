@@ -214,7 +214,9 @@ amigados:
                 sta     T80_STRING_H
                 jsr     t80_print_cursor
 
+loadname        = *+1
 		lda	#'m'
+                beq     noload
 		sta	fl_filename
 		lda	#'u'
 		sta	fl_filename+1
@@ -222,9 +224,11 @@ amigados:
 		sta	fl_loadaddr
 		lda	#>__MUSIC_LOAD__
 		sta	fl_loadaddr+1
+                lda     #0
+                sta     loadname
 		jsr	fastload
 
-                lda     #<message13
+noload:         lda     #<message13
                 sta     T80_STRING_L
                 lda     #>message13
                 sta     T80_STRING_H
@@ -493,7 +497,7 @@ message12:      .asciiz "loading demo `Music' ... "
 message13:      .asciiz "done."
 
 
-message14:       .asciiz "  -- Press any key to start --"
+message14:      .asciiz "  -- Press any key to start --"
 
 .segment "MUDATA"
 cotable_a:      .byte   $BE,$01,$3D,$B6,$01,$3D,$AE,$01,$3D,$A6,$01,$3D
