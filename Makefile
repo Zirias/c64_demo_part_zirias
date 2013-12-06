@@ -54,6 +54,8 @@ endif
 HTOOLS		= tools$(PSEP)bmp2c64$(EXE) tools$(PSEP)cc1541$(EXE)
 
 BINARIES = demo_kickstart demo_amigados demo_music
+DISKNAME = 'C=64 WORKBENCH'
+DISKID = 'AMIGA'
 
 all:	demo
 
