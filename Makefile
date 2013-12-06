@@ -70,8 +70,8 @@ disk:	all tools$(PSEP)cc1541$(EXE)
 		-f'                ' -u -s15 -wdemo_amigados \
 		-f'  DEMO: MUSIC   ' -d \
 		-f'                ' -d \
-		-f'  RELEASE 0.5B  ' -d \
-		-f'  2013/12/04    ' -d \
+		-f'  RELEASE 1.0   ' -d \
+		-f'  2013/12/06    ' -d \
 		-f'  BY ZIRIAS     ' -d \
 		-f'                ' -d \
 		-d \
