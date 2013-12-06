@@ -66,17 +66,15 @@ disk:	all tools$(PSEP)cc1541$(EXE)
 	$(MDP) disks
 	tools$(PSEP)cc1541 -x \
 		-n$(DISKNAME) -i$(DISKID) \
-		-d \
+		-f'----------------' -wdemo_kickstart \
+		-f'                ' -u -s15 -wdemo_amigados \
 		-f'  DEMO: MUSIC   ' -d \
 		-f'                ' -d \
 		-f'  RELEASE 0.5B  ' -d \
 		-f'  2013/12/04    ' -d \
 		-f'  BY ZIRIAS     ' -d \
 		-f'                ' -d \
-		-f'C64 AMIGA FILES:' -d \
 		-d \
-		-f'KICKSTART       ' -wdemo_kickstart \
-		-f'AMIGADOS        ' -u -s15 -wdemo_amigados \
 		-f'MUSIC           ' -u -s15 -wdemo_music \
 		-d \
 		disks$(PSEP)$(DISKFILE).d64

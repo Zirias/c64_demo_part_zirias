@@ -25,9 +25,9 @@ bs_next:	.word   0
 
 loader:
 		jsr	initfastload
-		lda	#'a'
+		lda	#' '
 		sta	fl_filename
-		lda	#'m'
+		lda	#' '
 		sta	fl_filename+1
 		lda	#0
 		sta	fl_loadaddr
