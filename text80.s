@@ -244,6 +244,7 @@ t80_crlf_cursor:
                 lda     #$1c
                 sta     sprite_1_0_x
                 lda     sprite_1_0_y
+                clc
                 adc     #8
                 sta     sprite_1_0_y
                 rts
