@@ -21,7 +21,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#ifdef WIN32
+#include "getopt.h"
+#else
 #include <getopt.h>
+#endif
 #include <libgen.h>
 
 enum gfxtype
@@ -174,7 +178,7 @@ static void converttoblocks()
 
     if (bottomup)
     {
-        linestep = -rowsize / 8;
+        linestep = -(rowsize / 8);
         rowstep = -rowsize;
         p = bitmap + bitmapsize + linestep;
     }
@@ -345,6 +349,9 @@ int main(int argc, char **argv)
     }
 
     convertbmp();
+#ifdef WIN32
+    setmode(fileno(stdout), O_BINARY);
+#endif
     switch (type)
     {
         case GFX_IMAGE:

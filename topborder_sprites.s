@@ -1,6 +1,12 @@
 .export topborder_sprites
+
 .segment "ADDATA"
+
 topborder_sprites:
+
+; generated data to follow
+
+
 .export sprite_black_r
 
 sprite_black_r:
