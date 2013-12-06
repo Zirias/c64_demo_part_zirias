@@ -199,6 +199,7 @@ amigados:
                 sta     T80_STRING_H
                 jsr     t80_print_cursor
                 jsr     t80_crlf_cursor
+                jsr     t80_crlf_cursor
 
                 lda     #<message11
                 sta     T80_STRING_L
@@ -491,6 +492,7 @@ message9:       .asciiz "do not mean the low res (3 px wide) `topaz' font ;)"
 
 
 message10:      .asciiz "Any key can be pressed to exit the demo."
+
 message11:      .asciiz "Contact: Felix Palmen <felix@palmen-it.de>"
 
 message12:      .asciiz "loading demo `Music' ... "
