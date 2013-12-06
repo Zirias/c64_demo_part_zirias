@@ -91,7 +91,7 @@ fastload:
 fl_sendouter:	ldy	#$08
 fl_sendinner:	bit	$dd00
 		bvc	fl_sendinner
-		bpl	fl_sendouter
+		bpl	fl_sendinner
 		lsr	fl_filename,x
 		lda	$dd00
 		and	#$ff-$30
