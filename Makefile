@@ -47,10 +47,15 @@ XTHEN = ]; then
 XFI = ; fi
 
 cc1541_EXTRA =
+bmp2c64_EXTRA =
 
 endif
 
 HTOOLS		= tools$(PSEP)bmp2c64$(EXE) tools$(PSEP)cc1541$(EXE)
+
+BINARIES = demo_kickstart demo_amigados demo_music
+
+all:	demo
 
 demo:	$(OBJECTS) $(LINKCFG)
 	$(LD) -odemo $(LDFLAGS) $(OBJECTS)
@@ -130,8 +135,6 @@ mrproper:	clean
 	$(RMF) topborder_sprites.s
 
 .PHONY:	disk all demo clean mrproper
-
-.SUFFIXES:
 
 .SUFFIXES:
 
