@@ -21,14 +21,15 @@ SAVE_X          = $23
 SAVE_Y          = $24
 TBL_OFFSET      = $25
 
-.segment "ADDATA"
-
+.segment "ADBSS"
 bg_save:        .res    1
-flash_offset:   .res    1
-flash_counter:  .res    1
 key_pressed:    .res    1
 raster_table:   .res    255
-tbl_base = key_pressed
+tbl_base = raster_table - 1
+
+.segment "MUBSS"
+flash_offset:   .res    1
+flash_counter:  .res    1
 
 .segment "AMIGADOS"
 
@@ -45,18 +46,6 @@ raster_top:
                 lda     tbl_base,x
                 sta     raster_payload+1
 raster_payload = *+1
-                jmp     raster_bottom
-
-; payload for changing background and border color
-raster_col:
-                nop
-                nop
-                nop
-                dex
-                lda     tbl_base,x
-                sta     BG_COLOR_0
-                nop
-                sta     BORDER_COLOR
                 jmp     raster_bottom
 
 ; payload for switching to 24 rows text mode
@@ -94,15 +83,6 @@ raster_zone1:
                 ldy     SAVE_Y
                 jmp     raster_bottom
 
-; payload for playing music
-raster_sound:
-                sty     SAVE_Y
-                stx     TBL_OFFSET
-                jsr     snd_play
-                ldx     TBL_OFFSET
-                ldy     SAVE_Y
-                jmp     raster_bottom
-
 ; payload for checking the keyboard
 raster_keycheck:
                 lda     key_pressed
@@ -136,55 +116,6 @@ raster_resizer:
                 lda     #$e1
                 sta     $7f3e
                 jmp     raster_bottom
-
-; payload for animating the marquee
-raster_marquee:
-                sty     SAVE_Y
-                stx     TBL_OFFSET
-                ldx     flash_counter
-                dex
-                stx     flash_counter
-                bpl     spmove
-                ldx     #1
-                stx     flash_counter
-                ldx     flash_offset
-                lda     #12
-                sta     sprite_1_0_col-$f8,x
-                inx
-                bne     spfok
-                ldx     #$f8
-spfok:          lda     #1
-                sta     sprite_1_0_col-$f8,x
-                stx     flash_offset
-                ; now move sprites
-spmove:         lda     sprite_1_x_h
-                ldx     #14
-spm_while:      asl
-                tay
-                bcc     spm_l
-                lda     sprite_1_0_x,x
-                bne     spm_hd
-                lda     #$ff
-                sta     sprite_1_0_x,x
-                bmi     spm_next
-spm_hd:         dec     sprite_1_0_x,x
-                iny
-                bne     spm_next
-spm_l:          lda     sprite_1_0_x,x
-                bne     spm_ld
-                lda     #$90
-                sta     sprite_1_0_x,x
-                iny
-                bne     spm_next
-spm_ld:         dec     sprite_1_0_x,x
-spm_next:       tya
-                dex
-                dex
-                bpl     spm_while
-                sta     sprite_1_x_h
-                ldy     SAVE_Y
-                ldx     TBL_OFFSET
-                jmp    raster_bottom
 
 ; payload for start of the Amiga screen bar
 raster_screen:
@@ -293,12 +224,6 @@ raster_on:
                 lda     #0
                 sta     key_pressed
 
-                ; initialize marquee flashing
-                lda     #$f8
-                sta     flash_offset
-                lda     #1
-                sta     flash_counter
-
                 ; load table for phase 0
                 ldx     #raster_0_tbl_size
                 stx     tbl_size
@@ -336,8 +261,85 @@ phase0_loop:    lda     raster_0_tbl,y
                 cli
                 rts
 
+.segment "MUSIC"
+; payload for changing background and border color
+raster_col:
+                nop
+                nop
+                nop
+                dex
+                lda     tbl_base,x
+                sta     BG_COLOR_0
+                nop
+                sta     BORDER_COLOR
+                jmp     raster_bottom
+
+; payload for playing music
+raster_sound:
+                sty     SAVE_Y
+                stx     TBL_OFFSET
+                jsr     snd_play
+                ldx     TBL_OFFSET
+                ldy     SAVE_Y
+                jmp     raster_bottom
+
+; payload for animating the marquee
+raster_marquee:
+                sty     SAVE_Y
+                stx     TBL_OFFSET
+                ldx     flash_counter
+                dex
+                stx     flash_counter
+                bpl     spmove
+                ldx     #1
+                stx     flash_counter
+                ldx     flash_offset
+                lda     #12
+                sta     sprite_1_0_col-$f8,x
+                inx
+                bne     spfok
+                ldx     #$f8
+spfok:          lda     #1
+                sta     sprite_1_0_col-$f8,x
+                stx     flash_offset
+                ; now move sprites
+spmove:         lda     sprite_1_x_h
+                ldx     #14
+spm_while:      asl
+                tay
+                bcc     spm_l
+                lda     sprite_1_0_x,x
+                bne     spm_hd
+                lda     #$ff
+                sta     sprite_1_0_x,x
+                bmi     spm_next
+spm_hd:         dec     sprite_1_0_x,x
+                iny
+                bne     spm_next
+spm_l:          lda     sprite_1_0_x,x
+                bne     spm_ld
+                lda     #$90
+                sta     sprite_1_0_x,x
+                iny
+                bne     spm_next
+spm_ld:         dec     sprite_1_0_x,x
+spm_next:       tya
+                dex
+                dex
+                bpl     spm_while
+                sta     sprite_1_x_h
+                ldy     SAVE_Y
+                ldx     TBL_OFFSET
+                jmp    raster_bottom
+
 ; switch to raster table for phase 1
 raster_phase1:
+                ; initialize marquee flashing
+                lda     #$f8
+                sta     flash_offset
+                lda     #1
+                sta     flash_counter
+
                 sei
                 lda     raster_1_tbl
                 sta     VIC_RASTER
@@ -418,6 +420,8 @@ raster_0_tbl:
                 .word raster_zone0
 
 raster_0_tbl_size = *-raster_0_tbl
+
+.segment "MUDATA"
 
 ; phase 1
 

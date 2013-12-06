@@ -9,7 +9,7 @@ DISKFILE	= ziri-demo
 HCC		= gcc
 HCFLAGS		= -O2 -g0
 
-OBJECTS		= kickstart.o fastload.o music.o gfx-core.o gfx-line.o \
+OBJECTS		= kickstart.o fastload.o main.o gfx-core.o gfx-line.o \
 		  	soundtable.o snd_play.o ziri_ambi.o rasterfx.o \
 			text80.o font.o sprites.o spritezone.o \
 			marquee_sprites.o topborder_sprites.o

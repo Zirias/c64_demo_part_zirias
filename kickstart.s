@@ -4,14 +4,11 @@
 ; load the rest of the demo
 ;
 
+.include "fastload.inc"
+
 .export basicsysaddr
-
-.import initfastload
-.import fastload
-.import fl_filename
-.import fl_loadaddr
-
 .import amigados
+.import __AMIGADOS_LOAD__
 
 .segment "KICKSTART"
 
@@ -29,9 +26,9 @@ loader:
 		sta	fl_filename
 		lda	#' '
 		sta	fl_filename+1
-		lda	#0
+		lda	#<__AMIGADOS_LOAD__
 		sta	fl_loadaddr
-		lda	#$12
+		lda	#>__AMIGADOS_LOAD__
 		sta	fl_loadaddr+1
 		jsr	fastload
 		jmp	amigados
