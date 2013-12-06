@@ -21,7 +21,7 @@ SAVE_X          = $23
 SAVE_Y          = $24
 TBL_OFFSET      = $25
 
-.bss
+.segment "ADDATA"
 
 bg_save:        .res    1
 flash_offset:   .res    1
@@ -30,7 +30,7 @@ key_pressed:    .res    1
 raster_table:   .res    255
 tbl_base = key_pressed
 
-.code
+.segment "AMIGADOS"
 
 ; common entry code for every IRQ
 ; avoid any branching before payload
@@ -381,7 +381,7 @@ raster_off:
                 sta     BG_COLOR_0
                 rts
 
-.rodata
+.segment "ADDATA"
 
 ; raster tables
 ; entry format:

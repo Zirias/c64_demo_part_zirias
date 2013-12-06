@@ -1,9 +1,7 @@
 .export topborder_sprites
-.rodata
+.segment "ADDATA"
 topborder_sprites:
 .export sprite_black_r
-
-.rodata
 
 sprite_black_r:
                 .byte   %00000000,%00000000,%00000000
@@ -31,8 +29,6 @@ sprite_black_r:
 
 .export sprite_blue_r
 
-.rodata
-
 sprite_blue_r:
                 .byte   %01000000,%00001000,%00000001
                 .byte   %01011111,%10001000,%00000001
@@ -58,8 +54,6 @@ sprite_blue_r:
                 .byte   0
 
 .export sprite_blue_l3
-
-.rodata
 
 sprite_blue_l3:
                 .byte   %00000000,%00000000,%00000000
@@ -87,8 +81,6 @@ sprite_blue_l3:
 
 .export sprite_blue_0_l2
 
-.rodata
-
 sprite_blue_0_l2:
                 .byte   %00000000,%00000000,%00000000
                 .byte   %00000000,%00100000,%00010000
@@ -114,8 +106,6 @@ sprite_blue_0_l2:
                 .byte   0
 
 .export sprite_blue_0_l1
-
-.rodata
 
 sprite_blue_0_l1:
                 .byte   %00000000,%00000000,%00000000
@@ -143,8 +133,6 @@ sprite_blue_0_l1:
 
 .export sprite_white_r
 
-.rodata
-
 sprite_white_r:
                 .byte   %00000000,%00000000,%00000000
                 .byte   %00000000,%00000000,%00000000
@@ -170,8 +158,6 @@ sprite_white_r:
                 .byte   0
 
 .export sprite_white_l2
-
-.rodata
 
 sprite_white_l2:
                 .byte   %00000000,%00000000,%00000000
@@ -199,8 +185,6 @@ sprite_white_l2:
 
 .export sprite_white_l1
 
-.rodata
-
 sprite_white_l1:
                 .byte   %00000000,%00000000,%00000000
                 .byte   %00000000,%00000000,%00000000
@@ -227,8 +211,6 @@ sprite_white_l1:
 
 .export sprite_blue_1_l2
 
-.rodata
-
 sprite_blue_1_l2:
                 .byte   %00000000,%00000000,%00000000
                 .byte   %00000000,%00100000,%00010000
@@ -254,8 +236,6 @@ sprite_blue_1_l2:
                 .byte   0
 
 .export sprite_blue_1_l1
-
-.rodata
 
 sprite_blue_1_l1:
                 .byte   %00000000,%00000000,%00000000

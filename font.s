@@ -1,6 +1,6 @@
 .export font_topaz_80col_petscii_western
 
-.rodata
+.segment "ADDATA"
 
 font_topaz_80col_petscii_western:
                 .byte   %00100010

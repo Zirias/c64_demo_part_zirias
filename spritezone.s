@@ -91,7 +91,7 @@ sprite_0_baseptr = sprite_0_base << 2
 sprite_1_baseptr = sprite_1_base << 2
 sprite_vectors = ((vic_bank + vic_colpage) << 8) + $3f8
 
-.bss
+.segment "ADDATA"
 
 ; define shadow registers
 
@@ -185,7 +185,7 @@ sprite_1_6_col:         .res 1
 sprite_1_7_col:         .res 1
 sprite_col_1_size = *-sprite_col_1-1
 
-.code
+.segment "AMIGADOS"
 
 ; activate zone 0
 sprite_zone0:

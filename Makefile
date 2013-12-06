@@ -10,36 +10,17 @@ HCC		= gcc
 HCFLAGS		= -O2 -g0
 HTOOLS		= tools/bmp2c64 tools/cc1541
 
-BINARIES	= loader kickstart amigados music
+OBJECTS		= kickstart.o fastload.o music.o gfx-core.o gfx-line.o \
+		  	soundtable.o snd_play.o ziri_ambi.o rasterfx.o \
+			text80.o font.o sprites.o spritezone.o \
+			marquee_sprites.o topborder_sprites.o
+LINKCFG = demo.cfg
+LDFLAGS	= -Ln demo.lbl -m demo.map -C $(LINKCFG)
 
-loader_OBJS	= c64startup.o loader.o gfx-core.o gfx-line.o soundtable.o \
-		  	snd_play.o ziri_ambi.o rasterfx.o text80.o font.o \
-			sprites.o spritezone.o marquee_sprites.o \
-			topborder_sprites.o
-loader_LDFLAGS	= -Ln loader.lbl -m loader.map -C c64-asm.cfg
+all:	demo
 
-kickstart_OBJS	=
-kickstart_LDFLAGS = -Ln kickstart.lbl -m kickstart.map -C c64-asm.cfg
-
-amigados_OBJS	=
-amigados_LDFLAGS = -Ln amigados.lbl -m amigados.map -C c64-asm.cfg
-
-music_OBJS	=
-music_LDFLAGS	= -Ln music.lbl -m music.map -C c64-asm.cfg
-
-all:	$(BINARIES)
-
-loader:	$(loader_OBJS)
-	$(LD) -oloader $(loader_LDFLAGS) $(loader_OBJS)
-
-kickstart:
-	touch kickstart
-
-amigados:
-	touch amigados
-
-music:
-	touch music
+demo:	$(OBJECTS) $(LINKCFG)
+	$(LD) -odemo $(LDFLAGS) $(OBJECTS)
 
 disk:	all tools/cc1541
 	mkdir -p disks
@@ -51,15 +32,12 @@ disk:	all tools/cc1541
 		-f'  RELEASE 0.5B  ' -d \
 		-f'  2013/12/04    ' -d \
 		-f'  BY ZIRIAS     ' -d \
-		-d \
-		-f'  BOOTLOADER    ' -wloader \
-		-d \
 		-f'                ' -d \
 		-f'C64 AMIGA FILES:' -d \
 		-d \
-		-f'KICKSTART       ' -u -wkickstart \
-		-f'AMIGADOS        ' -u -wamigados \
-		-f'MUSIC           ' -u -wmusic \
+		-f'KICKSTART       ' -wdemo_kickstart \
+		-f'AMIGADOS        ' -u -s15 -wdemo_amigados \
+		-f'MUSIC           ' -u -s15 -wdemo_music \
 		-d \
 		disks/$(DISKFILE).d64
 
@@ -76,7 +54,7 @@ tools/bmp2c64:	tools/bmp2c64.o
 	$(AS) -o$@ $(AFLAGS) $<
 
 font.s:		res/font_topaz_80col_petscii_western.bmp tools/bmp2c64
-	-if [ -x tools/bmp2c64 ]; then tools/bmp2c64 $< >font.s; fi
+	-if [ -x tools/bmp2c64 ]; then tools/bmp2c64 -s ADDATA $< >font.s; fi
 
 topborder_sprites.s: tools/bmp2c64 \
 		res/sprite_black_r.bmp \
@@ -91,7 +69,7 @@ topborder_sprites.s: tools/bmp2c64 \
 		res/sprite_blue_1_l1.bmp
 	-if [ -x tools/bmp2c64 ]; then \
 	    echo '.export topborder_sprites' >topborder_sprites.s; \
-	    echo '.rodata' >>topborder_sprites.s; \
+	    echo '.segment "ADDATA"' >>topborder_sprites.s; \
 	    echo 'topborder_sprites:' >>topborder_sprites.s; \
 	    tools/bmp2c64 res/sprite_black_r.bmp >>topborder_sprites.s; \
 	    tools/bmp2c64 res/sprite_blue_r.bmp >>topborder_sprites.s; \
@@ -118,7 +96,7 @@ mrproper:	clean
 	rm -f font.s
 	rm -f topborder_sprites.s
 
-.PHONY:	disk all clean mrproper
+.PHONY:	disk all demo clean mrproper
 
 .SUFFIXES:
 

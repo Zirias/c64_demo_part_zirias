@@ -1,7 +1,6 @@
-loader
-kickstart
-amigados
-music
+demo_kickstart
+demo_amigados
+demo_music
 *.lbl
 *.map
 *.o

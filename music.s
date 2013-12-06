@@ -6,6 +6,8 @@ GETKB           = $F142
 
 tbllen          = 195
 
+.export amigados
+
 .include        "gfx.inc"
 .include        "vic.inc"
 .include        "snd.inc"
@@ -22,9 +24,9 @@ tbllen          = 195
 .import raster_phase1
 .import key_pressed
 
-.code
+.segment "AMIGADOS"
                 ; initialize:
-                ldx     #0
+amigados:       ldx     #0
                 stx     from1tbl
                 stx     from2tbl
                 stx     to1tbl
@@ -411,7 +413,7 @@ bb_nodec:       sta     $9e
                 bne     bb_loop
                 rts
 
-.bss
+.segment "ADDATA"
 border:         .res    1
 from1tbl:       .res    1
 from1:          .res    1
@@ -423,7 +425,6 @@ to2tbl:         .res    1
 to2:            .res    1
 countdown:      .res    1
 
-.rodata
 message1:       .asciiz "Copyright &2013 Zirias"
 message2:       .asciiz "All rights reserved."
 message3:       .asciiz "C64 Workbench and AmigaBASIC style Demo Disk."
