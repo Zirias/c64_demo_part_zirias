@@ -49,13 +49,42 @@ raster_payload = *+1
                 jmp     raster_bottom
 
 ; payload for switching to 24 rows text mode
+; needs stabilization in music part
 raster_24row:
+                stx     TBL_OFFSET
+                inc     VIC_RASTER
+                lda     #$ff
+                sta     VIC_IRR
+                lda     #<raster_24rbt
+                sta     $fffe
+                lda     #>raster_24rbt
+                sta     $ffff
+                sty     SAVE_Y
+                tsx
+                cli
                 nop
                 nop
                 nop
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
+raster_24rbt:   txs
+                lda     #<raster_top
+                sta     $fffe
+                lda     #>raster_top
+                sta     $ffff
+                ldy     #1
+                dey
+                bne     *-1
+                nop
+                ldx     TBL_OFFSET
                 lda     VIC_CTL1
                 and     #%11010111
                 sta     VIC_CTL1
+                ldy     SAVE_Y
                 jmp     raster_bottom
 
 ; payload for switching to 25 rows hires mode
@@ -119,85 +148,85 @@ raster_resizer:
 
 ; payload for start of the Amiga screen bar
 raster_screen:
-		lda	#1
-		nop
-		nop
-		nop
-		nop
-		nop
-		sta	BG_COLOR_0
-		jmp	raster_bottom
+                lda     #1
+                nop
+                nop
+                nop
+                nop
+                nop
+                sta     BG_COLOR_0
+                jmp     raster_bottom
 
 ; payload for window border, this has to be stabilized
 raster_border:
-		stx	TBL_OFFSET
-		inc	VIC_RASTER
-		lda	#$ff
-		sta	VIC_IRR
-		lda	#<raster_wintop
-		sta	$fffe
-		lda	#>raster_wintop
-		sta	$ffff
+                stx     TBL_OFFSET
+                inc     VIC_RASTER
+                lda     #$ff
+                sta     VIC_IRR
+                lda     #<raster_wintop
+                sta     $fffe
+                lda     #>raster_wintop
+                sta     $ffff
                 sty     SAVE_Y
-		tsx
-		cli
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
+                tsx
+                cli
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
 
 ; stabilized top of the window border
 raster_wintop:
-		txs
-		lda	#<raster_top
-		sta	$fffe
-		lda	#>raster_top
-		sta	$ffff
-		ldx	TBL_OFFSET
+                txs
+                lda     #<raster_top
+                sta     $fffe
+                lda     #>raster_top
+                sta     $ffff
+                ldx     TBL_OFFSET
                 ldy     #$3
                 dey
                 bne     *-1
-		lda	#6
-		sta	BG_COLOR_0
+                lda     #6
+                sta     BG_COLOR_0
                 ldy     #$8
                 dey
                 bne     *-1
-		lda	#1
-		sta	BG_COLOR_0
+                lda     #1
+                sta     BG_COLOR_0
                 ldy     #$f
                 dey
                 bne     *-1
-		lda	#6
-		sta	BG_COLOR_0
+                lda     #6
+                sta     BG_COLOR_0
                 ldy     #$10
                 dey
                 bne     *-1
                 nop
-		lda	#1
-		sta	BG_COLOR_0
+                lda     #1
+                sta     BG_COLOR_0
                 ldy     #$10
                 dey
                 bne     *-1
-		nop
-		nop
-		lda	#6
-		sta	BG_COLOR_0
+                nop
+                nop
+                lda     #6
+                sta     BG_COLOR_0
                 ldy     #$f
                 dey
                 bne     *-1
                 nop
-		lda	#1
-		nop
-		nop
-		sta	BG_COLOR_0
+                lda     #1
+                nop
+                nop
+                sta     BG_COLOR_0
                 ldy     #$10
                 dey
                 bne     *-1
-		lda	#6
-		sta	BG_COLOR_0
-		ldy	SAVE_Y
+                lda     #6
+                sta     BG_COLOR_0
+                ldy     SAVE_Y
 
 ; common exit code for every IRQ
 raster_bottom:
@@ -413,7 +442,7 @@ raster_0_tbl:
                 .byte 243, $00
                 .word raster_resizer
 
-                .byte 250, $00
+                .byte 249, $00
                 .word raster_24row
 
                 .byte 27, $80
@@ -450,7 +479,7 @@ raster_1_tbl:
                 .byte 243, $00
                 .word raster_resizer
 
-                .byte 250, $00
+                .byte 249, $00
                 .word raster_24row
 
                 .byte 252, $00
