@@ -15,7 +15,7 @@ length  = 160
 
 .export ziri_ambi
 
-.code
+.segment "MUSIC"
 
 ziri_ambi:
                 ldx     #length
@@ -60,7 +60,7 @@ loop8:          lda     ambi8-1,x
                 bne     loop8
                 rts
 
-.rodata
+.segment "MUDATA"
 
 ambi1:  .byte   $00,$00,$00,$00,$00,$00,$00,$00
         .byte   $00,$00,$00,$00,$00,$01,$03,$0F

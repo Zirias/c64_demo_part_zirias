@@ -12,7 +12,7 @@
  * - fix potential memory leak when giving 2 filenames before writing file
  *   to disk
  * - add options to control filetype (PRG, USR, SEQ, REL, DEL) and
- *   write protection
+ *   file write protection
  * - generally create write-protected disks for now (DOS-Version 0x40 in BAM)
  * - start writing files at track 17, better loading speed for first files
  *
@@ -25,8 +25,12 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef WIN32
+#include "getopt.h"
+#else
 #include <getopt.h>
 #include <unistd.h>
+#endif
 
 #define min(a,b) (((a)<(b))?(a):(b))
 #define _true 1
@@ -239,10 +243,13 @@ int main(int argc, char** argv)
 		    fprintf(stderr, "File '%s' not found, skipping...\n", optarg);
 		}
 		if (filename==NULL)
+		{
 		    files[nrFiles].filename=files[nrFiles].localname;
+		}
 		else
-		files[nrFiles].filename=filename;
-
+		{
+		    files[nrFiles].filename=filename;
+		}
 filedone_common:
 		files[nrFiles].sectorInterleave=sectorInterleave;
 		files[nrFiles].nrSectors=0;

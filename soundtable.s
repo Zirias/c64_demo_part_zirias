@@ -6,7 +6,7 @@
 
 .export snd_tbl
 
-.rodata
+.segment "MUDATA"
 
 snd_tbl:
         .byte   $3B,$02,$5D,$02,$81,$02,$A7,$02,$CF,$02,$FA,$02

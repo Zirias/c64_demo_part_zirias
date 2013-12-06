@@ -21,6 +21,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#ifdef WIN32
+#include "getopt.h"
+#else
+#include <getopt.h>
+#endif
 #include <libgen.h>
 
 enum gfxtype
@@ -56,13 +61,14 @@ struct bmphdr
 
 static struct bmphdr hdr;
 static enum gfxtype type;
-int bottomup;
-int height;
+static int bottomup;
+static int height;
 
-size_t rowsize;
-size_t bitmapsize;
-char *bitmap;
-char *c64bitmap;
+static size_t rowsize;
+static size_t bitmapsize;
+static char *bitmap;
+static char *c64bitmap;
+static char *segment=0;
 
 static int readhdr(int fd)
 {
@@ -247,7 +253,9 @@ static void formatsprite(const char *name)
     char *p = c64bitmap;
     int l;
 
-    printf(".export %s\n\n.rodata\n\n%s:\n", name, name);
+    printf(".export %s\n\n", name);
+    if (segment) printf(".segment \"%s\"\n\n", segment);
+    printf("%s:\n", name);
 
     for (l = 0; l < 21; ++l)
     {
@@ -267,7 +275,10 @@ static void formatfont(const char *name)
     char *p = c64bitmap;
     int i;
 
-    printf(".export %s\n\n.rodata\n\n%s:\n", name, name);
+    printf(".export %s\n\n", name);
+    if (segment) printf(".segment \"%s\"\n\n", segment);
+    printf("%s:\n", name);
+
     for (i = 0; i < bitmapsize; ++i)
     {
         tobinstring(bin, *p++);
@@ -283,21 +294,28 @@ static void formatfont(const char *name)
 
 int main(int argc, char **argv)
 {
-    int fd;
+    int fd, i;
 
-    if (argc != 2)
+    optind=opterr=0;
+    
+    while ((i = getopt(argc, argv, "s:"))!= -1)
     {
-        fprintf(stderr, "Usage: %s <file.bmp>.\n", argv[0]);
+	segment=optarg;
+    }
+    
+    if (optind != argc-1)
+    {
+        fprintf(stderr, "Usage: %s [-s segment] <file.bmp>.\n", argv[0]);
         return -1;
     }
-    if ((fd = open(argv[1], O_RDONLY)) < 0)
+    if ((fd = open(argv[optind], O_RDONLY)) < 0)
     {
-        fprintf(stderr, "Error opening `%s'.\n", argv[1]);
+        fprintf(stderr, "Error opening `%s'.\n", argv[optind]);
         return -1;
     }
     if (readhdr(fd) < 0)
     {
-        fprintf(stderr, "`%s' is not a BMP file.\n", argv[1]);
+        fprintf(stderr, "`%s' is not a BMP file.\n", argv[optind]);
         close(fd);
         return -1;
     }
@@ -318,11 +336,12 @@ int main(int argc, char **argv)
 
     if (!bitmap)
     {
-        fprintf(stderr, "Error reading `%s' -- corrupted file.\n", argv[1]);
+        fprintf(stderr, "Error reading `%s' -- corrupted file.\n",
+		argv[optind]);
         return -1;
     }
 
-    char *name = basename(argv[1]);
+    char *name = basename(argv[optind]);
     char *ext = name + strlen(name) - 4;
     if (*ext == '.')
     {

@@ -1,6 +1,6 @@
 .export topborder_sprites
 
-.rodata
+.segment "ADDATA"
 
 topborder_sprites:
 

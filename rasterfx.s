@@ -21,16 +21,17 @@ SAVE_X          = $23
 SAVE_Y          = $24
 TBL_OFFSET      = $25
 
-.bss
-
+.segment "ADBSS"
 bg_save:        .res    1
-flash_offset:   .res    1
-flash_counter:  .res    1
 key_pressed:    .res    1
 raster_table:   .res    255
-tbl_base = key_pressed
+tbl_base = raster_table - 1
 
-.code
+.segment "MUBSS"
+flash_offset:   .res    1
+flash_counter:  .res    1
+
+.segment "AMIGADOS"
 
 ; common entry code for every IRQ
 ; avoid any branching before payload
@@ -47,26 +48,43 @@ raster_top:
 raster_payload = *+1
                 jmp     raster_bottom
 
-; payload for changing background and border color
-raster_col:
-                nop
-                nop
-                nop
-                dex
-                lda     tbl_base,x
-                sta     BG_COLOR_0
-                nop
-                sta     BORDER_COLOR
-                jmp     raster_bottom
-
 ; payload for switching to 24 rows text mode
+; needs stabilization in music part
 raster_24row:
+                stx     TBL_OFFSET
+                inc     VIC_RASTER
+                lda     #$ff
+                sta     VIC_IRR
+                lda     #<raster_24rbt
+                sta     $fffe
+                lda     #>raster_24rbt
+                sta     $ffff
+                sty     SAVE_Y
+                tsx
+                cli
                 nop
                 nop
                 nop
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
+raster_24rbt:   txs
+                lda     #<raster_top
+                sta     $fffe
+                lda     #>raster_top
+                sta     $ffff
+                ldy     #1
+                dey
+                bne     *-1
+                nop
+                ldx     TBL_OFFSET
                 lda     VIC_CTL1
                 and     #%11010111
                 sta     VIC_CTL1
+                ldy     SAVE_Y
                 jmp     raster_bottom
 
 ; payload for switching to 25 rows hires mode
@@ -90,15 +108,6 @@ raster_zone1:
                 sty     SAVE_Y
                 stx     TBL_OFFSET
                 jsr     sprite_zone1
-                ldx     TBL_OFFSET
-                ldy     SAVE_Y
-                jmp     raster_bottom
-
-; payload for playing music
-raster_sound:
-                sty     SAVE_Y
-                stx     TBL_OFFSET
-                jsr     snd_play
                 ldx     TBL_OFFSET
                 ldy     SAVE_Y
                 jmp     raster_bottom
@@ -135,6 +144,172 @@ raster_resizer:
                 sta     $7f3b
                 lda     #$e1
                 sta     $7f3e
+                jmp     raster_bottom
+
+; payload for start of the Amiga screen bar
+raster_screen:
+                lda     #1
+                nop
+                nop
+                nop
+                nop
+                nop
+                sta     BG_COLOR_0
+                jmp     raster_bottom
+
+; payload for window border, this has to be stabilized
+raster_border:
+                stx     TBL_OFFSET
+                inc     VIC_RASTER
+                lda     #$ff
+                sta     VIC_IRR
+                lda     #<raster_wintop
+                sta     $fffe
+                lda     #>raster_wintop
+                sta     $ffff
+                sty     SAVE_Y
+                tsx
+                cli
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
+
+; stabilized top of the window border
+raster_wintop:
+                txs
+                lda     #<raster_top
+                sta     $fffe
+                lda     #>raster_top
+                sta     $ffff
+                ldx     TBL_OFFSET
+                ldy     #$3
+                dey
+                bne     *-1
+                lda     #6
+                sta     BG_COLOR_0
+                ldy     #$8
+                dey
+                bne     *-1
+                lda     #1
+                sta     BG_COLOR_0
+                ldy     #$f
+                dey
+                bne     *-1
+                lda     #6
+                sta     BG_COLOR_0
+                ldy     #$10
+                dey
+                bne     *-1
+                nop
+                lda     #1
+                sta     BG_COLOR_0
+                ldy     #$10
+                dey
+                bne     *-1
+                nop
+                nop
+                lda     #6
+                sta     BG_COLOR_0
+                ldy     #$f
+                dey
+                bne     *-1
+                nop
+                lda     #1
+                nop
+                nop
+                sta     BG_COLOR_0
+                ldy     #$10
+                dey
+                bne     *-1
+                lda     #6
+                sta     BG_COLOR_0
+                ldy     SAVE_Y
+
+; common exit code for every IRQ
+raster_bottom:
+                lda     #$ff
+                sta     VIC_IRR
+                dex
+                bne     tbl_offset_ok
+tbl_size = *+1
+                ldx     #0
+tbl_offset_ok:
+                lda     tbl_base,x
+                sta     VIC_RASTER
+                dex
+                lda     tbl_base,x
+                eor     VIC_CTL1
+                sta     VIC_CTL1
+                stx     TBL_OFFSET
+                ldx     SAVE_X
+                lda     SAVE_A
+                rti
+
+; activate raster IRQ using table for phase 0
+raster_on:
+                lda     #0
+                sta     key_pressed
+
+                ; load table for phase 0
+                ldx     #raster_0_tbl_size
+                stx     tbl_size
+                stx     TBL_OFFSET
+                ldy     #0
+phase0_loop:    lda     raster_0_tbl,y
+                sta     tbl_base,x
+                iny
+                dex
+                bne     phase0_loop
+
+                ; install raster-irq-routine
+                lda     BG_COLOR_0
+                sta     bg_save
+                sei
+                lda     #%01111111
+                sta     $dc0d
+                lda     $dc0d
+                lda     #%00000001
+                sta     VIC_IRM
+                sta     VIC_IRR
+                lda     raster_0_tbl
+                sta     VIC_RASTER
+                lda     VIC_CTL1
+                and     #%01111111
+                sta     VIC_CTL1
+                lda     #$35
+                sta     $01
+
+                lda     #<raster_top
+                sta     $fffe
+                lda     #>raster_top
+                sta     $ffff
+                dec     TBL_OFFSET
+                cli
+                rts
+
+.segment "MUSIC"
+; payload for changing background and border color
+raster_col:
+                nop
+                nop
+                nop
+                dex
+                lda     tbl_base,x
+                sta     BG_COLOR_0
+                nop
+                sta     BORDER_COLOR
+                jmp     raster_bottom
+
+; payload for playing music
+raster_sound:
+                sty     SAVE_Y
+                stx     TBL_OFFSET
+                jsr     snd_play
+                ldx     TBL_OFFSET
+                ldy     SAVE_Y
                 jmp     raster_bottom
 
 ; payload for animating the marquee
@@ -186,158 +361,14 @@ spm_next:       tya
                 ldx     TBL_OFFSET
                 jmp    raster_bottom
 
-; payload for start of the Amiga screen bar
-raster_screen:
-		lda	#1
-		nop
-		nop
-		nop
-		nop
-		nop
-		sta	BG_COLOR_0
-		jmp	raster_bottom
-
-; payload for window border, this has to be stabilized
-raster_border:
-		stx	TBL_OFFSET
-		inc	VIC_RASTER
-		lda	#$ff
-		sta	VIC_IRR
-		lda	#<raster_wintop
-		sta	$fffe
-		lda	#>raster_wintop
-		sta	$ffff
-                sty     SAVE_Y
-		tsx
-		cli
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-
-; stabilized top of the window border
-raster_wintop:
-		txs
-		lda	#<raster_top
-		sta	$fffe
-		lda	#>raster_top
-		sta	$ffff
-		ldx	TBL_OFFSET
-                ldy     #$3
-                dey
-                bne     *-1
-		lda	#6
-		sta	BG_COLOR_0
-                ldy     #$8
-                dey
-                bne     *-1
-		lda	#1
-		sta	BG_COLOR_0
-                ldy     #$f
-                dey
-                bne     *-1
-		lda	#6
-		sta	BG_COLOR_0
-                ldy     #$10
-                dey
-                bne     *-1
-                nop
-		lda	#1
-		sta	BG_COLOR_0
-                ldy     #$10
-                dey
-                bne     *-1
-		nop
-		nop
-		lda	#6
-		sta	BG_COLOR_0
-                ldy     #$f
-                dey
-                bne     *-1
-                nop
-		lda	#1
-		nop
-		nop
-		sta	BG_COLOR_0
-                ldy     #$10
-                dey
-                bne     *-1
-		lda	#6
-		sta	BG_COLOR_0
-		ldy	SAVE_Y
-
-; common exit code for every IRQ
-raster_bottom:
-                lda     #$ff
-                sta     VIC_IRR
-                dex
-                bne     tbl_offset_ok
-tbl_size = *+1
-                ldx     #0
-tbl_offset_ok:
-                lda     tbl_base,x
-                sta     VIC_RASTER
-                dex
-                lda     tbl_base,x
-                eor     VIC_CTL1
-                sta     VIC_CTL1
-                stx     TBL_OFFSET
-                ldx     SAVE_X
-                lda     SAVE_A
-                rti
-
-; activate raster IRQ using table for phase 0
-raster_on:
-                lda     #0
-                sta     key_pressed
-
+; switch to raster table for phase 1
+raster_phase1:
                 ; initialize marquee flashing
                 lda     #$f8
                 sta     flash_offset
                 lda     #1
                 sta     flash_counter
 
-                ; load table for phase 0
-                ldx     #raster_0_tbl_size
-                stx     tbl_size
-                stx     TBL_OFFSET
-                ldy     #0
-phase0_loop:    lda     raster_0_tbl,y
-                sta     tbl_base,x
-                iny
-                dex
-                bne     phase0_loop
-
-                ; install raster-irq-routine
-                lda     BG_COLOR_0
-                sta     bg_save
-                sei
-                lda     #%01111111
-                sta     $dc0d
-                lda     $dc0d
-                lda     #%00000001
-                sta     VIC_IRM
-                sta     VIC_IRR
-                lda     raster_0_tbl
-                sta     VIC_RASTER
-                lda     VIC_CTL1
-                and     #%01111111
-                sta     VIC_CTL1
-                lda     #$35
-                sta     $01
-
-                lda     #<raster_top
-                sta     $fffe
-                lda     #>raster_top
-                sta     $ffff
-                dec     TBL_OFFSET
-                cli
-                rts
-
-; switch to raster table for phase 1
-raster_phase1:
                 sei
                 lda     raster_1_tbl
                 sta     VIC_RASTER
@@ -381,7 +412,7 @@ raster_off:
                 sta     BG_COLOR_0
                 rts
 
-.rodata
+.segment "ADDATA"
 
 ; raster tables
 ; entry format:
@@ -411,13 +442,15 @@ raster_0_tbl:
                 .byte 243, $00
                 .word raster_resizer
 
-                .byte 250, $00
+                .byte 249, $00
                 .word raster_24row
 
                 .byte 27, $80
                 .word raster_zone0
 
 raster_0_tbl_size = *-raster_0_tbl
+
+.segment "MUDATA"
 
 ; phase 1
 
@@ -446,7 +479,7 @@ raster_1_tbl:
                 .byte 243, $00
                 .word raster_resizer
 
-                .byte 250, $00
+                .byte 249, $00
                 .word raster_24row
 
                 .byte 252, $00

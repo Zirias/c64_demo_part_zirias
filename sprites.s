@@ -9,7 +9,7 @@
 .import topborder_sprites
 .import marquee_sprites
 
-.code
+.segment "AMIGADOS"
 
 sprites_topborder:
                 lda     #0
@@ -169,7 +169,7 @@ mq_copy2:       lda     marquee_sprites+$0100,x
                 sta     sprite_1_show
                 rts
 
-.rodata
+.segment "ADDATA"
 
 cursor_sprite:
                 .byte   %11110000,%00000000,%00000000

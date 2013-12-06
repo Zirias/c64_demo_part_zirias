@@ -20,11 +20,13 @@ PLOT_XH         = $fb
 PLOT_Y          = $fc
 PLOT_MODE       = $f9
 
-.data
+.segment "ADDATA"
+
 gfx_drawpage:   .byte   $60
 gfx_colpage:    .byte   $5c
 
-.code
+.segment "AMIGADOS"
+
 gfx_init:
                 lda     CIA2_DATA_A
                 and     #%11111110
@@ -112,7 +114,7 @@ cp_inv:         eor     ($9e),y
                 sta     ($9e),y
                 rts
 
-.rodata
+.segment "ADDATA"
 gfx_tabl:       .byte   $00,$01,$02,$03,$04,$05,$06,$07
                 .byte   $40,$41,$42,$43,$44,$45,$46,$47
                 .byte   $80,$81,$82,$83,$84,$85,$86,$87

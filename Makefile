@@ -1,25 +1,20 @@
 SYS		= c64
-LINKCFG		= c64-asm.cfg
 AS		= ca65
 LD		= ld65
 
 AFLAGS		= -t $(SYS) -g
-LDFLAGS		= -Ln $(BINARY).lbl -m $(BINARY).map -C $(LINKCFG)
-
-BINARY		= demo
-MODULES		= gfx-core.o gfx-line.o soundtable.o snd_play.o ziri_ambi.o \
-			rasterfx.o text80.o font.o sprites.o spritezone.o \
-			marquee_sprites.o topborder_sprites.o
 
 DISKFILE	= ziri-demo
-DISKNAME	= 'C=64 WORKBENCH'
-PRGNAME		= 'ZIRIAS'
-DISKID		= 'AMIGA'
-
-OBJS		= c64startup.o $(BINARY).o $(MODULES)
 
 HCC		= gcc
 HCFLAGS		= -O2 -g0
+
+OBJECTS		= kickstart.o fastload.o main.o gfx-core.o gfx-line.o \
+		  	soundtable.o snd_play.o ziri_ambi.o rasterfx.o \
+			text80.o font.o sprites.o spritezone.o \
+			marquee_sprites.o topborder_sprites.o
+LINKCFG = demo.cfg
+LDFLAGS	= -Ln demo.lbl -m demo.map -C $(LINKCFG)
 
 ifeq ($(OS),Windows_NT)
 
@@ -35,6 +30,7 @@ XTHEN = (
 XFI = )
 
 cc1541_EXTRA = tools\\getopt.o
+bmp2c64_EXTRA = tools\\getopt.o
 HCFLAGS += -DWIN32=1
 
 else
@@ -51,27 +47,42 @@ XTHEN = ]; then
 XFI = ; fi
 
 cc1541_EXTRA =
+bmp2c64_EXTRA =
 
 endif
 
-TOOLS		= tools$(PSEP)bmp2c64$(EXE) tools$(PSEP)cc1541$(EXE)
+HTOOLS		= tools$(PSEP)bmp2c64$(EXE) tools$(PSEP)cc1541$(EXE)
 
-all:	$(OBJS)
-	$(LD) -o $(BINARY) $(LDFLAGS) $(OBJS)
+BINARIES = demo_kickstart demo_amigados demo_music
+DISKNAME = 'C=64 WORKBENCH'
+DISKID = 'AMIGA'
+
+all:	demo
+
+demo:	$(OBJECTS) $(LINKCFG)
+	$(LD) -odemo $(LDFLAGS) $(OBJECTS)
 
 disk:	all tools$(PSEP)cc1541$(EXE)
 	$(MDP) disks
 	tools$(PSEP)cc1541 -x \
 		-n$(DISKNAME) -i$(DISKID) \
+		-f'----------------' -wdemo_kickstart \
+		-f'                ' -u -s15 -wdemo_amigados \
+		-f'  DEMO: MUSIC   ' -d \
+		-f'                ' -d \
+		-f'  RELEASE 0.5B  ' -d \
+		-f'  2013/12/04    ' -d \
+		-f'  BY ZIRIAS     ' -d \
+		-f'                ' -d \
 		-d \
-		-f$(PRGNAME) -w$(BINARY) \
+		-f'MUSIC           ' -u -s15 -wdemo_music \
 		-d \
 		disks$(PSEP)$(DISKFILE).d64
 
 tools$(PSEP)cc1541$(EXE):	tools$(PSEP)cc1541.o $(cc1541_EXTRA)
 	-$(HCC) -o$@ $^
 
-tools$(PSEP)bmp2c64$(EXE):	tools$(PSEP)bmp2c64.o
+tools$(PSEP)bmp2c64$(EXE):	tools$(PSEP)bmp2c64.o $(bmp2c64_EXTRA)
 	-$(HCC) -o$@ $^
 
 %.o:		%.c
@@ -82,7 +93,7 @@ tools$(PSEP)bmp2c64$(EXE):	tools$(PSEP)bmp2c64.o
 
 font.s:		res$(PSEP)font_topaz_80col_petscii_western.bmp tools$(PSEP)bmp2c64$(EXE)
 	$(XIF) tools$(PSEP)bmp2c64$(EXE) $(XTHEN) \
-		tools$(PSEP)bmp2c64 $< >font.s $(XFI)
+		tools$(PSEP)bmp2c64 -s ADDATA $< >font.s $(XFI)
 
 topborder_sprites.s: tools$(PSEP)bmp2c64$(EXE) \
 		res$(PSEP)sprite_black_r.bmp \
@@ -111,19 +122,19 @@ topborder_sprites.s: tools$(PSEP)bmp2c64$(EXE) \
 	$(XFI)
 
 clean:
-	$(RMF) $(BINARY)
+	$(RMF) $(BINARIES)
 	$(RMF) *.o
 	$(RMF) *.map
 	$(RMF) *.lbl
 	$(RMFR) disks
 	$(RMF) tools$(PSEP)*.o
-	$(RMF) $(TOOLS)
+	$(RMF) $(HTOOLS)
 
 mrproper:	clean
 	$(RMF) font.s
 	$(RMF) topborder_sprites.s
 
-.PHONY:	disk all clean mrproper
+.PHONY:	disk all demo clean mrproper
 
 .SUFFIXES:
 

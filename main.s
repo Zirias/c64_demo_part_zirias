@@ -6,6 +6,9 @@ GETKB           = $F142
 
 tbllen          = 195
 
+.export amigados
+
+.include        "fastload.inc"
 .include        "gfx.inc"
 .include        "vic.inc"
 .include        "snd.inc"
@@ -22,48 +25,76 @@ tbllen          = 195
 .import raster_phase1
 .import key_pressed
 
-.code
-                ; initialize:
-                ldx     #0
-                stx     from1tbl
-                stx     from2tbl
-                stx     to1tbl
-                stx     to2tbl
-                lda     #tbllen
-                sta     from1
-                sta     from2
-                lda     #tbllen - 123
-                sta     to1
-                sta     to2
-                lda     #66
-                sta     countdown
-                lda     #<(cotable_a-1)
-                ldx     #>(cotable_a-1)
-                sta     from1ptr1+1
-                stx     from1ptr1+2
-                sta     from1ptr2+1
-                stx     from1ptr2+2
-                sta     from1ptr3+1
-                stx     from1ptr3+2
-                sta     from2ptr1+1
-                stx     from2ptr1+2
-                sta     from2ptr2+1
-                stx     from2ptr2+2
-                sta     from2ptr3+1
-                stx     from2ptr3+2
-                sta     to1ptr1+1
-                stx     to1ptr1+2
-                sta     to1ptr2+1
-                stx     to1ptr2+2
-                sta     to1ptr3+1
-                stx     to1ptr3+2
-                sta     to2ptr1+1
-                stx     to2ptr1+2
-                sta     to2ptr2+1
-                stx     to2ptr2+2
-                sta     to2ptr3+1
-                stx     to2ptr3+2
+.import __MUSIC_LOAD__
 
+.segment "AMIGADOS"
+clear_window:
+                jsr     gfx_clear
+                ; draw "window" border
+                ; left
+                ldy     #7
+                lda     #0
+                sta     $9e
+                lda     #$60
+                sta     $9f
+                ldx     #$19
+                lda     #$80
+bl_loop:        sta     ($9e),y
+                dey
+                bpl     bl_loop
+                ldy     #7
+                inc     $9f
+                lda     $9e
+                clc
+                adc     #$40
+                bcc     bl_noinc
+                inc     $9f
+bl_noinc:       sta     $9e
+                lda     #$80
+                dex
+                bne     bl_loop
+                ; right
+                ldy     #7
+                lda     #$38
+                sta     $9e
+                lda     #$61
+                sta     $9f
+                ldx     #$19
+                lda     #$01
+br_loop:        sta     ($9e),y
+                dey
+                bpl     br_loop
+                ldy     #7
+                inc     $9f
+                lda     $9e
+                clc
+                adc     #$40
+                bcc     br_noinc
+                inc     $9f
+br_noinc:       sta     $9e
+                lda     #$01
+                dex
+                bne     br_loop
+                ; bottom
+                dec     $9f
+                lda     #$3f
+                sta     $9e
+                ldx     #$28
+                lda     #$ff
+                ldy     #0
+bb_loop:        sta     ($9e),y
+                lda     $9e
+                sec
+                sbc     #$08
+                bcs     bb_nodec
+                dec     $9f
+bb_nodec:       sta     $9e
+                lda     #$ff
+                dex
+                bne     bb_loop
+                rts
+
+amigados:
                 ; border color, graphics mode, clear screen
                 lda     BORDER_COLOR
                 sta     border
@@ -139,17 +170,12 @@ tbllen          = 195
                 sta     T80_STRING_H
                 jsr     t80_print_cursor
                 jsr     t80_crlf_cursor
-                jsr     t80_crlf_cursor
-                jsr     t80_crlf_cursor
 
                 lda     #<message7
                 sta     T80_STRING_L
                 lda     #>message7
                 sta     T80_STRING_H
                 jsr     t80_print_cursor
-                jsr     t80_crlf_cursor
-                jsr     t80_crlf_cursor
-                jsr     t80_crlf_cursor
                 jsr     t80_crlf_cursor
 
                 lda     #<message8
@@ -158,11 +184,62 @@ tbllen          = 195
                 sta     T80_STRING_H
                 jsr     t80_print_cursor
                 jsr     t80_crlf_cursor
-                jsr     t80_crlf_cursor
 
                 lda     #<message9
                 sta     T80_STRING_L
                 lda     #>message9
+                sta     T80_STRING_H
+                jsr     t80_print_cursor
+                jsr     t80_crlf_cursor
+                jsr     t80_crlf_cursor
+
+                lda     #<message10
+                sta     T80_STRING_L
+                lda     #>message10
+                sta     T80_STRING_H
+                jsr     t80_print_cursor
+                jsr     t80_crlf_cursor
+
+                lda     #<message11
+                sta     T80_STRING_L
+                lda     #>message11
+                sta     T80_STRING_H
+                jsr     t80_print_cursor
+                jsr     t80_crlf_cursor
+                jsr     t80_crlf_cursor
+
+                lda     #<message12
+                sta     T80_STRING_L
+                lda     #>message12
+                sta     T80_STRING_H
+                jsr     t80_print_cursor
+
+loadname        = *+1
+		lda	#'m'
+                beq     noload
+		sta	fl_filename
+		lda	#'u'
+		sta	fl_filename+1
+		lda	#<__MUSIC_LOAD__
+		sta	fl_loadaddr
+		lda	#>__MUSIC_LOAD__
+		sta	fl_loadaddr+1
+                lda     #0
+                sta     loadname
+		jsr	fastload
+
+noload:         lda     #<message13
+                sta     T80_STRING_L
+                lda     #>message13
+                sta     T80_STRING_H
+                jsr     t80_print_cursor
+                jsr     t80_crlf_cursor
+                jsr     t80_crlf_cursor
+                jsr     t80_crlf_cursor
+
+                lda     #<message14
+                sta     T80_STRING_L
+                lda     #>message14
                 sta     T80_STRING_H
                 jsr     t80_print_cursor
                 jsr     t80_crlf_cursor
@@ -173,7 +250,50 @@ tbllen          = 195
 
 waitkey:        lda     key_pressed
                 beq     waitkey
+                jmp     music
 
+.segment "MUSIC"
+music:
+                ; initialize:
+                ldx     #0
+                stx     from1tbl
+                stx     from2tbl
+                stx     to1tbl
+                stx     to2tbl
+                lda     #tbllen
+                sta     from1
+                sta     from2
+                lda     #tbllen - 123
+                sta     to1
+                sta     to2
+                lda     #66
+                sta     countdown
+                lda     #<(cotable_a-1)
+                ldx     #>(cotable_a-1)
+                sta     from1ptr1+1
+                stx     from1ptr1+2
+                sta     from1ptr2+1
+                stx     from1ptr2+2
+                sta     from1ptr3+1
+                stx     from1ptr3+2
+                sta     from2ptr1+1
+                stx     from2ptr1+2
+                sta     from2ptr2+1
+                stx     from2ptr2+2
+                sta     from2ptr3+1
+                stx     from2ptr3+2
+                sta     to1ptr1+1
+                stx     to1ptr1+2
+                sta     to1ptr2+1
+                stx     to1ptr2+2
+                sta     to1ptr3+1
+                stx     to1ptr3+2
+                sta     to2ptr1+1
+                stx     to2ptr1+2
+                sta     to2ptr2+1
+                stx     to2ptr2+2
+                sta     to2ptr3+1
+                stx     to2ptr3+2
                 jsr     clear_window
 
                 ; sound:
@@ -345,73 +465,7 @@ eat_keys:       jsr     GETKB
                 bne     eat_keys
                 rts
 
-clear_window:
-                jsr     gfx_clear
-                ; draw "window" border
-                ; left
-                ldy     #7
-                lda     #0
-                sta     $9e
-                lda     #$60
-                sta     $9f
-                ldx     #$19
-                lda     #$80
-bl_loop:        sta     ($9e),y
-                dey
-                bpl     bl_loop
-                ldy     #7
-                inc     $9f
-                lda     $9e
-                clc
-                adc     #$40
-                bcc     bl_noinc
-                inc     $9f
-bl_noinc:       sta     $9e
-                lda     #$80
-                dex
-                bne     bl_loop
-                ; right
-                ldy     #7
-                lda     #$38
-                sta     $9e
-                lda     #$61
-                sta     $9f
-                ldx     #$19
-                lda     #$01
-br_loop:        sta     ($9e),y
-                dey
-                bpl     br_loop
-                ldy     #7
-                inc     $9f
-                lda     $9e
-                clc
-                adc     #$40
-                bcc     br_noinc
-                inc     $9f
-br_noinc:       sta     $9e
-                lda     #$01
-                dex
-                bne     br_loop
-                ; bottom
-                dec     $9f
-                lda     #$3f
-                sta     $9e
-                ldx     #$28
-                lda     #$ff
-                ldy     #0
-bb_loop:        sta     ($9e),y
-                lda     $9e
-                sec
-                sbc     #$08
-                bcs     bb_nodec
-                dec     $9f
-bb_nodec:       sta     $9e
-                lda     #$ff
-                dex
-                bne     bb_loop
-                rts
-
-.bss
+.segment "ADBSS"
 border:         .res    1
 from1tbl:       .res    1
 from1:          .res    1
@@ -423,20 +477,29 @@ to2tbl:         .res    1
 to2:            .res    1
 countdown:      .res    1
 
-.rodata
+.segment "ADDATA"
 message1:       .asciiz "Copyright &2013 Zirias"
 message2:       .asciiz "All rights reserved."
 message3:       .asciiz "C64 Workbench and AmigaBASIC style Demo Disk."
 message4:       .asciiz "Release 0.5b, 2013-12-04"
 
 message5:       .asciiz "This demo started in 2006 and mimicks the style of the AmigaBASIC"
-message6:       .asciiz "demo `Music'. The ultimate goal is to make it look just like an Amiga."
+message6:       .asciiz "demo `Music'. The goal was to make it look just like an Amiga."
+message7:       .asciiz "There are still some minor inaccuracies compared to original Amiga"
+message8:       .asciiz "Workbench for technical reasons -- Can you spot them? Of course I"
+message9:       .asciiz "do not mean the low res (3 px wide) `topaz' font ;)"
 
-message7:       .asciiz "  -- Press any key to start --"
 
-message8:       .asciiz "Also, any key will exit the demo."
-message9:       .asciiz "Contact: Felix Palmen <felix@palmen-it.de>"
+message10:      .asciiz "Any key can be pressed to exit the demo."
+message11:      .asciiz "Contact: Felix Palmen <felix@palmen-it.de>"
 
+message12:      .asciiz "loading demo `Music' ... "
+message13:      .asciiz "done."
+
+
+message14:      .asciiz "  -- Press any key to start --"
+
+.segment "MUDATA"
 cotable_a:      .byte   $BE,$01,$3D,$B6,$01,$3D,$AE,$01,$3D,$A6,$01,$3D
                 .byte   $9E,$01,$3D,$96,$01,$3D,$8E,$01,$3D,$86,$01,$3D
                 .byte   $7F,$01,$3D,$77,$01,$3D,$6F,$01,$3D,$67,$01,$3D

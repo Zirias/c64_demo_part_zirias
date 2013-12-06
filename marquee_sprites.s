@@ -1,6 +1,6 @@
 .export marquee_sprites
 
-.rodata
+.segment "MUDATA"
 
 marquee_sprites:
                 .byte   %00001010,%00000010,%10101000

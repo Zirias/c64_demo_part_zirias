@@ -13,13 +13,12 @@
 .export snd_instr2
 .export snd_instr3
 
-.bss
+.segment "MUDATA"
 snd_count:      .res    1
 
-.data
 snd_playing:    .byte 0
 
-.code
+.segment "MUSIC"
 
 getbyte:
                 ldx     snd_playpos
@@ -180,7 +179,7 @@ snd_stop:
                 sta     $D412
                 rts
 
-.bss
+.segment "MUDATA"
 snd_speed:      .res    1
 snd_songptr:    .res    2
 snd_playpos:    .res    1
