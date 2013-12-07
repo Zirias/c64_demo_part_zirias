@@ -82,7 +82,9 @@ raster_24rbt:   txs
                 nop
                 ldx     TBL_OFFSET
                 lda     VIC_CTL1
-                and     #%11010111
+                and     #%11110111
+                sta     VIC_CTL1
+                and     #%11011111
                 sta     VIC_CTL1
                 ldy     SAVE_Y
                 jmp     raster_bottom
