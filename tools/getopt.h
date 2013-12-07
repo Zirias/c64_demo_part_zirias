@@ -9,3 +9,5 @@ int getopt(int nargc, char * const nargv[], const char *ostr);
  
 #endif
 
+/* vim: et:si:ts=8:sts=4:sw=4
+*/

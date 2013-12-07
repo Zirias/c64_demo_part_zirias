@@ -216,18 +216,18 @@ amigados:
                 jsr     t80_print_cursor
 
 loadname        = *+1
-		lda	#'m'
+                lda     #'m'
                 beq     noload
-		sta	fl_filename
-		lda	#'u'
-		sta	fl_filename+1
-		lda	#<__MUSIC_LOAD__
-		sta	fl_loadaddr
-		lda	#>__MUSIC_LOAD__
-		sta	fl_loadaddr+1
+                sta     fl_filename
+                lda     #'u'
+                sta     fl_filename+1
+                lda     #<__MUSIC_LOAD__
+                sta     fl_loadaddr
+                lda     #>__MUSIC_LOAD__
+                sta     fl_loadaddr+1
                 lda     #0
                 sta     loadname
-		jsr	fastload
+                jsr     fastload
 
 noload:         lda     #<message13
                 sta     T80_STRING_L
@@ -313,7 +313,7 @@ music:
 
                 ; sprites for marquee
                 jsr     sprites_marquee
-		jsr	sprites_topborder1
+                jsr     sprites_topborder1
 
                 ; more raster effects
                 jsr     raster_phase1

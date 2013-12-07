@@ -104,3 +104,5 @@ int getopt(int nargc, char * const nargv[], const char *ostr)
   return (optopt);                        /* dump back option letter */
 }
 
+/* vim: et:si:ts=8:sts=4:sw=4
+*/

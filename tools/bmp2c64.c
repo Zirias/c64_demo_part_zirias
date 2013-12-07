@@ -155,14 +155,14 @@ static void converttosprite()
 
     for (l = 0; l < 21; ++l)
     {
-	p = bottomup ? bitmap + 4 * (20 - l) : bitmap + 4 * l;
-	for (c = 0; c<3; ++c)
-	{
-	    if (inverted)
-		*q++ = ~*p++;
-	    else
-		*q++ = *p++;
-	}
+        p = bottomup ? bitmap + 4 * (20 - l) : bitmap + 4 * l;
+        for (c = 0; c<3; ++c)
+        {
+            if (inverted)
+                *q++ = ~*p++;
+            else
+                *q++ = *p++;
+        }
     }
 }
 
@@ -259,11 +259,11 @@ static void formatsprite(const char *name)
 
     for (l = 0; l < 21; ++l)
     {
-	tobinstring(bin0, *p++);
-	tobinstring(bin1, *p++);
-	tobinstring(bin2, *p++);
+        tobinstring(bin0, *p++);
+        tobinstring(bin1, *p++);
+        tobinstring(bin2, *p++);
         printf("                .byte   %%%s,%%%s,%%%s\n",
-		bin0, bin1, bin2);
+                bin0, bin1, bin2);
     }
     printf("                .byte   0\n\n");
 }
@@ -300,7 +300,7 @@ int main(int argc, char **argv)
     
     while ((i = getopt(argc, argv, "s:"))!= -1)
     {
-	segment=optarg;
+        segment=optarg;
     }
     
     if (optind != argc-1)
@@ -337,7 +337,7 @@ int main(int argc, char **argv)
     if (!bitmap)
     {
         fprintf(stderr, "Error reading `%s' -- corrupted file.\n",
-		argv[optind]);
+                argv[optind]);
         return -1;
     }
 
@@ -361,7 +361,7 @@ int main(int argc, char **argv)
             formatfont(name);
             break;
         case GFX_SPRITE:
-	    formatsprite(name);
+            formatsprite(name);
             break;
     }
 

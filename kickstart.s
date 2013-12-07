@@ -34,7 +34,7 @@ ks_loop:        lda     ks_loadmsg,x
                 jsr     CHROUT
                 inx
                 cpx     #ks_loadmsglen
-                bne     ks_loop;
+                bne     ks_loop
                 lda     #<loader
                 sta     $326
                 lda     #>loader
