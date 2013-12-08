@@ -14,16 +14,15 @@ READY           = $a474
 
 .segment "BOOT"
 
-                .word   $02bb           ; load address for binary
-                .assert *=$02bb, error  ; check linker placed us correctly
+                .word   $02bc           ; load address for binary
+                .assert *=$02bc, error  ; check linker placed us correctly
 
 ; BASIC header -- must be here if loaded with ",8" only
-basichdr:       .word   $080b
+basichdr:       .word   $080a           ; next basic line, in "KICKSTART"
                 .word   $17             ; 23
                 .byte   $9E             ; SYS
-                .byte   "2160", 0
-                .byte   0
-                .word   0
+                .byte   "2159", 0
+                .word   0               ; placed at $080a in "KICKSTART"
 basichdrlen     = *-basichdr
 
 ; show what is loading:
@@ -84,7 +83,7 @@ ks_loop:        lda     ks_loadmsg,x
 .segment "KICKSTART"
 
 loader:
-                .assert *=$0870, error  ; check linker placed us correctly
+                .assert *=$086f, error  ; check linker placed us correctly
                 lda     #$f1
                 cmp     $327
                 beq     normalstart     ; didn't autostart
@@ -115,7 +114,6 @@ ksmsgloop:      lda     ks_msg,x
                 jsr     initfastload
                 lda     #' '
                 sta     fl_filename
-                lda     #' '
                 sta     fl_filename+1
                 lda     #<__AMIGADOS_LOAD__
                 sta     fl_loadaddr
