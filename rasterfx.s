@@ -7,6 +7,7 @@
 ;
 
 .include "vic.inc"
+.include "vicconfig.inc"
 .include "gfx.inc"
 .include "snd.inc"
 .include "spritezone.inc"
@@ -133,19 +134,19 @@ key_done:       jmp     raster_bottom
 ; payload for drawing window resizer
 raster_resizer:
                 lda     #$ff
-                sta     $7f38
-                sta     $7f3f
+                sta     vic_bitmap + $1f38
+                sta     vic_bitmap + $1f3f
                 lda     #$ed
-                sta     $7f3c
-                sta     $7f3d
+                sta     vic_bitmap + $1f3c
+                sta     vic_bitmap + $1f3d
                 lda     #$8f
-                sta     $7f39
+                sta     vic_bitmap + $1f39
                 lda     #$af
-                sta     $7f3a
+                sta     vic_bitmap + $1f3a
                 lda     #$81
-                sta     $7f3b
+                sta     vic_bitmap + $1f3b
                 lda     #$e1
-                sta     $7f3e
+                sta     vic_bitmap + $1f3e
                 jmp     raster_bottom
 
 ; payload for start of the Amiga screen bar

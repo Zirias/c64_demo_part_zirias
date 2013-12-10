@@ -3,6 +3,7 @@
 ;
 
 .include "vic.inc"
+.include "vicconfig.inc"
 
 .export gfx_init
 .export gfx_done
@@ -20,23 +21,22 @@ PLOT_XH         = $fb
 PLOT_Y          = $fc
 PLOT_MODE       = $f9
 
-.segment "ADDATA"
+.segment "ADBSS"
 
-gfx_drawpage:   .byte   $60
-gfx_colpage:    .byte   $5c
+memctl_save:    .res 1
 
 .segment "AMIGADOS"
 
 gfx_init:
                 lda     CIA2_DATA_A
-                and     #%11111110
+                and     #vic_bankselect_and
                 sta     CIA2_DATA_A
                 lda     VIC_CTL1
                 ora     #%00100000
                 sta     VIC_CTL1
                 lda     VIC_MEMCTL
-                and     #%01111111
-                ora     #%01111000
+                sta     memctl_save
+                lda     #vic_memctl_hires
                 sta     VIC_MEMCTL
                 rts
 
@@ -47,8 +47,7 @@ gfx_done:
                 lda     VIC_CTL1
                 and     #%11011111
                 sta     VIC_CTL1
-                lda     VIC_MEMCTL
-                and     #%00010111
+                lda     memctl_save
                 sta     VIC_MEMCTL
                 rts
 
@@ -59,7 +58,7 @@ gfx_setcolor:
                 asl     a
                 asl     a
                 adc     $9e
-                ldx     gfx_colpage
+                ldx     #>vic_colram
                 stx     $9f
                 ldy     #0
                 sty     $9e
@@ -76,7 +75,7 @@ gfx_clear:
                 lda     #0
                 tay
                 sta     $9e
-                ldx     gfx_drawpage
+                ldx     #>vic_bitmap
                 stx     $9f
                 ldx     #$20
 cl_loop:        sta     ($9e),y
@@ -141,31 +140,58 @@ gfx_tabl:       .byte   $00,$01,$02,$03,$04,$05,$06,$07
                 .byte   $C0,$C1,$C2,$C3,$C4,$C5,$C6,$C7
                 .byte   $00,$01,$02,$03,$04,$05,$06,$07
 
-gfx_tabh:       .byte   $60,$60,$60,$60,$60,$60,$60,$60
-                .byte   $61,$61,$61,$61,$61,$61,$61,$61
-                .byte   $62,$62,$62,$62,$62,$62,$62,$62
-                .byte   $63,$63,$63,$63,$63,$63,$63,$63
-                .byte   $65,$65,$65,$65,$65,$65,$65,$65
-                .byte   $66,$66,$66,$66,$66,$66,$66,$66
-                .byte   $67,$67,$67,$67,$67,$67,$67,$67
-                .byte   $68,$68,$68,$68,$68,$68,$68,$68
-                .byte   $6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A
-                .byte   $6B,$6B,$6B,$6B,$6B,$6B,$6B,$6B
-                .byte   $6C,$6C,$6C,$6C,$6C,$6C,$6C,$6C
-                .byte   $6D,$6D,$6D,$6D,$6D,$6D,$6D,$6D
-                .byte   $6F,$6F,$6F,$6F,$6F,$6F,$6F,$6F
-                .byte   $70,$70,$70,$70,$70,$70,$70,$70
-                .byte   $71,$71,$71,$71,$71,$71,$71,$71
-                .byte   $72,$72,$72,$72,$72,$72,$72,$72
-                .byte   $74,$74,$74,$74,$74,$74,$74,$74
-                .byte   $75,$75,$75,$75,$75,$75,$75,$75
-                .byte   $76,$76,$76,$76,$76,$76,$76,$76
-                .byte   $77,$77,$77,$77,$77,$77,$77,$77
-                .byte   $79,$79,$79,$79,$79,$79,$79,$79
-                .byte   $7A,$7A,$7A,$7A,$7A,$7A,$7A,$7A
-                .byte   $7B,$7B,$7B,$7B,$7B,$7B,$7B,$7B
-                .byte   $7C,$7C,$7C,$7C,$7C,$7C,$7C,$7C
-                .byte   $7E,$7E,$7E,$7E,$7E,$7E,$7E,$7E
+bh00 = (vic_bitmap >> 8)
+bh01 = bh00 + $01
+bh02 = bh00 + $02
+bh03 = bh00 + $03
+bh05 = bh00 + $05
+bh06 = bh00 + $06
+bh07 = bh00 + $07
+bh08 = bh00 + $08
+bh0a = bh00 + $0a
+bh0b = bh00 + $0b
+bh0c = bh00 + $0c
+bh0d = bh00 + $0d
+bh0f = bh00 + $0f
+bh10 = bh00 + $10
+bh11 = bh00 + $11
+bh12 = bh00 + $12
+bh14 = bh00 + $14
+bh15 = bh00 + $15
+bh16 = bh00 + $16
+bh17 = bh00 + $17
+bh19 = bh00 + $19
+bh1a = bh00 + $1a
+bh1b = bh00 + $1b
+bh1c = bh00 + $1c
+bh1e = bh00 + $1e
+bh1f = bh00 + $1f
+
+gfx_tabh:       .byte   bh00,bh00,bh00,bh00,bh00,bh00,bh00,bh00
+                .byte   bh01,bh01,bh01,bh01,bh01,bh01,bh01,bh01
+                .byte   bh02,bh02,bh02,bh02,bh02,bh02,bh02,bh02
+                .byte   bh03,bh03,bh03,bh03,bh03,bh03,bh03,bh03
+                .byte   bh05,bh05,bh05,bh05,bh05,bh05,bh05,bh05
+                .byte   bh06,bh06,bh06,bh06,bh06,bh06,bh06,bh06
+                .byte   bh07,bh07,bh07,bh07,bh07,bh07,bh07,bh07
+                .byte   bh08,bh08,bh08,bh08,bh08,bh08,bh08,bh08
+                .byte   bh0a,bh0a,bh0a,bh0a,bh0a,bh0a,bh0a,bh0a
+                .byte   bh0b,bh0b,bh0b,bh0b,bh0b,bh0b,bh0b,bh0b
+                .byte   bh0c,bh0c,bh0c,bh0c,bh0c,bh0c,bh0c,bh0c
+                .byte   bh0d,bh0d,bh0d,bh0d,bh0d,bh0d,bh0d,bh0d
+                .byte   bh0f,bh0f,bh0f,bh0f,bh0f,bh0f,bh0f,bh0f
+                .byte   bh10,bh10,bh10,bh10,bh10,bh10,bh10,bh10
+                .byte   bh11,bh11,bh11,bh11,bh11,bh11,bh11,bh11
+                .byte   bh12,bh12,bh12,bh12,bh12,bh12,bh12,bh12
+                .byte   bh14,bh14,bh14,bh14,bh14,bh14,bh14,bh14
+                .byte   bh15,bh15,bh15,bh15,bh15,bh15,bh15,bh15
+                .byte   bh16,bh16,bh16,bh16,bh16,bh16,bh16,bh16
+                .byte   bh17,bh17,bh17,bh17,bh17,bh17,bh17,bh17
+                .byte   bh19,bh19,bh19,bh19,bh19,bh19,bh19,bh19
+                .byte   bh1a,bh1a,bh1a,bh1a,bh1a,bh1a,bh1a,bh1a
+                .byte   bh1b,bh1b,bh1b,bh1b,bh1b,bh1b,bh1b,bh1b
+                .byte   bh1c,bh1c,bh1c,bh1c,bh1c,bh1c,bh1c,bh1c
+                .byte   bh1e,bh1e,bh1e,bh1e,bh1e,bh1e,bh1e,bh1e
 
 gfx_bits:       .byte   $80,$40,$20,$10,$08,$04,$02,$01
                 .byte   $80,$40,$20,$10,$08,$04,$02,$01

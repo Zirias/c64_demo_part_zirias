@@ -11,6 +11,7 @@ tbllen          = 195
 .include        "fastload.inc"
 .include        "gfx.inc"
 .include        "vic.inc"
+.include        "vicconfig.inc"
 .include        "snd.inc"
 .include        "text80.inc"
 .include        "sprites.inc"
@@ -35,7 +36,7 @@ clear_window:
                 ldy     #7
                 lda     #0
                 sta     $9e
-                lda     #$60
+                lda     #>vic_bitmap
                 sta     $9f
                 ldx     #$19
                 lda     #$80
@@ -57,7 +58,7 @@ bl_noinc:       sta     $9e
                 ldy     #7
                 lda     #$38
                 sta     $9e
-                lda     #$61
+                lda     #>vic_bitmap + 1
                 sta     $9f
                 ldx     #$19
                 lda     #$01
@@ -114,7 +115,7 @@ amigados:
 
                 ; start messages
                 jsr     clear_window
-                lda     #$60
+                lda     #>vic_bitmap
                 sta     T80_DRAWPAGE
                 lda     #<font_topaz_80col_petscii_western
                 sta     T80_FONT_L
