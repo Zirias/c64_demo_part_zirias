@@ -2,14 +2,16 @@
 ; Zirias ambigram in 8 lines and 20 cols
 ;
 
-LINE1   = $6B90
-LINE2   = $6CD0
-LINE3   = $6E10
-LINE4   = $6F50
-LINE5   = $7090
-LINE6   = $71D0
-LINE7   = $7310
-LINE8   = $7450
+.include "vicconfig.inc"
+
+LINE1   = vic_bitmap + $0B90
+LINE2   = vic_bitmap + $0CD0
+LINE3   = vic_bitmap + $0E10
+LINE4   = vic_bitmap + $0F50
+LINE5   = vic_bitmap + $1090
+LINE6   = vic_bitmap + $11D0
+LINE7   = vic_bitmap + $1310
+LINE8   = vic_bitmap + $1450
 
 length  = 160
 

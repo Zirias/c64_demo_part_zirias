@@ -5,6 +5,7 @@
 ;
 
 .include "vic.inc"
+.include "vicconfig.inc"
 
 ; export shadow registers
 
@@ -79,17 +80,6 @@
 ; routines
 .export sprite_zone0
 .export sprite_zone1
-
-; memory configuration
-vic_bank = $40
-vic_colpage = $1c
-sprite_0_base = $10
-sprite_1_base = $12
-
-; some statically calculated values
-sprite_0_baseptr = sprite_0_base << 2
-sprite_1_baseptr = sprite_1_base << 2
-sprite_vectors = ((vic_bank + vic_colpage) << 8) + $3f8
 
 .segment "ADDATA"
 
@@ -189,10 +179,10 @@ sprite_col_1_size = *-sprite_col_1-1
 
 ; activate zone 0
 sprite_zone0:
-                ldy     #(sprite_0_baseptr + 7)
+                ldy     #(vic_sprite_0_baseptr + 7)
                 ldx     #7
 ptrloop0:       tya
-                sta     sprite_vectors,x
+                sta     vic_sprite_vectors,x
                 dey
                 dex
                 bpl     ptrloop0
@@ -221,10 +211,10 @@ colloop0:       lda     sprite_col_0,x
 
 ; activate zone 1
 sprite_zone1:
-                ldy     #(sprite_1_baseptr + 7)
+                ldy     #(vic_sprite_1_baseptr + 7)
                 ldx     #7
 ptrloop1:       tya
-                sta     sprite_vectors,x
+                sta     vic_sprite_vectors,x
                 dey
                 dex
                 bpl     ptrloop1
