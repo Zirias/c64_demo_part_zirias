@@ -28,6 +28,9 @@ MDP = -md
 XIF = if exist
 XTHEN = (
 XFI = )
+CATIN = copy /b
+CATADD = +
+CATOUT =
 
 cc1541_EXTRA = tools\\getopt.o
 bmp2c64_EXTRA = tools\\getopt.o
@@ -45,6 +48,9 @@ MDP = mkdir -p
 XIF = if [ -x
 XTHEN = ]; then
 XFI = ; fi
+CATIN = cat
+CATADD = 
+CATOUT = >
 
 cc1541_EXTRA =
 bmp2c64_EXTRA =
@@ -53,7 +59,7 @@ endif
 
 HTOOLS		= tools$(PSEP)bmp2c64$(EXE) tools$(PSEP)cc1541$(EXE)
 
-BINARIES = demo_kickstart demo_amigados demo_music
+BINARIES = demo_boot demo_kickstart demo_loader demo_amigados demo_music
 DISKNAME = 'C=64 WORKBENCH'
 DISKID = 'AMIGA'
 
@@ -61,12 +67,13 @@ all:	demo
 
 demo:	$(OBJECTS) $(LINKCFG)
 	$(LD) -odemo $(LDFLAGS) $(OBJECTS)
+	$(CATIN) demo_boot $(CATADD)demo_kickstart $(CATOUT)demo_loader
 
 disk:	all tools$(PSEP)cc1541$(EXE)
 	$(MDP) disks
 	tools$(PSEP)cc1541 -x \
 		-n$(DISKNAME) -i$(DISKID) \
-		-f'----------------' -wdemo_kickstart \
+		-f'----------------' -wdemo_loader \
 		-f'                ' -u -s15 -wdemo_amigados \
 		-f'  DEMO: MUSIC   ' -d \
 		-f'                ' -d \

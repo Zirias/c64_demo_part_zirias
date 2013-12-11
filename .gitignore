@@ -1,4 +1,6 @@
+demo_boot
 demo_kickstart
+demo_loader
 demo_amigados
 demo_music
 *.lbl

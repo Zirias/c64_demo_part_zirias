@@ -14,11 +14,10 @@
 ;(drive code init, main drive code, c64->drive communication by Marko Mäkelä)
 ;(drive->c64 communication routine by K.M/TABOO)
 
-.import __KSBSS_LOAD__
+.import __DRVCODE_LOAD__
 .import __DRVCODE_RUN__
 .import __DRVCODE_SIZE__
-DRVCODE_REALLOAD = __KSBSS_LOAD__
-DRVCODE_END = DRVCODE_REALLOAD + __DRVCODE_SIZE__
+DRVCODE_END = __DRVCODE_LOAD__ + __DRVCODE_SIZE__
 
 .export fl_filename
 .export fl_loadaddr
@@ -48,9 +47,9 @@ loadbuffer:     .res 254
 .segment "KICKSTART"
 
 initfastload:
-                lda     #<DRVCODE_REALLOAD
+                lda     #<__DRVCODE_LOAD__
                 sta     il_chunkstart
-                lda     #>DRVCODE_REALLOAD
+                lda     #>__DRVCODE_LOAD__
                 sta     il_chunkstart+1
                 lda     #<__DRVCODE_RUN__
                 sta     mwcmd+2
@@ -64,7 +63,7 @@ il_sendmw:      lda     mwcmd,x
                 bpl     il_sendmw
                 ldx     #0
 il_chunkstart   = *+1
-il_mwbyte:      lda     DRVCODE_REALLOAD,x
+il_mwbyte:      lda     __DRVCODE_LOAD__,x
                 jsr     CIOUT
                 inx
                 cpx     #drvcode_chunk
