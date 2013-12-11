@@ -89,10 +89,17 @@ loader:
                 sta     $327
                 lda     #$ca
                 sta     $326
+
+                ; if autostarted, forget the return address
                 pla
                 pla
-                lda     #$20            ; JSR opcode
-                sta     amigadosjmp
+
+                ; and instead use the "READY." routine
+                lda     #>(READY-1)
+                pha
+                lda     #<(READY-1)
+                pha
+
                 ldx     #basichdrlen - 1 ; copy BASIC header to 0801
 hdrcopyloop:    lda     basichdr,x
                 sta     $801,x
@@ -119,18 +126,8 @@ ksmsgloop:      lda     ks_msg,x
                 lda     #>__AMIGADOS_LOAD__
                 sta     fl_loadaddr+1
                 jsr     fastload
-                sei
-                lda     #$4c
-                sta     loader
-                lda     fl_run+1
-                sta     loader+1
-                lda     fl_run+2
-                sta     loader+2
-                cli
-amigadosjmp:    jmp     fl_run
-                lda     #$4c            ; JMP opcode
-                sta     amigadosjmp
-                jmp     READY
+amigadosjmp:    jsr     fl_run
+                rts
 
 .segment "KSDATA"
 
