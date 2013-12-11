@@ -6,7 +6,6 @@
 
 .include "fastload.inc"
 
-.import amigados
 .import __AMIGADOS_LOAD__
 
 CHROUT          = $ffd2
@@ -123,12 +122,12 @@ ksmsgloop:      lda     ks_msg,x
                 sei
                 lda     #$4c
                 sta     loader
-                lda     #<amigados
+                lda     fl_run+1
                 sta     loader+1
-                lda     #>amigados
+                lda     fl_run+2
                 sta     loader+2
                 cli
-amigadosjmp:    jmp     amigados
+amigadosjmp:    jmp     fl_run
                 lda     #$4c            ; JMP opcode
                 sta     amigadosjmp
                 jmp     READY

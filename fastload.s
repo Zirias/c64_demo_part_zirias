@@ -23,6 +23,7 @@ DRVCODE_END = __DRVCODE_LOAD__ + __DRVCODE_SIZE__
 .export fl_loadaddr
 .export initfastload
 .export fastload
+.export fl_run
 
 STATUS          = $90
 MESSAGES        = $9d
@@ -45,6 +46,9 @@ fl_filename:    .res 2
 loadbuffer:     .res 254
 
 .segment "KICKSTART"
+
+fl_entrypoint = *+1
+fl_run:         jmp     $0000
 
 initfastload:
                 lda     #<__DRVCODE_LOAD__
@@ -127,9 +131,14 @@ fl_sendack:     bit     $dd00
                 bpl     fl_sendouter
 fl_delay:       dex
                 bne     fl_delay
-
                 lda     #0
                 sta     temp2
+
+                jsr     fl_getbyte
+                sta     fl_entrypoint
+                jsr     fl_getbyte
+                sta     fl_entrypoint+1
+
 fl_loop:        jsr     fl_getbyte
 fl_loadaddr     = *+1
                 sta     $c000

@@ -9,10 +9,11 @@ DISKFILE	= ziri-demo
 HCC		= gcc
 HCFLAGS		= -O2 -g0
 
-OBJECTS		= kickstart.o fastload.o main.o gfx-core.o gfx-line.o \
-		  	soundtable.o snd_play.o ziri_ambi.o rasterfx.o \
+OBJECTS		= kickstart.o fastload.o amigados.o gfx-core.o gfx-line.o \
+		  	soundtable.o snd_play.o ziri_ambi.o raster_main.o \
 			text80.o font.o sprites.o spritezone.o \
-			marquee_sprites.o topborder_sprites.o
+			marquee_sprites.o topborder_sprites.o \
+			music.o
 LINKCFG = demo.cfg
 LDFLAGS	= -Ln demo.lbl -m demo.map -C $(LINKCFG)
 
