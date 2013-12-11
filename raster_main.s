@@ -22,7 +22,7 @@ SAVE_X          = $23
 SAVE_Y          = $24
 TBL_OFFSET      = $25
 
-.segment "ADBSS"
+.segment "KSBSS"
 bg_save:        .res    1
 key_pressed:    .res    1
 raster_table:   .res    255
@@ -32,7 +32,7 @@ tbl_base = raster_table - 1
 flash_offset:   .res    1
 flash_counter:  .res    1
 
-.segment "AMIGADOS"
+.segment "KICKSTART"
 
 ; common entry code for every IRQ
 ; avoid any branching before payload
@@ -47,72 +47,6 @@ raster_top:
                 lda     tbl_base,x
                 sta     raster_payload+1
 raster_payload = *+1
-                jmp     raster_bottom
-
-; payload for switching to 24 rows text mode
-; needs stabilization in music part
-raster_24row:
-                stx     TBL_OFFSET
-                inc     VIC_RASTER
-                lda     #$ff
-                sta     VIC_IRR
-                lda     #<raster_24rbt
-                sta     $fffe
-                lda     #>raster_24rbt
-                sta     $ffff
-                sty     SAVE_Y
-                tsx
-                cli
-                nop
-                nop
-                nop
-                nop
-                nop
-                nop
-                nop
-                nop
-                nop
-raster_24rbt:   txs
-                lda     #<raster_top
-                sta     $fffe
-                lda     #>raster_top
-                sta     $ffff
-                ldy     #1
-                dey
-                bne     *-1
-                nop
-                ldx     TBL_OFFSET
-                lda     VIC_CTL1
-                and     #%11110111
-                sta     VIC_CTL1
-                and     #%11011111
-                sta     VIC_CTL1
-                ldy     SAVE_Y
-                jmp     raster_bottom
-
-; payload for switching to 25 rows hires mode
-raster_25row:
-                lda     VIC_CTL1
-                ora     #%00101000
-                sta     VIC_CTL1
-                jmp     raster_bottom
-
-; payload for switching to sprite zone 0
-raster_zone0:
-                sty     SAVE_Y
-                stx     TBL_OFFSET
-                jsr     sprite_zone0
-                ldx     TBL_OFFSET
-                ldy     SAVE_Y
-                jmp     raster_bottom
-
-; payload for switching to sprite zone 1
-raster_zone1:
-                sty     SAVE_Y
-                stx     TBL_OFFSET
-                jsr     sprite_zone1
-                ldx     TBL_OFFSET
-                ldy     SAVE_Y
                 jmp     raster_bottom
 
 ; payload for checking the keyboard
@@ -130,106 +64,6 @@ raster_keycheck:
                 beq     key_done
                 sta     key_pressed
 key_done:       jmp     raster_bottom
-
-; payload for drawing window resizer
-raster_resizer:
-                lda     #$ff
-                sta     vic_bitmap + $1f38
-                sta     vic_bitmap + $1f3f
-                lda     #$ed
-                sta     vic_bitmap + $1f3c
-                sta     vic_bitmap + $1f3d
-                lda     #$8f
-                sta     vic_bitmap + $1f39
-                lda     #$af
-                sta     vic_bitmap + $1f3a
-                lda     #$81
-                sta     vic_bitmap + $1f3b
-                lda     #$e1
-                sta     vic_bitmap + $1f3e
-                jmp     raster_bottom
-
-; payload for start of the Amiga screen bar
-raster_screen:
-                lda     #1
-                nop
-                nop
-                nop
-                nop
-                nop
-                sta     BG_COLOR_0
-                jmp     raster_bottom
-
-; payload for window border, this has to be stabilized
-raster_border:
-                stx     TBL_OFFSET
-                inc     VIC_RASTER
-                lda     #$ff
-                sta     VIC_IRR
-                lda     #<raster_wintop
-                sta     $fffe
-                lda     #>raster_wintop
-                sta     $ffff
-                sty     SAVE_Y
-                tsx
-                cli
-                nop
-                nop
-                nop
-                nop
-                nop
-                nop
-
-; stabilized top of the window border
-raster_wintop:
-                txs
-                lda     #<raster_top
-                sta     $fffe
-                lda     #>raster_top
-                sta     $ffff
-                ldx     TBL_OFFSET
-                ldy     #$3
-                dey
-                bne     *-1
-                lda     #6
-                sta     BG_COLOR_0
-                ldy     #$8
-                dey
-                bne     *-1
-                lda     #1
-                sta     BG_COLOR_0
-                ldy     #$f
-                dey
-                bne     *-1
-                lda     #6
-                sta     BG_COLOR_0
-                ldy     #$10
-                dey
-                bne     *-1
-                nop
-                lda     #1
-                sta     BG_COLOR_0
-                ldy     #$10
-                dey
-                bne     *-1
-                nop
-                nop
-                lda     #6
-                sta     BG_COLOR_0
-                ldy     #$f
-                dey
-                bne     *-1
-                nop
-                lda     #1
-                nop
-                nop
-                sta     BG_COLOR_0
-                ldy     #$10
-                dey
-                bne     *-1
-                lda     #6
-                sta     BG_COLOR_0
-                ldy     SAVE_Y
 
 ; common exit code for every IRQ
 raster_bottom:
@@ -415,43 +249,21 @@ raster_off:
                 sta     BG_COLOR_0
                 rts
 
-.segment "ADDATA"
+.segment "KSDATA"
 
-; raster tables
+; default raster table
 ; entry format:
 ;       .byte   [rasterline]
 ;       .byte   [ctl-eor]               // use $80 to flip bit 9 of rasterline
 ;       .word   [payload]               // payload address
 ;       [.byte  [arg1], [arg2], ...]    // arguments for payload
 
-; phase 0
-
-raster_0_tbl:
-                .byte 27, $80
-                .word raster_screen
-
-                .byte 35, $00
-                .word raster_border
-
-                .byte 50, $00
-                .word raster_25row
-
-                .byte 52, $00
-                .word raster_zone1
-
+raster_def_tbl:
                 .byte 80, $00
                 .word raster_keycheck
 
-                .byte 243, $00
-                .word raster_resizer
+raster_def_tbl_len = *-raster_def_tbl
 
-                .byte 249, $00
-                .word raster_24row
-
-                .byte 27, $80
-                .word raster_zone0
-
-raster_0_tbl_size = *-raster_0_tbl
 
 .segment "MUDATA"
 

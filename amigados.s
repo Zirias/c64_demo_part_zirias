@@ -4,15 +4,12 @@
 
 GETKB           = $F142
 
-tbllen          = 195
-
 .export clear_window
 
 .include        "fastload.inc"
 .include        "gfx.inc"
 .include        "vic.inc"
 .include        "vicconfig.inc"
-.include        "snd.inc"
 .include        "text80.inc"
 .include        "sprites.inc"
 .include        "petscii_lc.inc"
@@ -225,9 +222,7 @@ amigados:
                 sta     T80_STRING_H
                 jsr     t80_print_cursor
 
-loadname        = *+1
                 lda     #'m'
-                beq     noload
                 sta     fl_filename
                 lda     #'u'
                 sta     fl_filename+1
@@ -235,11 +230,9 @@ loadname        = *+1
                 sta     fl_loadaddr
                 lda     #>__ADEXE_LOAD__
                 sta     fl_loadaddr+1
-                lda     #0
-                sta     loadname
                 jsr     fastload
 
-noload:         lda     #<message13
+                lda     #<message13
                 sta     T80_STRING_L
                 lda     #>message13
                 sta     T80_STRING_H
@@ -265,7 +258,6 @@ waitkey:        lda     key_pressed
 
                 jsr     raster_off
                 jsr     gfx_done
-                jsr     snd_stop
                 lda     #0
                 sta     SPRITE_SHOW
                 lda     border
@@ -273,6 +265,170 @@ waitkey:        lda     key_pressed
 eat_keys:       jsr     GETKB
                 bne     eat_keys
                 rts
+
+; raster payload for switching to 24 rows text mode
+; needs stabilization in music part
+raster_24row:
+                stx     RASTER_TBL_OFFSET
+                inc     VIC_RASTER
+                lda     #$ff
+                sta     VIC_IRR
+                lda     #<raster_24rbt
+                sta     $fffe
+                lda     #>raster_24rbt
+                sta     $ffff
+                sty     RASTER_SAVE_Y
+                tsx
+                cli
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
+raster_24rbt:   txs
+                lda     #<raster_top
+                sta     $fffe
+                lda     #>raster_top
+                sta     $ffff
+                ldy     #1
+                dey
+                bne     *-1
+                nop
+                ldx     RASTER_TBL_OFFSET
+                lda     VIC_CTL1
+                and     #%11110111
+                sta     VIC_CTL1
+                and     #%11011111
+                sta     VIC_CTL1
+                ldy     RASTER_SAVE_Y
+                jmp     raster_bottom
+
+; raster payload for switching to 25 rows hires mode
+raster_25row:
+                lda     VIC_CTL1
+                ora     #%00101000
+                sta     VIC_CTL1
+                jmp     raster_bottom
+
+; raster payload for switching to sprite zone 0
+raster_zone0:
+                sty     RASTER_SAVE_Y
+                stx     RASTER_TBL_OFFSET
+                jsr     sprite_zone0
+                ldx     RASTER_TBL_OFFSET
+                ldy     RASTER_SAVE_Y
+                jmp     raster_bottom
+
+; raster payload for switching to sprite zone 1
+raster_zone1:
+                sty     RASTER_SAVE_Y
+                stx     RASTER_TBL_OFFSET
+                jsr     sprite_zone1
+                ldx     RASTER_TBL_OFFSET
+                ldy     RASTER_SAVE_Y
+                jmp     raster_bottom
+
+; payload for drawing window resizer
+raster_resizer:
+                lda     #$ff
+                sta     vic_bitmap + $1f38
+                sta     vic_bitmap + $1f3f
+                lda     #$ed
+                sta     vic_bitmap + $1f3c
+                sta     vic_bitmap + $1f3d
+                lda     #$8f
+                sta     vic_bitmap + $1f39
+                lda     #$af
+                sta     vic_bitmap + $1f3a
+                lda     #$81
+                sta     vic_bitmap + $1f3b
+                lda     #$e1
+                sta     vic_bitmap + $1f3e
+                jmp     raster_bottom
+
+; payload for start of the Amiga screen bar
+raster_screen:
+                lda     #1
+                nop
+                nop
+                nop
+                nop
+                nop
+                sta     BG_COLOR_0
+                jmp     raster_bottom
+
+; payload for window border, this has to be stabilized
+raster_border:
+                stx     RASTER_TBL_OFFSET
+                inc     VIC_RASTER
+                lda     #$ff
+                sta     VIC_IRR
+                lda     #<raster_brbt
+                sta     $fffe
+                lda     #>raster_brbt
+                sta     $ffff
+                sty     RASTER_SAVE_Y
+                tsx
+                cli
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
+raster_brbt:    txs
+                lda     #<raster_top
+                sta     $fffe
+                lda     #>raster_top
+                sta     $ffff
+                ldx     RASTER_TBL_OFFSET
+                ldy     #$3
+                dey
+                bne     *-1
+                lda     #6
+                sta     BG_COLOR_0
+                ldy     #$8
+                dey
+                bne     *-1
+                lda     #1
+                sta     BG_COLOR_0
+                ldy     #$f
+                dey
+                bne     *-1
+                lda     #6
+                sta     BG_COLOR_0
+                ldy     #$10
+                dey
+                bne     *-1
+                nop
+                lda     #1
+                sta     BG_COLOR_0
+                ldy     #$10
+                dey
+                bne     *-1
+                nop
+                nop
+                lda     #6
+                sta     BG_COLOR_0
+                ldy     #$f
+                dey
+                bne     *-1
+                nop
+                lda     #1
+                nop
+                nop
+                sta     BG_COLOR_0
+                ldy     #$10
+                dey
+                bne     *-1
+                lda     #6
+                sta     BG_COLOR_0
+                ldy     RASTER_SAVE_Y
+                jmp     raster_bottom
 
 .segment "ADDATA"
 message1:       .asciiz "Copyright &2013 Zirias"
@@ -296,5 +452,33 @@ message13:      .asciiz "done."
 
 
 message14:      .asciiz "  -- Press any key to start --"
+
+raster_tbl:
+                .byte 27, $80
+                .word raster_screen
+
+                .byte 35, $00
+                .word raster_border
+
+                .byte 50, $00
+                .word raster_25row
+
+                .byte 52, $00
+                .word raster_zone1
+
+                .byte 80, $00
+                .word raster_keycheck
+
+                .byte 243, $00
+                .word raster_resizer
+
+                .byte 249, $00
+                .word raster_24row
+
+                .byte 27, $80
+                .word raster_zone0
+
+raster_tbl_size = *-raster_tbl
+
 
 ; vim: et:si:ts=8:sts=8:sw=8

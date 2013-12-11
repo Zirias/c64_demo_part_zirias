@@ -2,8 +2,6 @@
 ; demo inspired by AmigaBASIC demo
 ;
 
-GETKB           = $F142
-
 tbllen          = 195
 
 .include        "gfx.inc"
@@ -236,6 +234,7 @@ cont1b:         sty     to1
                 lda     key_pressed
                 bne     out
                 jmp     loop
+                jsr     snd_stop
 out:            rts
 
 .segment "MUDATA"
