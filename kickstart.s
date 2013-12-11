@@ -85,12 +85,14 @@ loader:
                 .assert *=$086f, error  ; check linker placed us correctly
                 lda     #$f1
                 cmp     $327
-                beq     normalstart     ; didn't autostart
+                beq     kickstart       ; no autostart
+
+                ; repair CHROUT vector
                 sta     $327
                 lda     #$ca
                 sta     $326
 
-                ; if autostarted, forget the return address
+                ; forget the (bogus) return address
                 pla
                 pla
 
@@ -100,24 +102,31 @@ loader:
                 lda     #<(READY-1)
                 pha
 
-                ldx     #basichdrlen - 1 ; copy BASIC header to 0801
+                ; copy BASIC header to correct location ($801)
+                ldx     #basichdrlen - 1
 hdrcopyloop:    lda     basichdr,x
                 sta     $801,x
                 dex
                 bpl     hdrcopyloop
                 ldx     #0
+
+                ; print "done."
 doneloop:       lda     ks_done,x
                 jsr     CHROUT
                 inx
                 cpx     #ks_donelen
                 bne     doneloop
-normalstart:    ldx     #0
+
+kickstart:
+                ldx     #0
 ksmsgloop:      lda     ks_msg,x
                 jsr     CHROUT
                 inx
                 cpx     #ks_msglen
                 bne     ksmsgloop
                 jsr     initfastload
+
+                ; load amigados
                 lda     #' '
                 sta     fl_filename
                 sta     fl_filename+1
@@ -126,6 +135,8 @@ ksmsgloop:      lda     ks_msg,x
                 lda     #>__AMIGADOS_LOAD__
                 sta     fl_loadaddr+1
                 jsr     fastload
+
+                ; and run it
 amigadosjmp:    jsr     fl_run
                 rts
 
