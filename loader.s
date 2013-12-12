@@ -110,6 +110,9 @@ ldmsgloop:      lda     ld_loading,x
                 cpx     #ld_loadinglen
                 bne     ldmsgloop
 
+                ; started from BASIC -> program line will grow by one
+                inc     $7a
+
 load:           jsr     chainload
 
                 ; print "done."
@@ -133,7 +136,7 @@ hdrcopyloop:    lda     ks_basichdr,x
 
 .segment "LDDATA"
 
-ld_loading:     .byte   "loading kickstart..."
+ld_loading:     .byte   13, "loading kickstart..."
 ld_loadinglen   = *-ld_loading
 
 ld_done:        .byte   " done.", 13

@@ -94,8 +94,8 @@ raster_install:
                 sty     RASTER_TBL_OFFSET
                 ldx     #0
 r_installload   = *+1
-r_installloop:  lda     $ffff,y
-                sta     raster_tbl_base,x
+r_installloop:  lda     $ffff,x
+                sta     raster_tbl_base,y
                 inx
                 dey
                 bne     r_installloop
