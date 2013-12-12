@@ -140,8 +140,6 @@ raster_off:
                 lda     #0
                 sta     VIC_IRM
                 sta     VIC_IRR
-                lda     #%00111011
-                sta     VIC_CTL1
                 lda     #$37
                 sta     $01
                 lda     #%10000011

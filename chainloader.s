@@ -103,6 +103,10 @@ fl_delay:       dex
                 bne     fl_delay
                 lda     #0
                 sta     temp2
+                lda     #<__KSENTRY_LOAD__
+                sta     fl_loadaddr
+                lda     #>__KSENTRY_LOAD__
+                sta     fl_loadaddr+1
 fl_loop:        jsr     fl_getbyte
 fl_loadaddr     = *+1
                 sta     __KSENTRY_LOAD__

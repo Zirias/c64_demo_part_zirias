@@ -18,6 +18,7 @@ GETKB           = $f142
 border_save:    .res 1
 bg_save:        .res 1
 memctl_save:    .res 1
+vicctl1_save:   .res 1
 
 .segment "KSENTRY"
 kickstart:
@@ -30,11 +31,13 @@ ksmsgloop:      lda     ks_msg,x
 
                 jsr     initfastload
 
-                ; save vic colors
+                ; save vic config
                 lda     BORDER_COLOR
                 sta     border_save
                 lda     BG_COLOR_0
                 sta     bg_save
+                lda     VIC_CTL1
+                sta     vicctl1_save
 
                 ; check if amigados is in place
                 lda     dosloaded
@@ -70,7 +73,9 @@ amigadosentry:  jsr     $ffff
 eat_keys:       jsr     GETKB
                 bne     eat_keys
                 
-                ; restore vic colors
+                ; restore vic config
+                lda     vicctl1_save
+                sta     VIC_CTL1
                 lda     border_save
                 sta     BORDER_COLOR
                 lda     bg_save

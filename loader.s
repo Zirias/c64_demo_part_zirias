@@ -16,12 +16,11 @@ READY           = $a474
                 .assert *=$02bc, error  ; check linker placed us correctly
 
 ; BASIC header -- must be here if loaded with ",8" only
-basichdr:       .word   $080a           ; next basic line, in "KICKSTART"
+                .word   $080a           ; next basic line, in "LOADER"
                 .word   $17             ; 23
                 .byte   $9E             ; SYS
                 .byte   "2159", 0
-                .word   0               ; placed at $080a in "KICKSTART"
-basichdrlen     = *-basichdr
+                .word   0               ; placed at $080a in "LOADER"
 
 ; show what is loading:
 ks_loadmsg:     .byte   " kickstart..."
@@ -101,12 +100,6 @@ loader:
                 lda     #<(READY-1)
                 pha
 
-                ; copy BASIC header to correct location ($801)
-                ldx     #basichdrlen - 1
-hdrcopyloop:    lda     basichdr,x
-                sta     $801,x
-                dex
-                bpl     hdrcopyloop
                 jmp     load
 
                 ; print loading message
@@ -120,11 +113,19 @@ ldmsgloop:      lda     ld_loading,x
 load:           jsr     chainload
 
                 ; print "done."
+                ldx     #0
 doneloop:       lda     ld_done,x
                 jsr     CHROUT
                 inx
                 cpx     #ld_donelen
                 bne     doneloop
+
+                ; copy BASIC header to correct location ($801)
+                ldx     #ks_basichdrlen - 1
+hdrcopyloop:    lda     ks_basichdr,x
+                sta     $801,x
+                dex
+                bpl     hdrcopyloop
 
                 ; execute kickstart
                 jsr     __KSENTRY_LOAD__
@@ -132,10 +133,17 @@ doneloop:       lda     ld_done,x
 
 .segment "LDDATA"
 
-ld_loading:     .byte   "loading kickstart... "
+ld_loading:     .byte   "loading kickstart..."
 ld_loadinglen   = *-ld_loading
 
 ld_done:        .byte   " done.", 13
 ld_donelen      = *-ld_done
+
+ks_basichdr:    .word   $080b           ; next basic line
+                .word   $17             ; 23
+                .byte   $9E             ; SYS
+                .byte   "49152", 0
+                .word   0               ; placed at $080b after copied
+ks_basichdrlen  = *-ks_basichdr
 
 ; vim: et:si:ts=8:sts=8:sw=8
