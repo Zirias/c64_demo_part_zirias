@@ -9,7 +9,9 @@ tbllen          = 195
 .include        "vicconfig.inc"
 .include        "snd.inc"
 .include        "sprites.inc"
+.include        "spritezone.inc"
 .include        "amigados.inc"
+.include        "raster.inc"
 
 .import ziri_ambi
 
@@ -28,11 +30,84 @@ from2:          .res    1
 to2tbl:         .res    1
 to2:            .res    1
 countdown:      .res    1
+flash_offset:   .res    1
+flash_counter:  .res    1
 
 .segment "MUMAIN"
                 .word   music
 
 .segment "MUSIC"
+
+; payload for changing background and border color
+raster_col:
+                nop
+                nop
+                nop
+                dex
+                lda     raster_tbl_base,x
+                sta     BG_COLOR_0
+                nop
+                sta     BORDER_COLOR
+                jmp     raster_bottom
+
+; payload for playing music
+raster_sound:
+                sty     RASTER_SAVE_Y
+                stx     RASTER_TBL_OFFSET
+                jsr     snd_play
+                ldx     RASTER_TBL_OFFSET
+                ldy     RASTER_SAVE_Y
+                jmp     raster_bottom
+
+; payload for animating the marquee
+raster_marquee:
+                sty     RASTER_SAVE_Y
+                stx     RASTER_TBL_OFFSET
+                ldx     flash_counter
+                dex
+                stx     flash_counter
+                bpl     spmove
+                ldx     #1
+                stx     flash_counter
+                ldx     flash_offset
+                lda     #12
+                sta     sprite_1_0_col-$f8,x
+                inx
+                bne     spfok
+                ldx     #$f8
+spfok:          lda     #1
+                sta     sprite_1_0_col-$f8,x
+                stx     flash_offset
+                ; now move sprites
+spmove:         lda     sprite_1_x_h
+                ldx     #14
+spm_while:      asl
+                tay
+                bcc     spm_l
+                lda     sprite_1_0_x,x
+                bne     spm_hd
+                lda     #$ff
+                sta     sprite_1_0_x,x
+                bmi     spm_next
+spm_hd:         dec     sprite_1_0_x,x
+                iny
+                bne     spm_next
+spm_l:          lda     sprite_1_0_x,x
+                bne     spm_ld
+                lda     #$90
+                sta     sprite_1_0_x,x
+                iny
+                bne     spm_next
+spm_ld:         dec     sprite_1_0_x,x
+spm_next:       tya
+                dex
+                dex
+                bpl     spm_while
+                sta     sprite_1_x_h
+                ldy     RASTER_SAVE_Y
+                ldx     RASTER_TBL_OFFSET
+                jmp     raster_bottom
+
 music:
                 ; initialize:
                 ldx     #0
@@ -95,7 +170,10 @@ music:
                 jsr     sprites_topborder1
 
                 ; more raster effects
-                jsr     raster_phase1
+                lda     #>raster_tbl
+                ldx     #<raster_tbl
+                ldy     #raster_tbl_len
+                jsr     raster_install
 
                 ; set drawing mode to invert
                 lda     #MODE_INV
@@ -273,6 +351,55 @@ cotable_b:      .byte   $07,$00,$02,$0F,$00,$02,$17,$00,$02,$1F,$00,$02
                 .byte   $C5,$00,$FE,$C5,$01,$05,$C5,$01,$0D,$C5,$01,$15
                 .byte   $C5,$01,$1D,$C5,$01,$25,$C5,$01,$2D,$C5,$01,$35
                 .byte   $C5,$01,$3D
+
+raster_tbl:
+                .byte 27, $80
+                .word raster_screen
+
+                .byte 35, $00
+                .word raster_border
+
+                .byte 50, $00
+                .word raster_25row
+
+                .byte 52, $00
+                .word raster_zone1
+
+                .byte 80, $00
+                .word raster_keycheck
+
+                .byte 100, $00
+                .word raster_marquee
+
+                .byte 120, $00
+                .word raster_sound
+
+                .byte 243, $00
+                .word raster_resizer
+
+                .byte 249, $00
+                .word raster_24row
+
+                .byte 252, $00
+                .word raster_col
+                .byte 10
+
+                .byte 254, $00
+                .word raster_col
+                .byte 14
+
+                .byte 23, $80
+                .word raster_col
+                .byte 10
+
+                .byte 25, $00
+                .word raster_col
+                .byte 6
+
+                .byte 27, $00
+                .word raster_zone0
+
+raster_tbl_len  = *-raster_tbl
 
 song:           .byte   7,%00010000,8,%00100000,9,%00100000
                 .byte   10,%00110011,%11000100,11,%00110011,%01000100

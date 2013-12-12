@@ -4,11 +4,20 @@
 ; load the rest of the demo
 ;
 
+.include "vic.inc"
+.include "vicconfig.inc"
 .include "fastload.inc"
+.include "raster.inc"
 
 .import __AMIGADOS_LOAD__
 
 CHROUT          = $ffd2
+GETKB           = $f142
+
+.segment "KSBSS"
+border_save:    .res 1
+bg_save:        .res 1
+memctl_save:    .res 1
 
 .segment "KSENTRY"
 kickstart:
@@ -18,7 +27,18 @@ ksmsgloop:      lda     ks_msg,x
                 inx
                 cpx     #ks_msglen
                 bne     ksmsgloop
+
                 jsr     initfastload
+
+                ; save vic colors
+                lda     BORDER_COLOR
+                sta     border_save
+                lda     BG_COLOR_0
+                sta     bg_save
+
+                ; check if amigados is in place
+                lda     dosloaded
+                bne     noload
 
                 ; load amigados
                 lda     #'-'
@@ -29,12 +49,58 @@ ksmsgloop:      lda     ks_msg,x
                 lda     #>__AMIGADOS_LOAD__
                 sta     fl_loadaddr+1
                 jsr     fastload
+                inc     dosloaded
+                lda     fl_run+1
+                sta     amigadosentry+1
+                lda     fl_run+2
+                sta     amigadosentry+2
 
-                ; and run it
-amigadosjmp:    jsr     fl_run
+noload:         ; configure VIC and enable raster IRQ handling
+                jsr     vic_init
+                jsr     raster_on
+
+                ; run amigados
+amigadosentry:  jsr     $ffff
+
+                ; disable raster IRQ handling, reset VIC to normal
+                jsr     raster_off
+                jsr     vic_done
+
+                ; clear leftover keys from buffer
+eat_keys:       jsr     GETKB
+                bne     eat_keys
+                
+                ; restore vic colors
+                lda     border_save
+                sta     BORDER_COLOR
+                lda     bg_save
+                sta     BG_COLOR_0
+
+                rts
+
+.segment "KICKSTART"
+
+vic_init:
+                lda     CIA2_DATA_A
+                and     #vic_bankselect_and
+                sta     CIA2_DATA_A
+                lda     VIC_MEMCTL
+                sta     memctl_save
+                lda     #vic_memctl_text
+                sta     VIC_MEMCTL
+                rts
+
+vic_done:
+                lda     CIA2_DATA_A
+                ora     #%00000011
+                sta     CIA2_DATA_A
+                lda     memctl_save
+                sta     VIC_MEMCTL
                 rts
 
 .segment "KSDATA"
+
+dosloaded:      .byte   0
 
 ks_msg:         .byte   13, 13, "c=64 kickstart by zirias 12/2013", 13, 13
                 .byte   "booting amigados", 13

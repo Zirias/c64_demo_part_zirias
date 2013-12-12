@@ -5,8 +5,8 @@
 .include "vic.inc"
 .include "vicconfig.inc"
 
-.export gfx_init
-.export gfx_done
+.export gfx_on
+.export gfx_off
 .export gfx_setcolor
 .export gfx_clear
 .export gfx_plot
@@ -23,31 +23,22 @@ PLOT_MODE       = $f9
 
 .segment "ADBSS"
 
-memctl_save:    .res 1
 
 .segment "AMIGADOS"
 
-gfx_init:
-                lda     CIA2_DATA_A
-                and     #vic_bankselect_and
-                sta     CIA2_DATA_A
+gfx_on:
                 lda     VIC_CTL1
                 ora     #%00100000
                 sta     VIC_CTL1
-                lda     VIC_MEMCTL
-                sta     memctl_save
                 lda     #vic_memctl_hires
                 sta     VIC_MEMCTL
                 rts
 
-gfx_done:
-                lda     CIA2_DATA_A
-                ora     #%00000011
-                sta     CIA2_DATA_A
+gfx_off:
                 lda     VIC_CTL1
                 and     #%11011111
                 sta     VIC_CTL1
-                lda     memctl_save
+                lda     #vic_memctl_text
                 sta     VIC_MEMCTL
                 rts
 

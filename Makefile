@@ -11,7 +11,7 @@ HCFLAGS		= -O2 -g0
 
 OBJECTS		= loader.o chainloader.o \
 		kickstart.o fastload.o amigados.o gfx-core.o gfx-line.o \
-		  	soundtable.o snd_play.o ziri_ambi.o raster_main.o \
+		  	soundtable.o snd_play.o ziri_ambi.o raster.o \
 			text80.o font.o sprites.o spritezone.o \
 			marquee_sprites.o topborder_sprites.o \
 			music.o

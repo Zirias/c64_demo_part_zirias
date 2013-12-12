@@ -1,10 +1,20 @@
 ;
-; demo inspired by AmigaBASIC demo
+; AmigaDOS main file
+;
+; - draw window border
+; - control console
+; - load and execute programs
 ;
 
-GETKB           = $F142
-
 .export clear_window
+
+.export raster_24row
+.export raster_25row
+.export raster_zone0
+.export raster_zone1
+.export raster_resizer
+.export raster_screen
+.export raster_border
 
 .include        "fastload.inc"
 .include        "gfx.inc"
@@ -12,24 +22,18 @@ GETKB           = $F142
 .include        "vicconfig.inc"
 .include        "text80.inc"
 .include        "sprites.inc"
+.include        "spritezone.inc"
 .include        "petscii_lc.inc"
+.include        "raster.inc"
 
 .import ziri_ambi
 
 .import font_topaz_80col_petscii_western
 
-.import raster_on
-.import raster_off
-.import raster_phase1
-.import key_pressed
-
 .import __ADEXE_LOAD__
 
 .segment "ADEXE"
 .res 1                  ; dummy byte to define segment
-
-.segment "ADBSS"
-border:         .res    1
 
 .segment "ADMAIN"
                 .word   amigados
@@ -101,13 +105,17 @@ bb_nodec:       sta     $9e
                 bne     bb_loop
                 rts
 
+ad_raster:
+                lda     #>raster_tbl
+                ldx     #<raster_tbl
+                ldy     #raster_tbl_len
+                jmp     raster_install
+
 amigados:
                 ; border color, graphics mode, clear screen
-                lda     BORDER_COLOR
-                sta     border
                 lda     #6
                 sta     BORDER_COLOR
-                jsr     gfx_init
+                jsr     gfx_on
                 lda     #1
                 ldx     #6
                 jsr     gfx_setcolor
@@ -117,7 +125,7 @@ amigados:
                 jsr     sprites_cursor
 
                 ; raster effects:
-                jsr     raster_on
+                jsr     ad_raster
 
                 ; start messages
                 jsr     clear_window
@@ -256,14 +264,9 @@ waitkey:        lda     key_pressed
                 beq     waitkey
                 jsr     fl_run
 
-                jsr     raster_off
-                jsr     gfx_done
+                jsr     gfx_off
                 lda     #0
                 sta     SPRITE_SHOW
-                lda     border
-                sta     BORDER_COLOR
-eat_keys:       jsr     GETKB
-                bne     eat_keys
                 rts
 
 ; raster payload for switching to 24 rows text mode
@@ -478,7 +481,7 @@ raster_tbl:
                 .byte 27, $80
                 .word raster_zone0
 
-raster_tbl_size = *-raster_tbl
+raster_tbl_len  = *-raster_tbl
 
 
 ; vim: et:si:ts=8:sts=8:sw=8

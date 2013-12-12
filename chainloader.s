@@ -99,6 +99,10 @@ il_sendme:      lda     mecmd,x
                 bpl     il_sendme
                 jsr     UNLSN
 
+fl_delay:       dex
+                bne     fl_delay
+                lda     #0
+                sta     temp2
 fl_loop:        jsr     fl_getbyte
 fl_loadaddr     = *+1
                 sta     __KSENTRY_LOAD__
