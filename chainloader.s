@@ -14,16 +14,13 @@
 ;(drive code init, main drive code, c64->drive communication by Marko Mäkelä)
 ;(drive->c64 communication routine by K.M/TABOO)
 
-.import __DRVCODE2_LOAD__
-.import __DRVCODE2_RUN__
-.import __DRVCODE2_SIZE__
-DRVCODE2_END = __DRVCODE2_LOAD__ + __DRVCODE2_SIZE__
+.import __DRVCODE1_LOAD__
+.import __DRVCODE1_RUN__
+.import __DRVCODE1_SIZE__
+DRVCODE1_END = __DRVCODE1_LOAD__ + __DRVCODE1_SIZE__
+.import __KSENTRY_LOAD__
 
-.export fl_filename
-.export fl_loadaddr
-.export initfastload
-.export fastload
-.export fl_run
+.export chainload
 
 STATUS          = $90
 MESSAGES        = $9d
@@ -40,24 +37,27 @@ temp1           = $02
 temp2           = $03
 stackptrstore   = $04
 
-.segment "KSBSS"
+.segment "LDBSS"
 
-fl_filename:    .res 2
 loadbuffer:     .res 254
 
-.segment "KICKSTART"
+.segment "LOADER"
 
-fl_entrypoint = *+1
-fl_run:         jmp     $0000
+il_device:      lda     FA
+                jsr     LISTEN
+                lda     #$6f
+                jmp     SECOND
 
-initfastload:
-                lda     #<__DRVCODE2_LOAD__
+chainload:
+                tsx
+                stx     stackptrstore
+                lda     #<__DRVCODE1_LOAD__
                 sta     il_chunkstart
-                lda     #>__DRVCODE2_LOAD__
+                lda     #>__DRVCODE1_LOAD__
                 sta     il_chunkstart+1
-                lda     #<__DRVCODE2_RUN__
+                lda     #<__DRVCODE1_RUN__
                 sta     mwcmd+2
-                lda     #>__DRVCODE2_RUN__
+                lda     #>__DRVCODE1_RUN__
                 sta     mwcmd+1
 il_mwloop:      jsr     il_device
                 ldx     #mwcmd_size - 1
@@ -67,7 +67,7 @@ il_sendmw:      lda     mwcmd,x
                 bpl     il_sendmw
                 ldx     #0
 il_chunkstart   = *+1
-il_mwbyte:      lda     __DRVCODE2_LOAD__,x
+il_mwbyte:      lda     __DRVCODE1_LOAD__,x
                 jsr     CIOUT
                 inx
                 cpx     #drvcode_chunk
@@ -87,8 +87,8 @@ il_nohigh:      lda     il_chunkstart
                 bcc     il_nohigh2
                 inc     il_chunkstart+1
 il_nohigh2:     lda     il_chunkstart+1
-                cpx     #<DRVCODE2_END
-                sbc     #>DRVCODE2_END
+                cpx     #<DRVCODE1_END
+                sbc     #>DRVCODE1_END
                 bcc     il_mwloop
 
                 jsr     il_device
@@ -97,51 +97,11 @@ il_sendme:      lda     mecmd,x
                 jsr     CIOUT
                 dex
                 bpl     il_sendme
-                jmp     UNLSN
-
-il_device:      lda     FA
-                jsr     LISTEN
-                lda     #$6f
-                jmp     SECOND
-
-fastload:
-                tsx
-                stx     stackptrstore
-                ldx     #$01
-fl_sendouter:   ldy     #$08
-fl_sendinner:   bit     $dd00
-                bvc     fl_sendinner
-                bpl     fl_sendinner
-                lsr     fl_filename,x
-                lda     $dd00
-                and     #$ff-$30
-                ora     #$10
-                bcc     fl_zerobit
-                eor     #$30
-fl_zerobit:     sta     $dd00
-                lda     #$c0
-fl_sendack:     bit     $dd00
-                bne     fl_sendack
-                lda     $dd00
-                and     #$ff-$30
-                sta     $dd00
-                dey
-                bne     fl_sendinner
-                dex
-                bpl     fl_sendouter
-fl_delay:       dex
-                bne     fl_delay
-                lda     #0
-                sta     temp2
-
-                jsr     fl_getbyte
-                sta     fl_entrypoint
-                jsr     fl_getbyte
-                sta     fl_entrypoint+1
+                jsr     UNLSN
 
 fl_loop:        jsr     fl_getbyte
 fl_loadaddr     = *+1
-                sta     $c000
+                sta     __KSENTRY_LOAD__
                 inc     fl_loadaddr
                 bne     fl_loop
                 inc     fl_loadaddr+1
@@ -192,7 +152,7 @@ fl_bitloop:     nop
                 bne     fl_bitloop
                 rts
 
-.segment "DRVCODE2"
+.segment "DRVCODE1"
 
 RETRIES         = 5
 acsbf           = $01
@@ -203,12 +163,6 @@ id              = $16
 datbf           = $14
 buf             = $0400
 
-drvmain:        cli
-                jsr     getbyte
-                sta     namecmp2
-                sei
-                jsr     getbyte
-                sta     namecmp1
                 lda     #$08
                 sta     $1800
 
@@ -224,12 +178,10 @@ nextfile:       lda     buf,y
                 cmp     #$83            ; look only for USR files
                 bne     notfound
                 lda     buf+3,y
-namecmp1        = *+1
-                cmp     #0
+                cmp     #' '
                 bne     notfound
                 lda     buf+4,y
-namecmp2        = *+1
-                cmp     #0
+                cmp     #' '
                 beq     found
 notfound:       tya
                 clc
@@ -249,7 +201,7 @@ loadend_wait:   bit     $1800
                 bne     loadend_wait
                 ldy     #$00
                 sty     $1800
-                jmp     drvmain
+                rts
 
 found:          iny
 nextsect:       lda     buf,y
@@ -348,13 +300,13 @@ gotatn:         pla
                 pla
                 rts
 
-.segment "KSDATA"
+.segment "LDDATA"
 
-mwcmd:          .byte   drvcode_chunk, >__DRVCODE2_RUN__
-                .byte   <__DRVCODE2_RUN__, "w-m"
+mwcmd:          .byte   drvcode_chunk, >__DRVCODE1_RUN__
+                .byte   <__DRVCODE1_RUN__, "w-m"
 mwcmd_size      = *-mwcmd
 
-mecmd:          .byte   >__DRVCODE2_RUN__, <__DRVCODE2_RUN__, "e-m"
+mecmd:          .byte   >__DRVCODE1_RUN__, <__DRVCODE1_RUN__, "e-m"
 mecmd_size      = *-mecmd
 
 

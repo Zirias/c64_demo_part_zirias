@@ -9,7 +9,8 @@ DISKFILE	= ziri-demo
 HCC		= gcc
 HCFLAGS		= -O2 -g0
 
-OBJECTS		= kickstart.o fastload.o amigados.o gfx-core.o gfx-line.o \
+OBJECTS		= loader.o chainloader.o \
+		kickstart.o fastload.o amigados.o gfx-core.o gfx-line.o \
 		  	soundtable.o snd_play.o ziri_ambi.o raster_main.o \
 			text80.o font.o sprites.o spritezone.o \
 			marquee_sprites.o topborder_sprites.o \
@@ -60,7 +61,9 @@ endif
 
 HTOOLS		= tools$(PSEP)bmp2c64$(EXE) tools$(PSEP)cc1541$(EXE)
 
-BINARIES = demo_boot demo_kickstart demo_loader demo_amigados demo_music
+BINARIES = demo_boot demo_loader demo_bootload demo_kickstart \
+	   demo_amigados demo_music
+
 DISKNAME = 'C=64 WORKBENCH'
 DISKID = 'AMIGA'
 
@@ -68,16 +71,16 @@ all:	demo
 
 demo:	$(OBJECTS) $(LINKCFG)
 	$(LD) -odemo $(LDFLAGS) $(OBJECTS)
-	$(CATIN) demo_boot $(CATADD)demo_kickstart $(CATOUT)demo_loader
+	$(CATIN) demo_boot $(CATADD)demo_loader $(CATOUT)demo_bootloader
 
 disk:	all tools$(PSEP)cc1541$(EXE)
 	$(MDP) disks
 	tools$(PSEP)cc1541 -x \
 		-n$(DISKNAME) -i$(DISKID) \
-		-f'----------------' -wdemo_loader \
-		-f'                ' -u -s15 -wdemo_amigados \
+		-f'----------------' -u -s15 -wdemo_amigados \
+		-f'                ' -wdemo_bootloader \
 		-f'  DEMO: MUSIC   ' -d \
-		-f'                ' -d \
+		-f'                ' -u -s15 -wdemo_kickstart \
 		-f'  RELEASE 1.01  ' -d \
 		-f'  2013/12/07    ' -d \
 		-f'  BY ZIRIAS     ' -d \
