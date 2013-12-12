@@ -1,18 +1,8 @@
 ;
-; fastload.s
-; load a file without using interrupts, letting them occur normally
+; chainload.s
 ;
-; this is taken from http://cadaver.homeftp.net/rants/irqload.htm, adapted
-; to ca65/ld65 and my segment layout for this demo, and very slightly modified
-; (no flashing while loading, look for USR instead of PRG and don't care for
-; SuperCPU)
+; variation of fastload.s especially for loading kickstart
 ;
-; original header:
-;
-;COVERT BITOPS loader, simplified for Rant #5
-;IRQ-loader based on work by K.M/TABOO & Marko Mäkelä
-;(drive code init, main drive code, c64->drive communication by Marko Mäkelä)
-;(drive->c64 communication routine by K.M/TABOO)
 
 .import __DRVCODE1_LOAD__
 .import __DRVCODE1_RUN__

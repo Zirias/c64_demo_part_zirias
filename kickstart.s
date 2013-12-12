@@ -1,7 +1,8 @@
 ;
 ; kickstart.s
 ;
-; load the rest of the demo
+; provide some lowest-level functions like IRQ handling and VIC configuration
+; boot AmigaDOS ;)
 ;
 
 .include "vic.inc"

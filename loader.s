@@ -1,7 +1,10 @@
 ;
-; kickstart.s
+; loader.s
 ;
-; load the rest of the demo
+; boot loader for kickstart
+; loads kickstart to $c000 and installs BASIC stub to run it
+;
+; optionally auto-startable with load"*",8,1
 ;
 
 .import __KSENTRY_LOAD__
@@ -74,7 +77,7 @@ ks_loop:        lda     ks_loadmsg,x
                 .word $f157     ;$324 kernal chrin routine ($f157)
 
                 .word $f1ca     ;$326 kernal chrout routine ($f1ca)
-                ;HERE'S THE TRAP:
+                ;hijack STOP here:
                 .word $02ed     ;$328: kernal stop routine Vector ($f6ed)
 
 .segment "LOADER"
