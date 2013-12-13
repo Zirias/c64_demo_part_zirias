@@ -25,6 +25,7 @@
 .include        "spritezone.inc"
 .include        "petscii_lc.inc"
 .include        "raster.inc"
+.include        "keyboard.inc"
 
 .import ziri_ambi
 
@@ -171,6 +172,8 @@ amigados:
                 ; handle cursor from here
                 jsr     t80_crlf_cursor
                 jsr     t80_crlf_cursor
+
+                jmp     kbtest
 
                 lda     #<message5
                 sta     T80_STRING_L
@@ -433,7 +436,33 @@ raster_brbt:    txs
                 ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
 
+kbtest:
+                jsr     kb_init
+kbloop:         jsr     kb_check
+                jsr     kb_get
+                beq     kbloop
+                sta     plb
+                clc
+                lsr
+                lsr
+                lsr
+                lsr
+                tax
+                lda     kbtesthex,x
+                jsr     t80_putc
+                inc     T80_COL
+plb             = *+1
+                lda     #0
+                and     #$f
+                tax
+                lda     kbtesthex,x
+                jsr     t80_putc
+                dec     T80_COL
+                jmp     kbloop
+
 .segment "ADDATA"
+kbtesthex:      .byte "0123456789abcdef"
+
 message1:       .asciiz "Copyright &2013 Zirias"
 message2:       .asciiz "All rights reserved."
 message3:       .asciiz "C64 Workbench and AmigaBASIC style Demo Disk."
