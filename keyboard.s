@@ -12,7 +12,7 @@
 ;
 ; call kb_init before anything else
 ; call kb_check periodically (e.g. from raster IRQ) to poll keyboard
-; call kb_get to get next buffered scancode (or 0 if no new activity)
+; call kb_get to get next buffered scancode (carry indicates empty buffer)
 ; call kb_peek to know if there are scancodes waiting
 ; call kb_clear to empty scancode buffer
 
@@ -30,6 +30,7 @@ bufwr:          .res 1
 
 tmp1:           .res 1
 tmp2:           .res 1
+tmp3:           .res 1
 
 modmask:        .res 1
 
@@ -42,7 +43,6 @@ kb_init:
                 rts
 
 kb_get:
-                lda     #0
                 ldx     bufrd
                 cpx     bufwr
                 beq     kbg_out
@@ -51,6 +51,7 @@ kb_get:
                 bpl     kbg_done
                 ldx     #$f
 kbg_done:       stx     bufrd
+                clc
 kbg_out:        rts
 
 kb_peek:
@@ -68,6 +69,7 @@ kb_check:
                 lda     #0
                 sta     modmask
                 sta     tmp1
+                sta     tmp3
 kbc_row7:       lda     #%01111111
                 sta     $dc00
                 lda     $dc01
@@ -83,6 +85,7 @@ kbc_row7:       lda     #%01111111
 kbc_noctrl:     txa
                 and     #%11111011
                 beq     kbc_row6
+                inc     tmp3
                 jsr     kbc_col
                 adc     #7<<3
                 sta     tmp1
@@ -101,6 +104,7 @@ kbc_row6:       lda     #%10111111
 kbc_norsh:      txa
                 and     #%11101111
                 beq     kbc_row5
+                inc     tmp3
                 jsr     kbc_col
                 adc     #6<<3
                 sta     tmp1
@@ -109,6 +113,7 @@ kbc_row5:       lda     #%11011111
                 lda     $dc01
                 eor     #$ff
                 beq     kbc_row4
+                inc     tmp3
                 jsr     kbc_col
                 adc     #5<<3
                 sta     tmp1
@@ -117,6 +122,7 @@ kbc_row4:       lda     #%11101111
                 lda     $dc01
                 eor     #$ff
                 beq     kbc_row3
+                inc     tmp3
                 jsr     kbc_col
                 adc     #4<<3
                 sta     tmp1
@@ -125,6 +131,7 @@ kbc_row3:       lda     #%11110111
                 lda     $dc01
                 eor     #$ff
                 beq     kbc_row2
+                inc     tmp3
                 jsr     kbc_col
                 adc     #3<<3
                 sta     tmp1
@@ -133,6 +140,7 @@ kbc_row2:       lda     #%11111011
                 lda     $dc01
                 eor     #$ff
                 beq     kbc_row1
+                inc     tmp3
                 jsr     kbc_col
                 adc     #2<<3
                 sta     tmp1
@@ -151,6 +159,7 @@ kbc_row1:       lda     #%11111101
 kbc_nolsh:      txa
                 and     #%01111111
                 beq     kbc_row0
+                inc     tmp3
                 jsr     kbc_col
                 adc     #1<<3
                 sta     tmp1
@@ -159,13 +168,16 @@ kbc_row0:       lda     #%11111110
                 lda     $dc01
                 eor     #$ff
                 beq     kbc_buffer
+                inc     tmp3
                 jsr     kbc_col
                 sta     tmp1
-kbc_buffer:     lda     tmp1
+kbc_buffer:     lda     tmp3
                 bne     kbc_checknew
+                lda     #$80
                 sta     tmp2
                 rts
-kbc_checknew:   cmp     tmp2
+kbc_checknew:   lda     tmp1
+                cmp     tmp2
                 beq     kbc_done
                 sta     tmp2
                 ora     modmask

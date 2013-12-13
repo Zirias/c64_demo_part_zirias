@@ -440,7 +440,7 @@ kbtest:
                 jsr     kb_init
 kbloop:         jsr     kb_check
                 jsr     kb_get
-                beq     kbloop
+                bcs     kbloop
                 sta     plb
                 clc
                 lsr
