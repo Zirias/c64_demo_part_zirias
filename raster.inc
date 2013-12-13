@@ -2,7 +2,6 @@
 .import raster_on
 .import raster_off
 .import raster_install
-.import key_pressed
 
 ; for raster payload implementors
 .importzp RASTER_SAVE_A         ; saved by default

@@ -260,11 +260,10 @@ amigados:
                 jsr     t80_crlf_cursor
 
                 ; clear key
-                lda     #0
-                sta     key_pressed
+                jsr     kb_clear
 
-waitkey:        lda     key_pressed
-                beq     waitkey
+waitkey:        jsr     kb_get
+                bcs     waitkey
                 jsr     fl_run
 
                 jsr     gfx_off
@@ -438,8 +437,7 @@ raster_brbt:    txs
 
 kbtest:
                 jsr     kb_init
-kbloop:         jsr     kb_check
-                jsr     kb_get
+kbloop:         jsr     kb_get
                 bcs     kbloop
                 sta     plb
                 clc

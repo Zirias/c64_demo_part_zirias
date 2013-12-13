@@ -5,11 +5,11 @@
 ; - keyboard checking
 
 .include "vic.inc"
+.include "keyboard.inc"
 
 .export raster_on
 .export raster_off
 .export raster_install
-.export key_pressed
 
 .export RASTER_SAVE_A
 .export RASTER_SAVE_X
@@ -27,8 +27,6 @@ RASTER_SAVE_Y           = $24
 RASTER_TBL_OFFSET       = $25
 
 .segment "KSBSS"
-bg_save:        .res    1
-key_pressed:    .res    1
 raster_table:   .res    255
 raster_tbl_base = raster_table - 1
 
@@ -51,19 +49,9 @@ raster_payload = *+1
 
 ; payload for checking the keyboard
 raster_keycheck:
-                lda     key_pressed
-                bne     key_done
-                lda     #0
-                sta     $dc03
-                lda     #$ff
-                sta     $dc02
-                lda     #0
-                sta     $dc00
-                lda     #$ff
-                cmp     $dc01
-                beq     key_done
-                sta     key_pressed
-key_done:
+                stx     RASTER_TBL_OFFSET
+                jsr     kb_check
+                ldx     RASTER_TBL_OFFSET
 
 ; common exit code for every IRQ
 raster_bottom:
@@ -115,9 +103,6 @@ r_installloop:  lda     $ffff,x
 
 ; activate raster IRQ using table for phase 0
 raster_on:
-                lda     #0
-                sta     key_pressed
-
                 sei
                 lda     #%01111111
                 sta     $dc0d

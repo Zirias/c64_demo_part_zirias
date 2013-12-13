@@ -12,6 +12,7 @@ tbllen          = 195
 .include        "spritezone.inc"
 .include        "amigados.inc"
 .include        "raster.inc"
+.include        "keyboard.inc"
 
 .import ziri_ambi
 
@@ -180,8 +181,7 @@ music:
                 sta     PLOT_MODE
 
                 ; clear key
-                lda     #0
-                sta     key_pressed
+                jsr     kb_clear
 
                 ; main loop
 loop:           ldx     countdown
@@ -309,8 +309,8 @@ cont1b:         sty     to1
                 jsr     gfx_line
 
                 ; end when key pressed:
-                lda     key_pressed
-                bne     out
+                jsr     kb_get
+                bcc     out
                 jmp     loop
 out:            jsr     snd_stop
                 rts
