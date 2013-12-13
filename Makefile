@@ -81,8 +81,8 @@ disk:	all tools$(PSEP)cc1541$(EXE)
 		-f'                ' -wdemo_bootloader \
 		-f'  DEMO: MUSIC   ' -d \
 		-f'                ' -u -s15 -wdemo_kickstart \
-		-f'  RELEASE 1.09A1' -d \
-		-f'  2013/12/12    ' -d \
+		-f'  RELEASE 1.09A2' -d \
+		-f'  2013/12/13    ' -d \
 		-f'  BY ZIRIAS     ' -d \
 		-f'                ' -d \
 		-d \

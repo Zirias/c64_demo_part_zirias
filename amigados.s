@@ -437,7 +437,7 @@ raster_brbt:    txs
 message1:       .asciiz "Copyright &2013 Zirias"
 message2:       .asciiz "All rights reserved."
 message3:       .asciiz "C64 Workbench and AmigaBASIC style Demo Disk."
-message4:       .asciiz "Release 1.09a1, 2013-12-12"
+message4:       .asciiz "Release 1.09a2, 2013-12-13"
 
 message5:       .asciiz "This demo started in 2006 and mimicks the style of the AmigaBASIC"
 message6:       .asciiz "demo `Music'. The goal was to make it look just like an Amiga."

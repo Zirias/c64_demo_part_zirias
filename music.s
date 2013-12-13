@@ -312,8 +312,8 @@ cont1b:         sty     to1
                 lda     key_pressed
                 bne     out
                 jmp     loop
-                jsr     snd_stop
-out:            rts
+out:            jsr     snd_stop
+                rts
 
 .segment "MUDATA"
 cotable_a:      .byte   $BE,$01,$3D,$B6,$01,$3D,$AE,$01,$3D,$A6,$01,$3D
