@@ -24,6 +24,7 @@ noctrl:         txa
                 tax
                 beq     noctrl2
                 bit     kbi_ctrl_ind
+                rts
 noctrl2:        lda     keymap_us,y
                 clv
 kbi_out:        rts
