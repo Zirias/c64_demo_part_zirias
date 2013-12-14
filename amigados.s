@@ -26,6 +26,7 @@
 .include        "petscii_lc.inc"
 .include        "raster.inc"
 .include        "keyboard.inc"
+.include        "kbinput.inc"
 
 .import ziri_ambi
 
@@ -437,29 +438,19 @@ raster_brbt:    txs
 
 kbtest:
                 jsr     kb_init
-kbloop:         jsr     kb_get
+kbloop:         jsr     kb_in
                 bcs     kbloop
-                sta     plb
-                clc
-                lsr
-                lsr
-                lsr
-                lsr
-                tax
-                lda     kbtesthex,x
-                jsr     t80_putc
-                inc     T80_COL
-plb             = *+1
-                lda     #0
-                and     #$f
-                tax
-                lda     kbtesthex,x
-                jsr     t80_putc
-                dec     T80_COL
+                bvs     kbloop
+                sta     kbteststr
+                lda     #<kbteststr
+                sta     T80_STRING_L
+                lda     #>kbteststr
+                sta     T80_STRING_H
+                jsr     t80_print_cursor
                 jmp     kbloop
 
 .segment "ADDATA"
-kbtesthex:      .byte "0123456789abcdef"
+kbteststr:      .byte 0,0
 
 message1:       .asciiz "Copyright &2013 Zirias"
 message2:       .asciiz "All rights reserved."

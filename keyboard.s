@@ -1,5 +1,7 @@
 ;
-; keyboard input driver
+; keyboard hardware driver
+;
+; Felix Palmen <felix@palmen-it.de> -- 2013-12-14
 ;
 ; this driver delivers 1-byte scancodes in the following scheme:
 ;
@@ -7,6 +9,14 @@
 ; bit    6: SHIFT
 ; bits 5-3: keyboard matrix row
 ; bits 2-0: keyboard matrix column
+;
+; design considerations:
+; - make scancodes only one byte, for efficiency
+;   this means there are only 2 bits left, the matrix position takes 6 bits
+; - use the 2 spare bits for modifiers (CTRL and SHIFT) because modifiers
+;   are of greater value to simple CLIs than e.g. "key released" events
+; - key repeat has to be implemented here, because calling code has no way to
+;   determine whether a key is hold (TBD later)
 ;
 ; up to 15 scancodes are buffered in a ring buffer
 ;
@@ -196,7 +206,7 @@ kbc_dropoldest: stx     bufrd
 kbc_done:       rts
 
 kbc_col:        ldx     #7
-kbc_colloop:    asl     a
+kbc_colloop:    lsr     a
                 bcs     kbc_havekey
                 dex
                 bpl     kbc_colloop
