@@ -21,10 +21,7 @@ PLOT_XH         = $fb
 PLOT_Y          = $fc
 PLOT_MODE       = $f9
 
-.segment "ADBSS"
-
-
-.segment "AMIGADOS"
+.segment "KICKSTART"
 
 gfx_on:
                 lda     VIC_CTL1
@@ -104,7 +101,7 @@ cp_inv:         eor     ($9e),y
                 sta     ($9e),y
                 rts
 
-.segment "ADDATA"
+.segment "KSDATA"
 gfx_tabl:       .byte   $00,$01,$02,$03,$04,$05,$06,$07
                 .byte   $40,$41,$42,$43,$44,$45,$46,$47
                 .byte   $80,$81,$82,$83,$84,$85,$86,$87

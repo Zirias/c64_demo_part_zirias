@@ -48,7 +48,7 @@ CNTH            = $b8
 ZPDEC           = $C6
 ZPINC           = $E6
 
-.segment "MUSIC"
+.segment "KICKSTART"
 
 ; gfx_coreline:
 ; expects (x1,y1) in PLOT_*
