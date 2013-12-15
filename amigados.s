@@ -431,7 +431,7 @@ contestmsg:     string "CONSOLE TEST MODE, leave with STOP"
 message1:       string "Copyright &2013 Zirias"
 message2:       string "All rights reserved."
 message3:       string "C64 Workbench and AmigaBASIC style Demo Disk."
-message4:       string "Release 1.09a2, 2013-12-13"
+message4:       string "Release 1.09a3, 2013-12-15"
 
 message5:       string "This demo started in 2006 and mimicks the style of the AmigaBASIC"
 message6:       string "demo `Music'. The goal was to make it look just like an Amiga."
