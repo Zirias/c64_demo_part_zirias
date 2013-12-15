@@ -167,6 +167,8 @@ music:
                 jsr     ziri_ambi
 
                 ; sprites for marquee
+                lda     #$f8
+                sta     flash_offset
                 jsr     sprites_marquee
                 jsr     sprites_topborder1
 
