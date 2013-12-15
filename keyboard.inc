@@ -1,4 +1,3 @@
-.import kb_init
 .import kb_get
 .import kb_peek
 .import kb_clear

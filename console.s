@@ -1,12 +1,25 @@
 .include "spritezone.inc"
 .include "text80.inc"
+.include "amigados.inc"
 .include "vicconfig.inc"
 
-.export con_scrollscr
+.export con_clrscr
+.export con_chrout
+.export con_newline
+.export con_print
+
+TMP             = $fd
+
+.segment "ADBSS"
+
+con_screen:     .res    77 * 24
 
 .segment "AMIGADOS"
 
-con_scrollscr:
+scrollscr:
+                stx     TMP
+
+                ; move 32 rows upwards by one
                 ldy     #92
 cs_outer:       lda     rowoffsets-1,y
                 sta     cs_read1base+1
@@ -41,10 +54,150 @@ cs_write2base   = *+1
                 bne     cs_inner
                 dey
                 bne     cs_outer
+
+                ; empty left frame part in row #24 (right frame untouched)
+                ldx     #$7
+                lda     #$80
+cs_frame:       sta     vic_bitmap + $1cc0,x
+                dex
+                bpl     cs_frame
+
+                ; empty row #24 (#25 stays always empty)
+                ldx     #$98
+                lda     #0
+cs_clear:       sta     vic_bitmap + $1cc7,x
+                sta     vic_bitmap + $1d5f,x
+                dex
+                bne     cs_clear
+
+                ldx     TMP
+                rts
+
+con_clrscr:
+                lda     #$20
+                ldx     #$37
+ccs_loopextra:  sta     con_screen + $700,x
+                dex
+                bpl     ccs_loopextra
+                ldy     #7
+                ldx     #0
+ccs_outer:      dec     ccs_sta
+ccs_sta         = *+1
+ccs_inner:      sta     con_screen + $700,x
+                dex
+                bne     ccs_inner
+                dey
+                bne     ccs_outer
+                lda     ccs_sta
+                adc     #7
+                sta     ccs_sta
+                jsr     clear_window
+                lda     #0
+                sta     T80_ROW
+                sta     T80_COL
+                jsr     updatecursor
+                rts
+
+updatecursor:
+                lda     T80_ROW
+                asl     a
+                asl     a
+                asl     a
+                adc     #$32
+                sta     sprite_1_0_y
+                lda     #0
+                sta     sprite_1_x_h
+                lda     T80_COL
+                asl     a
+                asl     a
+                bcc     uc_noh1
+                inc     sprite_1_x_h
+uc_noh1:        adc     #$1c
+                bcc     uc_noh2
+                inc     sprite_1_x_h
+uc_noh2:        sta     sprite_1_0_x
+                rts        
+
+con_setchr:
+                sta     TMP
+                lda     T80_ROW
+                asl     a
+                tay
+                lda     screenrows,y
+                sta     csc_sta
+                lda     screenrows+1,y
+                sta     csc_sta+1
+                lda     TMP
+                ldy     T80_COL
+csc_sta         = *+1
+                sta     $ffff,y
+                rts
+
+con_chrout:
+                jsr     con_setchr
+                jsr     t80_putc
+                lda     #76
+                cmp     T80_COL
+                beq     con_newline
+                inc     T80_COL
+                jsr     updatecursor
+                rts
+
+con_newline:
+                lda     #0
+                sta     T80_COL
+                lda     #23
+                cmp     T80_ROW
+                beq     cco_scroll
+                inc     T80_ROW
+                jsr     updatecursor
+                rts
+cco_scroll:     jsr     scrollscr
+                jsr     updatecursor
+                rts
+
+con_print:
+                sta     cp_read
+                sta     cp_cmp
+                stx     cp_read+1
+                stx     cp_cmp+1
+                ldx     #0
+cp_loop:        inx
+cp_read         = *+1
+                lda     $ffff,x
+                jsr     con_chrout
+cp_cmp          = *+1
+                cpx     $ffff
+                bne     cp_loop
                 rts
 
 .segment "ADDATA"
 
+screenrows:
+                .word   con_screen
+                .word   con_screen + 77
+                .word   con_screen + 154
+                .word   con_screen + 231
+                .word   con_screen + 308
+                .word   con_screen + 385
+                .word   con_screen + 462
+                .word   con_screen + 539
+                .word   con_screen + 616
+                .word   con_screen + 693
+                .word   con_screen + 770
+                .word   con_screen + 847
+                .word   con_screen + 924
+                .word   con_screen + 1001
+                .word   con_screen + 1025
+                .word   con_screen + 1102
+                .word   con_screen + 1179
+                .word   con_screen + 1256
+                .word   con_screen + 1333
+                .word   con_screen + 1410
+                .word   con_screen + 1487
+                .word   con_screen + 1564
+                .word   con_screen + 1641
+                .word   con_screen + 1718
 rowoffsets:
                 .word   vic_bitmap + $1d60, vic_bitmap + $1cc0
                 .word   vic_bitmap + $1c20, vic_bitmap + $1b80

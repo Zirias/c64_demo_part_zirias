@@ -20,13 +20,11 @@
 ;
 ; up to 15 scancodes are buffered in a ring buffer
 ;
-; call kb_init before anything else
 ; call kb_check periodically (e.g. from raster IRQ) to poll keyboard
 ; call kb_get to get next buffered scancode (carry indicates empty buffer)
 ; call kb_peek to know if there are scancodes waiting
 ; call kb_clear to empty scancode buffer
 
-.export kb_init
 .export kb_get
 .export kb_peek
 .export kb_clear
@@ -35,8 +33,6 @@
 .segment "KSBSS"
 
 buffer:         .res 16
-bufrd:          .res 1
-bufwr:          .res 1
 
 tmp1:           .res 1
 tmp2:           .res 1
@@ -44,13 +40,11 @@ tmp3:           .res 1
 
 modmask:        .res 1
 
-.segment "KICKSTART"
+.segment "KSDATA"
+bufrd:          .byte $f
+bufwr:          .byte $f
 
-kb_init:
-                lda     #$f
-                sta     bufrd
-                sta     bufwr
-                rts
+.segment "KICKSTART"
 
 kb_get:
                 ldx     bufrd

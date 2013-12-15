@@ -4,21 +4,13 @@
 ; Felix Palmen <felix@palmen-it.de> -- 2013-11-29
 ;
 
-.include "spritezone.inc"
-
 .export T80_DRAWPAGE
 .export T80_ROW
 .export T80_COL
 .export T80_FONT_L
 .export T80_FONT_H
-.export T80_STRING_L
-.export T80_STRING_H
 
 .export t80_putc
-.export t80_print
-.export t80_print_cursor
-.export t80_crlf
-.export t80_crlf_cursor
 
 T80_DRAWPAGE    = $8b
 
@@ -27,9 +19,6 @@ T80_COL         = $b8
 
 T80_FONT_L      = $8e
 T80_FONT_H      = $8f
-
-T80_STRING_L    = $8c
-T80_STRING_H    = $8d
 
 PUTS_L          = $fa
 PUTS_H          = $fb
@@ -48,8 +37,10 @@ char:           .res 8
 ; in:   a               character block offset in font
 ; out:  CHAR_L          address
 getcharaddr:
-                ldx     #0
-                stx     CHAR_H
+                sta     CHAR_L
+                lda     #0
+                sta     CHAR_H
+                lda     CHAR_L
                 asl     a
                 rol     CHAR_H
                 asl     a
@@ -106,8 +97,8 @@ thispage2:      sta     PUTS_L
 ; in:   a               character code (petscii)
 ; in:   T80_FONT_L      address of 80col font to use
 ; in:   T80_DRAWPAGE    first page of graphics screen
-; in:   T80_ROW         text row (0-24)
-; in:   T80_COL         text column (0-79)
+; in:   T80_ROW         text row (0-23)
+; in:   T80_COL         text column (0-76)
 t80_putc:
                 clc
                 lsr     a
@@ -121,6 +112,7 @@ loop1:          lda     (CHAR_L),y
                 bpl     loop1
                 clc
                 lda     T80_COL
+                adc     #1
                 lsr     a
                 sta     WCOL
                 bcs     c0_put_l
@@ -160,6 +152,7 @@ loop4:          lda     (CHAR_L),y
                 bpl     loop4
                 clc
                 lda     T80_COL
+                adc     #1
                 lsr     a
                 sta     WCOL
                 bcs     c1_put_l
@@ -188,65 +181,6 @@ loop6:          lda     (PUTS_L),y
                 sta     (PUTS_L),y
                 dey
                 bpl     loop6
-                rts
-
-; print a string to screen
-; does not handle wrapping to next line!
-; in:   T80_STRING_L    pointer to null-terminated string to print
-; in:   T80_FONT_L      address of 80col font to use
-; in:   T80_DRAWPAGE    first page of graphics screen
-; in:   T80_ROW         start row (0-24)
-; in:   T80_COL         start column (0-79)
-t80_print:
-                ldy     #0
-                lda     (T80_STRING_L),y
-                bne     p_putnext
-                rts
-p_putnext:      jsr     t80_putc
-                inc     T80_COL
-                inc     T80_STRING_L
-                bne     t80_print
-                inc     T80_STRING_H
-                bne     t80_print
-                rts
-
-; print a string and handle cursor position (sprite 0 in zone 1)
-; like t80_print
-t80_print_cursor:
-                ldy     #0
-                lda     (T80_STRING_L),y
-                bne     pc_putnext
-                rts
-pc_putnext:     jsr     t80_putc
-                inc     T80_COL
-                ldx     sprite_1_0_x
-                inx
-                inx
-                inx
-                inx
-                stx     sprite_1_0_x
-                inc     T80_STRING_L
-                bne     t80_print_cursor
-                inc     T80_STRING_H
-                bne     t80_print_cursor
-                rts
-
-t80_crlf:
-                inc     T80_ROW
-                lda     #1
-                sta     T80_COL
-                rts
-
-t80_crlf_cursor:
-                inc     T80_ROW
-                lda     #1
-                sta     T80_COL
-                lda     #$1c
-                sta     sprite_1_0_x
-                lda     sprite_1_0_y
-                clc
-                adc     #8
-                sta     sprite_1_0_y
                 rts
 
 ; vim: et:si:ts=8:sts=8:sw=8

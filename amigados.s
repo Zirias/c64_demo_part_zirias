@@ -16,19 +16,19 @@
 .export raster_screen
 .export raster_border
 
+.include        "macros.inc"
 .include        "fastload.inc"
 .include        "gfx.inc"
 .include        "vic.inc"
 .include        "vicconfig.inc"
 .include        "text80.inc"
+.include        "console.inc"
 .include        "sprites.inc"
 .include        "spritezone.inc"
 .include        "petscii_lc.inc"
 .include        "raster.inc"
 .include        "keyboard.inc"
 .include        "kbinput.inc"
-
-.import ziri_ambi
 
 .import font_topaz_80col_petscii_western
 
@@ -130,107 +130,81 @@ amigados:
                 jsr     ad_raster
 
                 ; start messages
-                jsr     clear_window
                 lda     #>vic_bitmap
                 sta     T80_DRAWPAGE
                 lda     #<font_topaz_80col_petscii_western
                 sta     T80_FONT_L
                 lda     #>font_topaz_80col_petscii_western
                 sta     T80_FONT_H
-                lda     #0
-                sta     T80_ROW
-                lda     #1
-                sta     T80_COL
+                jsr     con_clrscr
 
                 lda     #<message1
-                sta     T80_STRING_L
-                lda     #>message1
-                sta     T80_STRING_H
-                jsr     t80_print
-                jsr     t80_crlf
+                ldx     #>message1
+                jsr     con_print
+                jsr     con_newline
 
                 lda     #<message2
-                sta     T80_STRING_L
-                lda     #>message2
-                sta     T80_STRING_H
-                jsr     t80_print
-                jsr     t80_crlf
+                ldx     #>message2
+                jsr     con_print
+                jsr     con_newline
 
                 lda     #<message3
-                sta     T80_STRING_L
-                lda     #>message3
-                sta     T80_STRING_H
-                jsr     t80_print
-                jsr     t80_crlf
+                ldx     #>message3
+                jsr     con_print
+                jsr     con_newline
 
                 lda     #<message4
-                sta     T80_STRING_L
-                lda     #>message4
-                sta     T80_STRING_H
-                jsr     t80_print
-                jsr     t80_crlf
+                ldx     #>message4
+                jsr     con_print
+                jsr     con_newline
 
                 ; handle cursor from here
-                jsr     t80_crlf_cursor
-                jsr     t80_crlf_cursor
+                jsr     con_newline
+                jsr     con_newline
 
                 lda     #<message5
-                sta     T80_STRING_L
-                lda     #>message5
-                sta     T80_STRING_H
-                jsr     t80_print_cursor
-                jsr     t80_crlf_cursor
+                ldx     #>message5
+                jsr     con_print
+                jsr     con_newline
 
                 lda     #<message6
-                sta     T80_STRING_L
-                lda     #>message6
-                sta     T80_STRING_H
-                jsr     t80_print_cursor
-                jsr     t80_crlf_cursor
+                ldx     #>message6
+                jsr     con_print
+                jsr     con_newline
 
                 lda     #<message7
-                sta     T80_STRING_L
-                lda     #>message7
-                sta     T80_STRING_H
-                jsr     t80_print_cursor
-                jsr     t80_crlf_cursor
+                ldx     #>message7
+                jsr     con_print
+                jsr     con_newline
 
                 lda     #<message8
-                sta     T80_STRING_L
-                lda     #>message8
-                sta     T80_STRING_H
-                jsr     t80_print_cursor
-                jsr     t80_crlf_cursor
+                ldx     #>message8
+                jsr     con_print
+                jsr     con_newline
 
                 lda     #<message9
-                sta     T80_STRING_L
-                lda     #>message9
-                sta     T80_STRING_H
-                jsr     t80_print_cursor
-                jsr     t80_crlf_cursor
-                jsr     t80_crlf_cursor
+                ldx     #>message9
+                jsr     con_print
+                jsr     con_newline
+                jsr     con_newline
 
                 lda     #<message10
-                sta     T80_STRING_L
-                lda     #>message10
-                sta     T80_STRING_H
-                jsr     t80_print_cursor
-                jsr     t80_crlf_cursor
-                jsr     t80_crlf_cursor
+                ldx     #>message10
+                jsr     con_print
+                jsr     con_newline
+                jsr     con_newline
 
                 lda     #<message11
-                sta     T80_STRING_L
-                lda     #>message11
-                sta     T80_STRING_H
-                jsr     t80_print_cursor
-                jsr     t80_crlf_cursor
-                jsr     t80_crlf_cursor
+                ldx     #>message11
+                jsr     con_print
+                jsr     con_newline
+                jsr     con_newline
+
+                jsr     contest
 
                 lda     #<message12
-                sta     T80_STRING_L
-                lda     #>message12
-                sta     T80_STRING_H
-                jsr     t80_print_cursor
+                ldx     #>message12
+                jsr     con_print
 
                 lda     #'m'
                 sta     fl_filename
@@ -243,22 +217,17 @@ amigados:
                 jsr     fastload
 
                 lda     #<message13
-                sta     T80_STRING_L
-                lda     #>message13
-                sta     T80_STRING_H
-                jsr     t80_print_cursor
-                jsr     t80_crlf_cursor
-                jsr     t80_crlf_cursor
-                jsr     t80_crlf_cursor
+                ldx     #>message13
+                jsr     con_print
+                jsr     con_newline
+                jsr     con_newline
+                jsr     con_newline
 
                 lda     #<message14
-                sta     T80_STRING_L
-                lda     #>message14
-                sta     T80_STRING_H
-                jsr     t80_print_cursor
-                jsr     t80_crlf_cursor
-
-                jsr     kbtest
+                ldx     #>message14
+                jsr     con_print
+                jsr     con_newline
+                jsr     con_newline
 
                 ; clear key
                 jsr     kb_clear
@@ -296,21 +265,17 @@ raster_24row:
                 nop
                 nop
 raster_24rbt:   txs
-                lda     #<raster_top
-                sta     $fffe
-                lda     #>raster_top
-                sta     $ffff
-                ldy     #1
-                dey
-                bne     *-1
-                nop
-                ldx     RASTER_TBL_OFFSET
                 lda     VIC_CTL1
                 and     #%11110111
                 sta     VIC_CTL1
+                ldy     #<raster_top
+                sty     $fffe
+                ldy     #>raster_top
+                sty     $ffff
+                ldy     RASTER_SAVE_Y
+                ldx     RASTER_TBL_OFFSET
                 and     #%11011111
                 sta     VIC_CTL1
-                ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
 
 ; raster payload for switching to 25 rows hires mode
@@ -318,6 +283,11 @@ raster_25row:
                 lda     VIC_CTL1
                 ora     #%00101000
                 sta     VIC_CTL1
+                sty     RASTER_SAVE_Y
+                stx     RASTER_TBL_OFFSET
+                jsr     sprite_zone1
+                ldx     RASTER_TBL_OFFSET
+                ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
 
 ; raster payload for switching to sprite zone 0
@@ -436,48 +406,49 @@ raster_brbt:    txs
                 ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
 
-.import con_scrollscr
-kbtest:
-                jsr     kb_init
-kbloop:         jsr     kb_in
-                bcs     kbloop
-                bvs     checkenter
-                sta     kbteststr
-                lda     #<kbteststr
-                sta     T80_STRING_L
-                lda     #>kbteststr
-                sta     T80_STRING_H
-                jsr     t80_print_cursor
-                jmp     kbloop
-checkenter:     cpx     #KBC_ENTER
-                bne     kbloop
-                jsr     con_scrollscr
+contest:
+                lda     #<contestmsg
+                ldx     #>contestmsg
+                jsr     con_print
+                jsr     con_newline
+                jsr     con_newline
+conloop:        jsr     kb_in
+                bcs     conloop
+                bvs     checkctrl
+                jsr     con_chrout
+                jmp     conloop
+checkctrl:      cpx     #KBC_ENTER
+                beq     kbenter
+                cpx     #KBC_STOP
+                bne     conloop
                 rts
+kbenter:        jsr     con_newline
+                jmp     conloop
 
 .segment "ADDATA"
-kbteststr:      .byte 0,0
+contestmsg:     string "CONSOLE TEST MODE, leave with STOP"
 
-message1:       .asciiz "Copyright &2013 Zirias"
-message2:       .asciiz "All rights reserved."
-message3:       .asciiz "C64 Workbench and AmigaBASIC style Demo Disk."
-message4:       .asciiz "Release 1.09a2, 2013-12-13"
+message1:       string "Copyright &2013 Zirias"
+message2:       string "All rights reserved."
+message3:       string "C64 Workbench and AmigaBASIC style Demo Disk."
+message4:       string "Release 1.09a2, 2013-12-13"
 
-message5:       .asciiz "This demo started in 2006 and mimicks the style of the AmigaBASIC"
-message6:       .asciiz "demo `Music'. The goal was to make it look just like an Amiga."
-message7:       .asciiz "There are still some minor inaccuracies compared to original Amiga"
-message8:       .asciiz "Workbench for technical reasons -- Can you spot them? Of course I"
-message9:       .asciiz "do not mean the low res (3 px wide) `topaz' font ;)"
-
-
-message10:      .asciiz "Any key can be pressed to exit the demo."
-
-message11:      .asciiz "Contact: Felix Palmen <felix@palmen-it.de>"
-
-message12:      .asciiz "loading demo `Music' ... "
-message13:      .asciiz "done."
+message5:       string "This demo started in 2006 and mimicks the style of the AmigaBASIC"
+message6:       string "demo `Music'. The goal was to make it look just like an Amiga."
+message7:       string "There are still some minor inaccuracies compared to original Amiga"
+message8:       string "Workbench for technical reasons -- Can you spot them? Of course I"
+message9:       string "do not mean the low res (3 px wide) `topaz' font ;)"
 
 
-message14:      .asciiz "  -- Press any key to start --"
+message10:      string "Any key can be pressed to exit the demo."
+
+message11:      string "Contact: Felix Palmen <felix@palmen-it.de>"
+
+message12:      string "loading demo `Music' ... "
+message13:      string "done."
+
+
+message14:      string "  -- Press any key to start --"
 
 raster_tbl:
                 .byte 27, $80
@@ -488,9 +459,6 @@ raster_tbl:
 
                 .byte 50, $00
                 .word raster_25row
-
-                .byte 52, $00
-                .word raster_zone1
 
                 .byte 80, $00
                 .word raster_keycheck

@@ -364,9 +364,6 @@ raster_tbl:
                 .byte 50, $00
                 .word raster_25row
 
-                .byte 52, $00
-                .word raster_zone1
-
                 .byte 80, $00
                 .word raster_keycheck
 
@@ -375,6 +372,9 @@ raster_tbl:
 
                 .byte 120, $00
                 .word raster_sound
+
+                .byte 160, $00
+                .word raster_zone1
 
                 .byte 243, $00
                 .word raster_resizer
