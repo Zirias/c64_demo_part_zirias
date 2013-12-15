@@ -9,9 +9,8 @@
 .export clear_window
 
 .export raster_24row
-.export raster_25row
+.export raster_contentstart
 .export raster_zone0
-.export raster_zone1
 .export raster_resizer
 .export raster_screen
 .export raster_border
@@ -278,8 +277,8 @@ raster_24rbt:   txs
                 sta     VIC_CTL1
                 jmp     raster_bottom
 
-; raster payload for switching to 25 rows hires mode
-raster_25row:
+; raster payload for switching to 25 rows hires mode and sprite zone 1
+raster_contentstart:
                 lda     VIC_CTL1
                 ora     #%00101000
                 sta     VIC_CTL1
@@ -295,15 +294,6 @@ raster_zone0:
                 sty     RASTER_SAVE_Y
                 stx     RASTER_TBL_OFFSET
                 jsr     sprite_zone0
-                ldx     RASTER_TBL_OFFSET
-                ldy     RASTER_SAVE_Y
-                jmp     raster_bottom
-
-; raster payload for switching to sprite zone 1
-raster_zone1:
-                sty     RASTER_SAVE_Y
-                stx     RASTER_TBL_OFFSET
-                jsr     sprite_zone1
                 ldx     RASTER_TBL_OFFSET
                 ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
@@ -458,7 +448,7 @@ raster_tbl:
                 .word raster_border
 
                 .byte 50, $00
-                .word raster_25row
+                .word raster_contentstart
 
                 .byte 80, $00
                 .word raster_keycheck
