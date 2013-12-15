@@ -174,8 +174,6 @@ amigados:
                 jsr     t80_crlf_cursor
                 jsr     t80_crlf_cursor
 
-                jmp     kbtest
-
                 lda     #<message5
                 sta     T80_STRING_L
                 lda     #>message5
@@ -259,6 +257,8 @@ amigados:
                 sta     T80_STRING_H
                 jsr     t80_print_cursor
                 jsr     t80_crlf_cursor
+
+                jsr     kbtest
 
                 ; clear key
                 jsr     kb_clear
@@ -436,11 +436,12 @@ raster_brbt:    txs
                 ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
 
+.import con_scrollscr
 kbtest:
                 jsr     kb_init
 kbloop:         jsr     kb_in
                 bcs     kbloop
-                bvs     kbloop
+                bvs     checkenter
                 sta     kbteststr
                 lda     #<kbteststr
                 sta     T80_STRING_L
@@ -448,6 +449,10 @@ kbloop:         jsr     kb_in
                 sta     T80_STRING_H
                 jsr     t80_print_cursor
                 jmp     kbloop
+checkenter:     cpx     #KBC_ENTER
+                bne     kbloop
+                jsr     con_scrollscr
+                rts
 
 .segment "ADDATA"
 kbteststr:      .byte 0,0

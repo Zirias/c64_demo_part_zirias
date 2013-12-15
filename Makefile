@@ -14,7 +14,7 @@ OBJECTS		= loader.o chainloader.o \
 		  	soundtable.o snd_play.o ziri_ambi.o raster.o \
 			text80.o font.o sprites.o spritezone.o \
 			marquee_sprites.o topborder_sprites.o \
-			keyboard.o kbinput.o music.o
+			keyboard.o kbinput.o console.o music.o
 LINKCFG = demo.cfg
 LDFLAGS	= -Ln demo.lbl -m demo.map -C $(LINKCFG)
 
