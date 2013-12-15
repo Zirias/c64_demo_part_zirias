@@ -13,10 +13,14 @@
 .export snd_instr2
 .export snd_instr3
 
-.segment "MUDATA"
+.segment "MUBSS"
 snd_count:      .res    1
-
-snd_playing:    .byte 0
+snd_speed:      .res    1
+snd_songptr:    .res    2
+snd_playpos:    .res    1
+snd_instr1:     .res    1
+snd_instr2:     .res    1
+snd_instr3:     .res    1
 
 .segment "MUSIC"
 
@@ -180,11 +184,6 @@ snd_stop:
                 rts
 
 .segment "MUDATA"
-snd_speed:      .res    1
-snd_songptr:    .res    2
-snd_playpos:    .res    1
-snd_instr1:     .res    1
-snd_instr2:     .res    1
-snd_instr3:     .res    1
+snd_playing:    .byte 0
 
 ; vim: et:si:ts=8:sts=8:sw=8
