@@ -432,6 +432,7 @@ raster_brbt:    txs
                 sta     VIC_CTL1
                 lda     #1
                 sta     SPRITE_LAYER
+                lda     sprite_1_show
                 sta     SPRITE_SHOW
                 ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
