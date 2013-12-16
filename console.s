@@ -6,7 +6,7 @@
 ; - clear screen
 ; - scroll upwards
 ; - get/put character to given position
-; - redraw screen [TODO]
+; - redraw screen
 ; - output character
 ; - print (pascal) string to console
 ; - turn on/off cursor sprite [TODO]
@@ -21,22 +21,26 @@
 .include "vicconfig.inc"
 
 .export con_clrscr
+.export con_redraw
 .export con_getchr
 .export con_setchr
 .export con_chrout
 .export con_newline
 .export con_print
+.export con_savecrsr
+.export con_restorecrsr
 
-TMP             = $fd
+TMP             = $8c
 
 .segment "ADBSS"
 
 con_screen:     .res    77 * 24
+cursor_savex:   .res    1
+cursor_savey:   .res    1
 
 .segment "AMIGADOS"
 
 ; scroll screen upwards one row -- preserves X
-; [TODO] scroll screen memory (con_screen) too
 scrollscr:
                 stx     TMP
 
@@ -91,7 +95,34 @@ cs_clear:       sta     vic_bitmap + $1cc7,x
                 dex
                 bne     cs_clear
 
-                ; [TODO]: scroll screen memory here
+                ; scroll screen memory
+                ldy     #0
+css_outer:      lda     screenrows,y
+                sta     css_sta
+                lda     screenrows+2,y
+                sta     css_lda
+                iny
+                lda     screenrows,y
+                sta     css_sta+1
+                lda     screenrows+2,y
+                sta     css_lda+1
+                ldx     #0
+css_lda         = *+1
+css_inner:      lda     $ffff,x
+css_sta         = *+1
+                sta     $ffff,x
+                inx
+                cpx     #77
+                bne     css_inner
+                iny
+                cpy     #46
+                bne     css_outer
+                ldx     #0
+                lda     #$20
+ccs_space:      sta     con_screen + 1771,x
+                inx
+                cpx     #77
+                bne     ccs_space
 
                 dec     T80_ROW
                 ldx     TMP
@@ -106,22 +137,63 @@ ccs_loopextra:  sta     con_screen + $700,x
                 bpl     ccs_loopextra
                 ldy     #7
                 ldx     #0
-ccs_outer:      dec     ccs_sta
-ccs_sta         = *+1
-ccs_inner:      sta     con_screen + $700,x
-                dex
-                bne     ccs_inner
+ccs_stapage     = *+2
+ccs_loop:       sta     con_screen, x
+                inx
+                bne     ccs_loop
                 dey
-                bne     ccs_outer
-                lda     ccs_sta
-                adc     #7
-                sta     ccs_sta
+                beq     ccs_done
+                inc     ccs_stapage
+                jmp     ccs_loop
+ccs_done:       lda     #>con_screen
+                sta     ccs_stapage
                 jsr     clear_window
                 lda     #0
                 sta     T80_ROW
                 sta     T80_COL
                 jsr     updatecursor
                 rts
+
+; save cursor position
+; should be called before running any application with direct screen access
+con_savecrsr:
+                lda     T80_ROW
+                sta     cursor_savey
+                lda     T80_COL
+                sta     cursor_savex
+                rts
+
+; redraw console screen contents
+; uses saved cursor position, so save it timely
+con_redraw:
+                jsr     clear_window
+                ldy     #23
+crd_outer:      sty     T80_ROW
+                tya
+                asl     a
+                tay
+                lda     screenrows,y
+                sta     crd_lda
+                lda     screenrows+1,y
+                sta     crd_lda+1
+                ldx     #0
+crd_inner:      stx     T80_COL
+crd_lda         = *+1
+                lda     $ffff,x
+                jsr     t80_putc
+                inx
+                cpx     #77
+                bne     crd_inner
+                ldy     T80_ROW
+                dey
+                bpl     crd_outer
+
+; restore saved cursor position
+con_restorecrsr:
+                lda     cursor_savey
+                sta     T80_ROW
+                lda     cursor_savex
+                sta     T80_COL
 
 ; update cursor position to T80_ROW/T80_COL
 ; preserves X, Y
@@ -148,8 +220,8 @@ uc_noh2:        sta     sprite_1_0_x
 ; set character at position T80_ROW/T80_COL
 ; preserves X
 con_setchr:
-                jsr     t80_putc
                 sta     TMP
+                jsr     t80_putc
                 lda     T80_ROW
                 asl     a
                 tay
@@ -238,16 +310,16 @@ screenrows:
                 .word   con_screen + 847
                 .word   con_screen + 924
                 .word   con_screen + 1001
-                .word   con_screen + 1025
-                .word   con_screen + 1102
-                .word   con_screen + 1179
-                .word   con_screen + 1256
-                .word   con_screen + 1333
-                .word   con_screen + 1410
-                .word   con_screen + 1487
-                .word   con_screen + 1564
-                .word   con_screen + 1641
-                .word   con_screen + 1718
+                .word   con_screen + 1078
+                .word   con_screen + 1155
+                .word   con_screen + 1232
+                .word   con_screen + 1309
+                .word   con_screen + 1386
+                .word   con_screen + 1463
+                .word   con_screen + 1540
+                .word   con_screen + 1617
+                .word   con_screen + 1694
+                .word   con_screen + 1771
 rowoffsets:
                 .word   vic_bitmap + $1d60, vic_bitmap + $1cc0
                 .word   vic_bitmap + $1c20, vic_bitmap + $1b80

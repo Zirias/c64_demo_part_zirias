@@ -9,8 +9,8 @@
 .export clear_window
 
 .export raster_24row
-.export raster_contentstart
 .export raster_zone0
+.export raster_zone1
 .export raster_resizer
 .export raster_screen
 .export raster_border
@@ -156,8 +156,6 @@ amigados:
                 ldx     #>message4
                 jsr     con_print
                 jsr     con_newline
-
-                ; handle cursor from here
                 jsr     con_newline
                 jsr     con_newline
 
@@ -233,7 +231,33 @@ amigados:
 
 waitkey:        jsr     kb_get
                 bcs     waitkey
+                jsr     con_savecrsr
+
+                ; run demo
                 jsr     fl_run
+
+                ; restore console
+                lda     #>vic_bitmap
+                sta     T80_DRAWPAGE
+                lda     #<font_topaz_80col_petscii_western
+                sta     T80_FONT_L
+                lda     #>font_topaz_80col_petscii_western
+                sta     T80_FONT_H
+                jsr     sprites_topborder
+                jsr     sprites_cursor
+                jsr     ad_raster
+                jsr     con_redraw
+
+                lda     #<message15
+                ldx     #>message15
+                jsr     con_print
+                jsr     con_newline
+
+                ; clear key
+                jsr     kb_clear
+
+waitkey2:       jsr     kb_get
+                bcs     waitkey2
 
                 jsr     gfx_off
                 lda     #0
@@ -277,23 +301,20 @@ raster_24rbt:   txs
                 sta     VIC_CTL1
                 jmp     raster_bottom
 
-; raster payload for switching to 25 rows hires mode and sprite zone 1
-raster_contentstart:
-                lda     VIC_CTL1
-                ora     #%00101000
-                sta     VIC_CTL1
-                sty     RASTER_SAVE_Y
-                stx     RASTER_TBL_OFFSET
-                jsr     sprite_zone1
-                ldx     RASTER_TBL_OFFSET
-                ldy     RASTER_SAVE_Y
-                jmp     raster_bottom
-
 ; raster payload for switching to sprite zone 0
 raster_zone0:
                 sty     RASTER_SAVE_Y
                 stx     RASTER_TBL_OFFSET
                 jsr     sprite_zone0
+                ldx     RASTER_TBL_OFFSET
+                ldy     RASTER_SAVE_Y
+                jmp     raster_bottom
+
+; raster payload for switching to sprite zone 1
+raster_zone1:
+                sty     RASTER_SAVE_Y
+                stx     RASTER_TBL_OFFSET
+                jsr     sprite_zone1
                 ldx     RASTER_TBL_OFFSET
                 ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
@@ -393,6 +414,25 @@ raster_brbt:    txs
                 bne     *-1
                 lda     #6
                 sta     BG_COLOR_0
+                ldy     #$e
+                dey
+                bne     *-1
+                lda     #vic_sprite_1_baseptr
+                sta     vic_sprite_vectors
+                lda     sprite_1_0_x
+                sta     SPRITE_0_X
+                lda     #10
+                sta     SPRITE_0_COL
+                lda     sprite_1_0_y
+                sta     SPRITE_0_Y
+                lda     sprite_1_x_h
+                sta     SPRITE_X_HB
+                lda     VIC_CTL1
+                ora     #%00101000
+                sta     VIC_CTL1
+                lda     #1
+                sta     SPRITE_LAYER
+                sta     SPRITE_SHOW
                 ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
 
@@ -440,15 +480,13 @@ message13:      string "done."
 
 message14:      string "  -- Press any key to start --"
 
+message15:      string "That's it for now ... press any key to go back to BASIC."
 raster_tbl:
                 .byte 27, $80
                 .word raster_screen
 
                 .byte 35, $00
                 .word raster_border
-
-                .byte 50, $00
-                .word raster_contentstart
 
                 .byte 80, $00
                 .word raster_keycheck
