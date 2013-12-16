@@ -27,7 +27,7 @@
 .include        "petscii_lc.inc"
 .include        "raster.inc"
 .include        "keyboard.inc"
-.include        "kbinput.inc"
+.include        "cmdline.inc"
 
 .import font_topaz_80col_petscii_western
 
@@ -197,7 +197,10 @@ amigados:
                 jsr     con_newline
                 jsr     con_newline
 
-                jsr     contest
+                lda     #<prompt
+                ldx     #>prompt
+                jsr     con_print
+                jsr     cmd_getnext
 
                 lda     #<message12
                 ldx     #>message12
@@ -437,27 +440,8 @@ raster_brbt:    txs
                 ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
 
-contest:
-                lda     #<contestmsg
-                ldx     #>contestmsg
-                jsr     con_print
-                jsr     con_newline
-                jsr     con_newline
-conloop:        jsr     kb_in
-                bcs     conloop
-                bvs     checkctrl
-                jsr     con_chrout
-                jmp     conloop
-checkctrl:      cpx     #KBC_ENTER
-                beq     kbenter
-                cpx     #KBC_STOP
-                bne     conloop
-                rts
-kbenter:        jsr     con_newline
-                jmp     conloop
-
 .segment "ADDATA"
-contestmsg:     string "CONSOLE TEST MODE, leave with STOP"
+prompt:         string "1> "
 
 message1:       string "Copyright &2013 Zirias"
 message2:       string "All rights reserved."

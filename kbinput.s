@@ -17,11 +17,12 @@ kb_in:
                 and     #%10000000
                 beq     noctrl
                 bit     kbi_ctrl_ind
+                txa
+                ora     #%10000000
                 rts
 noctrl:         txa
                 tay
                 lda     ctrlmap_us,y
-                tax
                 beq     noctrl2
                 bit     kbi_ctrl_ind
                 rts
@@ -31,7 +32,7 @@ kbi_out:        rts
                 
 .segment "KSDATA"
 
-kbi_ctrl_ind:   .byte $ff
+kbi_ctrl_ind:   .byte $7f
 
 keymap_us:
                 .byte   0,  0,  0,  0,  0,  0,  0,  0
