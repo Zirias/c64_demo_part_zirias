@@ -134,8 +134,7 @@ hdrcopyloop:    lda     ks_basichdr,x
                 bpl     hdrcopyloop
 
                 ; execute kickstart
-                jsr     __KSENTRY_LOAD__
-                rts
+                jmp     __KSENTRY_LOAD__
 
 .segment "LDDATA"
 
