@@ -1,9 +1,28 @@
+;
+; "AmigaDOS" console -- Felix Palmen <felix@palmen-it.de> 12/2013
+;
+; This module provides the basic console functionality:
+;
+; - clear screen
+; - scroll upwards
+; - get/put character to given position
+; - redraw screen [TODO]
+; - output character
+; - print (pascal) string to console
+; - turn on/off cursor sprite [TODO]
+; - update cursor position [TODO: add call with a given position]
+;
+; T80_ROW / T80_COL from text80 module is used as the cursor position
+;
+
 .include "spritezone.inc"
 .include "text80.inc"
 .include "amigados.inc"
 .include "vicconfig.inc"
 
 .export con_clrscr
+.export con_getchr
+.export con_setchr
 .export con_chrout
 .export con_newline
 .export con_print
@@ -16,6 +35,8 @@ con_screen:     .res    77 * 24
 
 .segment "AMIGADOS"
 
+; scroll screen upwards one row -- preserves X
+; [TODO] scroll screen memory (con_screen) too
 scrollscr:
                 stx     TMP
 
@@ -70,9 +91,13 @@ cs_clear:       sta     vic_bitmap + $1cc7,x
                 dex
                 bne     cs_clear
 
+                ; [TODO]: scroll screen memory here
+
+                dec     T80_ROW
                 ldx     TMP
                 rts
 
+; clear the screen
 con_clrscr:
                 lda     #$20
                 ldx     #$37
@@ -98,6 +123,8 @@ ccs_inner:      sta     con_screen + $700,x
                 jsr     updatecursor
                 rts
 
+; update cursor position to T80_ROW/T80_COL
+; preserves X, Y
 updatecursor:
                 lda     T80_ROW
                 asl     a
@@ -118,7 +145,10 @@ uc_noh1:        adc     #$1c
 uc_noh2:        sta     sprite_1_0_x
                 rts        
 
+; set character at position T80_ROW/T80_COL
+; preserves X
 con_setchr:
+                jsr     t80_putc
                 sta     TMP
                 lda     T80_ROW
                 asl     a
@@ -133,9 +163,27 @@ csc_sta         = *+1
                 sta     $ffff,y
                 rts
 
+; get character at position T80_ROW/T80_COL
+; preserves X
+con_getchr:
+                lda     T80_ROW
+                asl     a
+                tay
+                lda     screenrows,y
+                sta     cgc_lda
+                lda     screenrows+1,y
+                sta     cgc_lda+1
+                ldy     T80_COL
+cgc_lda         = *+1
+                lda     $ffff,y
+                rts
+
+; print character at position T80_ROW/T80_COL
+; updates T80_ROW/T80_COL and cursor position accordingly
+; line wrapping and screen scrolling is handled
+; preserves X
 con_chrout:
                 jsr     con_setchr
-                jsr     t80_putc
                 lda     #76
                 cmp     T80_COL
                 beq     con_newline
@@ -143,19 +191,21 @@ con_chrout:
                 jsr     updatecursor
                 rts
 
+; start new line in console window, scrolling handled automatically
+; preserves X
 con_newline:
                 lda     #0
                 sta     T80_COL
-                lda     #23
-                cmp     T80_ROW
-                beq     cco_scroll
-                inc     T80_ROW
-                jsr     updatecursor
-                rts
-cco_scroll:     jsr     scrollscr
-                jsr     updatecursor
+                ldy     T80_ROW
+                iny
+                sty     T80_ROW
+                cpy     #24
+                bne     cnl_noscroll
+                jsr     scrollscr
+cnl_noscroll:   jsr     updatecursor
                 rts
 
+; print pascal string given in A/X starting at T80_ROW/T80_COL
 con_print:
                 sta     cp_read
                 sta     cp_cmp
