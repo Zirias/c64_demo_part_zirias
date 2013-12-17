@@ -16,7 +16,7 @@
 ; - use the 2 spare bits for modifiers (CTRL and SHIFT) because modifiers
 ;   are of greater value to simple CLIs than e.g. "key released" events
 ; - key repeat has to be implemented here, because calling code has no way to
-;   determine whether a key is hold (TBD later)
+;   determine whether a key is hold .. for now done with fixed values
 ;
 ; up to 15 scancodes are buffered in a ring buffer
 ;
@@ -37,6 +37,9 @@ buffer:         .res 16
 tmp1:           .res 1
 tmp2:           .res 1
 tmp3:           .res 1
+
+repeatwait:     .res 1
+repeatfreq:     .res 1
 
 modmask:        .res 1
 
@@ -182,9 +185,13 @@ kbc_buffer:     lda     tmp3
                 rts
 kbc_checknew:   lda     tmp1
                 cmp     tmp2
-                beq     kbc_done
+                beq     kbc_checkrepeat
                 sta     tmp2
-                ora     modmask
+                ldx     #40
+                stx     repeatwait
+                ldx     #2
+                stx     repeatfreq
+kbc_repeatok:   ora     modmask
                 ldx     bufwr
                 sta     buffer,x
                 dex
@@ -208,5 +215,20 @@ kbc_colloop:    lsr     a
 kbc_havekey:    txa
                 clc
                 rts
+
+kbc_checkrepeat:
+                ldx     repeatwait
+                beq     kbc_dorepeat
+                dex
+                stx     repeatwait
+                rts
+kbc_dorepeat:   ldx     repeatfreq
+                beq     kbcr_next
+                dex
+                stx     repeatfreq
+                rts
+kbcr_next:      ldx     #2
+                stx     repeatfreq
+                jmp     kbc_repeatok
 
 ; vim: et:si:ts=8:sts=8:sw=8
