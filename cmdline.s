@@ -69,7 +69,8 @@ cgn_left:       lda     currentpos
                 jsr     con_crsrleft
                 jmp     cgn_mainloop
 
-cgn_enter:      jsr     con_newline
+cgn_enter:      jsr     cgn_eol
+                jsr     con_newline
                 lda     #<currentline
                 ldx     #>currentline
                 rts
@@ -98,7 +99,10 @@ cgn_home:       lda     #0
                 jsr     con_setcrsr
                 jmp     cgn_mainloop
 
-cgn_end:        ldx     linestartrow
+cgn_end:        jsr     cgn_eol
+                jmp     cgn_mainloop
+
+cgn_eol:        ldx     linestartrow
                 lda     linestartcol
                 clc
                 adc     currentline
@@ -112,8 +116,7 @@ cend_ok:        sta     T80_COL
                 stx     T80_ROW
                 lda     currentline
                 sta     currentpos
-                jsr     con_setcrsr
-                jmp     cgn_mainloop
+                jmp     con_setcrsr
 cend_ovf:       sbc     #77
                 inx
                 jmp     cend_checkcol
@@ -167,7 +170,8 @@ cgd_copyloop:   lda     currentline+2,x
                 dec     currentline
                 jmp     cgn_mainloop
 
-cgn_cancel:     jsr     con_newline
+cgn_cancel:     jsr     cgn_eol
+                jsr     con_newline
                 lda     #0
                 tax
                 rts
