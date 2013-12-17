@@ -74,10 +74,6 @@ cgn_enter:      jsr     con_newline
                 ldx     #>currentline
                 rts
 
-cgn_home:       jmp     cgn_mainloop
-
-cgn_end:        jmp     cgn_mainloop
-
 cgn_backspace:  lda     currentpos
                 beq     cgn_mainloop
                 cmp     currentline
@@ -90,6 +86,30 @@ cgn_backspace:  lda     currentpos
                 dex
                 sta     currentline+1,x
                 stx     currentpos
+                jmp     cgn_mainloop
+
+cgn_home:       lda     #0
+                sta     currentpos
+                lda     linestartrow
+                sta     T80_ROW
+                lda     linestartcol
+                sta     T80_COL
+                jsr     con_setcrsr
+                jmp     cgn_mainloop
+
+cgn_end:        ldx     linestartrow
+                lda     linestartcol
+                adc     currentline
+cend_checkcol:  cmp     #77
+                bcc     cend_ok
+                sbc     #77
+                inx
+                bpl     cend_checkcol
+cend_ok:        sta     T80_COL
+                stx     T80_ROW
+                lda     currentline
+                sta     currentpos
+                jsr     con_setcrsr
                 jmp     cgn_mainloop
 
 cgn_delmiddle:  jmp     cgn_mainloop

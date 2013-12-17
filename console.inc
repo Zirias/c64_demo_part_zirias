@@ -11,5 +11,6 @@
 .import con_hidecrsr
 .import con_crsrleft
 .import con_crsrright
+.import con_setcrsr
 
 ; vim: ft=asm:et:si:ts=8:sts=8:sw=8
