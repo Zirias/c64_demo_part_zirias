@@ -7,5 +7,9 @@
 .import con_print
 .import con_savecrsr
 .import con_restorecrsr
+.import con_showcrsr
+.import con_hidecrsr
+.import con_crsrleft
+.import con_crsrright
 
 ; vim: ft=asm:et:si:ts=8:sts=8:sw=8

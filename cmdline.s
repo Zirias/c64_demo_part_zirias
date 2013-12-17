@@ -4,6 +4,7 @@
 
 .include "console.inc"
 .include "kbinput.inc"
+.include "text80.inc"
 
 .export cmd_getnext
 
@@ -11,6 +12,8 @@
 
 currentline:    .res 256
 currentpos:     .res 1
+linestartrow:   .res 1
+linestartcol:   .res 1
 
 .segment "AMIGADOS"
 
@@ -18,11 +21,17 @@ cmd_getnext:
                 lda     #0
                 sta     currentline
                 sta     currentpos
+                lda     T80_ROW
+                sta     linestartrow
+                lda     T80_COL
+                sta     linestartcol
 
 cgn_mainloop:   jsr     kb_in
                 bcs     cgn_mainloop
                 bvs     cgn_handlectrl
                 ldx     currentline
+                cpx     #$ff
+                beq     cgn_mainloop
                 cpx     currentpos
                 bne     cgn_insert
                 sta     currentline+1,x
@@ -47,9 +56,18 @@ cgn_jumptocmd:  tax
 cgn_cmdjump     = *+1
                 jmp     $ffff
 
-cgn_right:      jmp     cgn_mainloop
+cgn_right:      lda     currentpos
+                cmp     currentline
+                beq     cgn_mainloop
+                inc     currentpos
+                jsr     con_crsrright
+                jmp     cgn_mainloop
 
-cgn_left:       jmp     cgn_mainloop
+cgn_left:       lda     currentpos
+                beq     cgn_mainloop
+                dec     currentpos
+                jsr     con_crsrleft
+                jmp     cgn_mainloop
 
 cgn_enter:      jsr     con_newline
                 lda     #<currentline
@@ -60,7 +78,21 @@ cgn_home:       jmp     cgn_mainloop
 
 cgn_end:        jmp     cgn_mainloop
 
-cgn_backspace:  jmp     cgn_mainloop
+cgn_backspace:  lda     currentpos
+                beq     cgn_mainloop
+                cmp     currentline
+                bne     cgn_delmiddle
+                jsr     con_crsrleft
+                lda     #$20
+                jsr     con_setchr
+                dec     currentline
+                ldx     currentpos
+                dex
+                sta     currentline+1,x
+                stx     currentpos
+                jmp     cgn_mainloop
+
+cgn_delmiddle:  jmp     cgn_mainloop
 
 cgn_cancel:     jsr     con_newline
                 lda     #0

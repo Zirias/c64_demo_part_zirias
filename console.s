@@ -9,8 +9,8 @@
 ; - redraw screen
 ; - output character
 ; - print (pascal) string to console
-; - turn on/off cursor sprite [TODO]
-; - update cursor position [TODO: add call with a given position]
+; - turn on/off cursor sprite
+; - update cursor position
 ;
 ; T80_ROW / T80_COL from text80 module is used as the cursor position
 ;
@@ -29,6 +29,11 @@
 .export con_print
 .export con_savecrsr
 .export con_restorecrsr
+.export con_showcrsr
+.export con_hidecrsr
+.export con_crsrleft
+.export con_crsrright
+.export con_setcrsr
 
 TMP             = $8c
 
@@ -151,7 +156,7 @@ ccs_done:       lda     #>con_screen
                 lda     #0
                 sta     T80_ROW
                 sta     T80_COL
-                jsr     updatecursor
+                jsr     con_setcrsr
                 rts
 
 ; save cursor position
@@ -197,7 +202,9 @@ con_restorecrsr:
 
 ; update cursor position to T80_ROW/T80_COL
 ; preserves X, Y
-updatecursor:
+con_setcrsr:
+                lda     sprite_1_show
+                beq     nocrsr
                 lda     T80_ROW
                 asl     a
                 asl     a
@@ -215,7 +222,19 @@ uc_noh1:        adc     #$1c
                 bcc     uc_noh2
                 inc     sprite_1_x_h
 uc_noh2:        sta     sprite_1_0_x
-                rts        
+nocrsr:         rts        
+
+; show cursor
+con_showcrsr:
+                lda     #1
+                sta     sprite_1_show
+                rts
+
+; hide cursor
+con_hidecrsr:
+                lda     #0
+                sta     sprite_1_show
+                rts
 
 ; set character at position T80_ROW/T80_COL
 ; preserves X
@@ -250,18 +269,35 @@ cgc_lda         = *+1
                 lda     $ffff,y
                 rts
 
+; move cursor to the left
+con_crsrleft:
+                lda     T80_COL
+                beq     ccl_lineup
+                dec     T80_COL
+                jmp     con_setcrsr
+ccl_lineup:     lda     T80_ROW
+                bne     ccl_setline
+                rts
+ccl_setline:    dec     T80_ROW
+                lda     #76
+                sta     T80_COL
+                jmp     con_setcrsr
+                
 ; print character at position T80_ROW/T80_COL
 ; updates T80_ROW/T80_COL and cursor position accordingly
 ; line wrapping and screen scrolling is handled
 ; preserves X
 con_chrout:
                 jsr     con_setchr
+
+; move cursor to the right -- this is exactly the same
+; routing as con_chrout except it doesn't actually print anything
+con_crsrright:
                 lda     #76
                 cmp     T80_COL
                 beq     con_newline
                 inc     T80_COL
-                jsr     updatecursor
-                rts
+                jmp     con_setcrsr
 
 ; start new line in console window, scrolling handled automatically
 ; preserves X
@@ -274,8 +310,7 @@ con_newline:
                 cpy     #24
                 bne     cnl_noscroll
                 jsr     scrollscr
-cnl_noscroll:   jsr     updatecursor
-                rts
+cnl_noscroll:   jmp     con_setcrsr
 
 ; print pascal string given in A/X starting at T80_ROW/T80_COL
 con_print:
