@@ -14,6 +14,7 @@ currentline:    .res 256
 currentpos:     .res 1
 linestartrow:   .res 1
 linestartcol:   .res 1
+tmp:            .res 1
 
 .segment "AMIGADOS"
 
@@ -33,15 +34,14 @@ cgn_mainloop:   jsr     kb_in
                 cpx     #$ff
                 beq     cgn_mainloop
                 cpx     currentpos
-                bne     cgn_insert
-                sta     currentline+1,x
+                beq     cgn_append
+                jmp     cgn_insert
+cgn_append:     sta     currentline+1,x
                 inx
                 stx     currentline
                 stx     currentpos
                 jsr     con_chrout
                 jmp     cgn_mainloop
-
-cgn_insert:     jmp     cgn_mainloop
 
 cgn_handlectrl: bmi     cgn_mainloop    ; keys with CTRL-modifier not handled
                 asl     a
@@ -77,8 +77,9 @@ cgn_enter:      jsr     con_newline
 cgn_backspace:  lda     currentpos
                 beq     cgn_mainloop
                 cmp     currentline
-                bne     cgn_delmiddle
-                jsr     con_crsrleft
+                beq     cgn_delend
+                jmp     cgn_delmiddle
+cgn_delend:     jsr     con_crsrleft
                 lda     #$20
                 jsr     con_setchr
                 dec     currentline
@@ -99,7 +100,9 @@ cgn_home:       lda     #0
 
 cgn_end:        ldx     linestartrow
                 lda     linestartcol
+                clc
                 adc     currentline
+                bcs     cend_ovf
 cend_checkcol:  cmp     #77
                 bcc     cend_ok
                 sbc     #77
@@ -111,8 +114,58 @@ cend_ok:        sta     T80_COL
                 sta     currentpos
                 jsr     con_setcrsr
                 jmp     cgn_mainloop
+cend_ovf:       sbc     #77
+                inx
+                jmp     cend_checkcol
 
-cgn_delmiddle:  jmp     cgn_mainloop
+cgn_insert:     sta     tmp
+                jsr     con_savecrsr
+                ldx     currentline
+cgi_copyloop:   dex
+                lda     currentline+1,x
+                sta     currentline+2,x
+                cpx     currentpos
+                bne     cgi_copyloop
+                lda     tmp
+                sta     currentline+1,x
+                inc     currentline
+                jsr     con_hidecrsr
+                lda     linestartrow
+                sta     T80_ROW
+                lda     linestartcol
+                sta     T80_COL
+                lda     #<currentline
+                ldx     #>currentline
+                jsr     con_print
+                jsr     con_restorecrsr
+                jsr     con_showcrsr
+                jsr     con_crsrright
+                inc     currentpos
+                jmp     cgn_mainloop
+
+cgn_delmiddle:  jsr     con_savecrsr
+                dec     currentpos
+                ldx     currentpos
+cgd_copyloop:   lda     currentline+2,x
+                sta     currentline+1,x
+                inx
+                cpx     currentline
+                bne     cgd_copyloop
+                lda     #$20
+                sta     currentline,x
+                jsr     con_hidecrsr
+                lda     linestartrow
+                sta     T80_ROW
+                lda     linestartcol
+                sta     T80_COL
+                lda     #<currentline
+                ldx     #>currentline
+                jsr     con_print
+                jsr     con_restorecrsr
+                jsr     con_showcrsr
+                jsr     con_crsrleft
+                dec     currentline
+                jmp     cgn_mainloop
 
 cgn_cancel:     jsr     con_newline
                 lda     #0
