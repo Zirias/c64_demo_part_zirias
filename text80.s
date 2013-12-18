@@ -27,11 +27,11 @@ CHAR_L          = $b5
 CHAR_H          = $b6
 WCOL            = $fd
 
-.segment "ADDATA"
+.segment "KSDATA"
 
 char:           .res 8
 
-.segment "AMIGADOS"
+.segment "KICKSTART"
 
 ; get address of character data
 ; in:   a               character block offset in font
