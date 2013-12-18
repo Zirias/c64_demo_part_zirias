@@ -249,6 +249,8 @@ waitkey:        jsr     kb_get
                 jsr     fl_run
 
                 ; restore console
+                lda     #6
+                sta     BORDER_COLOR
                 lda     #>vic_bitmap
                 sta     T80_DRAWPAGE
                 lda     #<font_topaz_80col_petscii_western
