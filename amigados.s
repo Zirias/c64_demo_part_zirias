@@ -128,6 +128,14 @@ amigados:
                 ; raster effects:
                 jsr     ad_raster
 
+                ; set initial working directory:
+                ldx     defaultwd
+                stx     wd
+copywd:         lda     defaultwd,x
+                sta     wd,x
+                dex
+                bne     copywd
+
                 ; start messages
                 lda     #>vic_bitmap
                 sta     T80_DRAWPAGE
@@ -197,6 +205,7 @@ amigados:
                 jsr     con_newline
                 jsr     con_newline
 
+                jsr     makeprompt
                 lda     #<prompt
                 ldx     #>prompt
                 jsr     con_print
@@ -440,8 +449,32 @@ raster_brbt:    txs
                 ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
 
+makeprompt:
+                lda     wd
+                tax
+                clc
+                adc     #4
+                sta     prompt
+                lda     #'>'
+                sta     prompt+3,x
+                lda     #' '
+                sta     prompt+4,x
+promptcpy:      lda     wd,x
+                sta     prompt+2,x
+                dex
+                bne     promptcpy
+                lda     #'1'
+                sta     prompt+1
+                lda     #'.'
+                sta     prompt+2
+                rts
+
+.segment "ADBSS"
+prompt:         .res 256
+wd:             .res 256
+
 .segment "ADDATA"
-prompt:         string "1> "
+defaultwd:      string "DF0:"
 
 message1:       string "Copyright &2013 Zirias"
 message2:       string "All rights reserved."
