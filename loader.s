@@ -9,6 +9,8 @@
 
 .import __KSENTRY_LOAD__
 .import chainload
+.import ld_devnum
+.import ks_devnum
 
 CHROUT          = $ffd2
 READY           = $a474
@@ -116,7 +118,9 @@ ldmsgloop:      lda     ld_loading,x
                 ; started from BASIC -> program line will grow by one
                 inc     $7a
 
-load:           jsr     chainload
+load:           lda     $ba
+                sta     ld_devnum       ; set bootloader device number
+                jsr     chainload
 
                 ; print "done."
                 ldx     #0
@@ -133,6 +137,8 @@ hdrcopyloop:    lda     ks_basichdr,x
                 dex
                 bpl     hdrcopyloop
 
+                lda     $ba
+                sta     ks_devnum       ; set kickstart device number
                 ; execute kickstart
                 jmp     __KSENTRY_LOAD__
 

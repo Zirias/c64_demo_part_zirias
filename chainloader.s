@@ -11,6 +11,7 @@ DRVCODE1_END = __DRVCODE1_LOAD__ + __DRVCODE1_SIZE__
 .import __KSENTRY_LOAD__
 
 .export chainload
+.export ld_devnum
 
 STATUS          = $90
 MESSAGES        = $9d
@@ -33,7 +34,8 @@ loadbuffer:     .res 254
 
 .segment "LOADER"
 
-il_device:      lda     FA
+ld_devnum       = *+1
+il_device:      lda     #0
                 jsr     LISTEN
                 lda     #$6f
                 jmp     SECOND

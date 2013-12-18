@@ -24,6 +24,7 @@ DRVCODE2_END = __DRVCODE2_LOAD__ + __DRVCODE2_SIZE__
 .export initfastload
 .export fastload
 .export fl_run
+.export ks_devnum
 
 STATUS          = $90
 MESSAGES        = $9d
@@ -99,7 +100,8 @@ il_sendme:      lda     mecmd,x
                 bpl     il_sendme
                 jmp     UNLSN
 
-il_device:      lda     FA
+ks_devnum       = *+1
+il_device:      lda     #0
                 jsr     LISTEN
                 lda     #$6f
                 jmp     SECOND
