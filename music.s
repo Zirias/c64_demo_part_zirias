@@ -55,7 +55,8 @@ raster_col:
 raster_sound:
                 sty     RASTER_SAVE_Y
                 stx     RASTER_TBL_OFFSET
-                jsr     snd_play
+                ;jsr     snd_play
+                jsr     $6003
                 ldx     RASTER_TBL_OFFSET
                 ldy     RASTER_SAVE_Y
                 jmp     raster_bottom
@@ -153,15 +154,17 @@ music:
                 jsr     clear_window
 
                 ; sound:
-                lda     #%00001111
-                sta     $D418
-                lda     #<song
-                sta     snd_songptr
-                lda     #>song
-                sta     snd_songptr+1
-                lda     #12
-                sta     snd_speed
-                jsr     snd_init
+                ;lda     #%00001111
+                ;sta     $D418
+                ;lda     #<song
+                ;sta     snd_songptr
+                ;lda     #>song
+                ;sta     snd_songptr+1
+                ;lda     #12
+                ;sta     snd_speed
+                ;jsr     snd_init
+                lda     #0
+                jsr     $6000
 
                 ; ambigram:
                 jsr     ziri_ambi
@@ -551,5 +554,8 @@ song:           .byte   7,%00010000,8,%00100000,9,%00100000
                 .byte   0
                 .byte   0
                 .byte   4,5,6,3,G3,255
+
+.segment "LPAR64"
+.incbin "lpar64.bin"
 
 ; vim: et:si:ts=8:sts=8:sw=8
