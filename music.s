@@ -556,6 +556,6 @@ song:           .byte   7,%00010000,8,%00100000,9,%00100000
                 .byte   4,5,6,3,G3,255
 
 .segment "LPAR64"
-.incbin "lpar64.bin"
+.incbin "anotl.bin"
 
 ; vim: et:si:ts=8:sts=8:sw=8
