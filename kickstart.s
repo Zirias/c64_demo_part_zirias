@@ -59,7 +59,22 @@ ksmsgloop:      lda     ks_msg,x
                 lda     fl_run+2
                 sta     amigadosentry+2
 
-noload:         ; configure VIC and enable raster IRQ handling
+noload:         ; "disable" NMI using no-ack trick
+                sei
+                lda     #<nmi_disable
+                sta     $0318
+                lda     #>nmi_disable
+                sta     $0319
+                lda     #0
+                sta     $dd0e
+                sta     $dd04
+                sta     $dd05
+                lda     #$81
+                sta     $dd0d
+                lda     #1
+                sta     $dd0e
+
+                ; configure VIC and enable raster IRQ handling
                 jsr     vic_init
                 jsr     raster_on
 
@@ -69,6 +84,15 @@ amigadosentry:  jsr     $ffff
                 ; disable raster IRQ handling, reset VIC to normal
                 jsr     raster_off
                 jsr     vic_done
+
+                ; re-enable normal NMI
+                lda     #$47
+                sta     $0318
+                lda     #$fe
+                sta     $0319
+                lda     #1
+                sta     $dd0d
+                lda     $dd0d
 
                 ; clear leftover keys from buffer
 eat_keys:       jsr     GETKB
@@ -83,6 +107,8 @@ eat_keys:       jsr     GETKB
                 sta     BG_COLOR_0
 
                 rts
+
+nmi_disable:    rti
 
 .segment "KICKSTART"
 
