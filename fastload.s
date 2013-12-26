@@ -14,6 +14,8 @@
 ;(drive code init, main drive code, c64->drive communication by Marko Mäkelä)
 ;(drive->c64 communication routine by K.M/TABOO)
 
+.include "kickstart.inc"
+
 .import __DRVCODE2_LOAD__
 .import __DRVCODE2_RUN__
 .import __DRVCODE2_SIZE__
@@ -26,10 +28,6 @@ DRVCODE2_END = __DRVCODE2_LOAD__ + __DRVCODE2_SIZE__
 .export fl_run
 .export ks_devnum
 
-STATUS          = $90
-MESSAGES        = $9d
-FA              = $ba
-
 LISTEN          = $ffb1
 SECOND          = $ff93
 UNLSN           = $ffae
@@ -37,9 +35,9 @@ CIOUT           = $ffa8
 
 drvcode_chunk   = $20
 
-temp1           = $02
-temp2           = $03
-stackptrstore   = $04
+temp1           = TMP_0
+temp2           = TMP_1
+stackptrstore   = TMP_2
 
 .segment "KSBSS"
 

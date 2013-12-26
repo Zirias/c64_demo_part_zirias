@@ -19,6 +19,7 @@
 .include "text80.inc"
 .include "amigados.inc"
 .include "vicconfig.inc"
+.include "kickstart.inc"
 
 .export con_clrscr
 .export con_redraw
@@ -35,7 +36,7 @@
 .export con_crsrright
 .export con_setcrsr
 
-TMP             = $8c
+TMP             = TMP_5
 
 .segment "ADBSS"
 

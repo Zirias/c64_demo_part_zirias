@@ -28,13 +28,14 @@
 .include        "raster.inc"
 .include        "keyboard.inc"
 .include        "cmdline.inc"
+.include        "kickstart.inc"
 
 .import font_topaz_80col_petscii_western
 
 .import __ADEXE_LOAD__
 
 .segment "ADEXE"
-.res 1                  ; dummy byte to define segment
+.res 0  ; force segment definition
 
 .segment "ADMAIN"
                 .word   amigados
@@ -46,61 +47,61 @@ clear_window:
                 ; left
                 ldy     #7
                 lda     #0
-                sta     $9e
+                sta     TMP_0
                 lda     #>vic_bitmap
-                sta     $9f
+                sta     TMP_1
                 ldx     #$19
                 lda     #$80
-bl_loop:        sta     ($9e),y
+bl_loop:        sta     (TMP_0),y
                 dey
                 bpl     bl_loop
                 ldy     #7
-                inc     $9f
-                lda     $9e
+                inc     TMP_1
+                lda     TMP_0
                 clc
                 adc     #$40
                 bcc     bl_noinc
-                inc     $9f
-bl_noinc:       sta     $9e
+                inc     TMP_1
+bl_noinc:       sta     TMP_0
                 lda     #$80
                 dex
                 bne     bl_loop
                 ; right
                 ldy     #7
                 lda     #$38
-                sta     $9e
+                sta     TMP_0
                 lda     #>vic_bitmap + 1
-                sta     $9f
+                sta     TMP_1
                 ldx     #$19
                 lda     #$01
-br_loop:        sta     ($9e),y
+br_loop:        sta     (TMP_0),y
                 dey
                 bpl     br_loop
                 ldy     #7
-                inc     $9f
-                lda     $9e
+                inc     TMP_1
+                lda     TMP_0
                 clc
                 adc     #$40
                 bcc     br_noinc
-                inc     $9f
-br_noinc:       sta     $9e
+                inc     TMP_1
+br_noinc:       sta     TMP_0
                 lda     #$01
                 dex
                 bne     br_loop
                 ; bottom
-                dec     $9f
+                dec     TMP_1
                 lda     #$3f
-                sta     $9e
+                sta     TMP_0
                 ldx     #$28
                 lda     #$ff
                 ldy     #0
-bb_loop:        sta     ($9e),y
-                lda     $9e
+bb_loop:        sta     (TMP_0),y
+                lda     TMP_0
                 sec
                 sbc     #$08
                 bcs     bb_nodec
-                dec     $9f
-bb_nodec:       sta     $9e
+                dec     TMP_1
+bb_nodec:       sta     TMP_0
                 lda     #$ff
                 dex
                 bne     bb_loop

@@ -4,6 +4,7 @@
 
 .include "vic.inc"
 .include "vicconfig.inc"
+.include "kickstart.inc"
 
 .export gfx_on
 .export gfx_off
@@ -11,15 +12,16 @@
 .export gfx_clear
 .export gfx_plot
 
-.export PLOT_XL
-.export PLOT_XH
-.export PLOT_Y
-.export PLOT_MODE
+.exportzp PLOT_XL
+.exportzp PLOT_XH
+.exportzp PLOT_Y
+.exportzp PLOT_MODE
 
-PLOT_XL         = $fa
-PLOT_XH         = $fb
-PLOT_Y          = $fc
-PLOT_MODE       = $f9
+.segment "ZPSYS": zeropage
+PLOT_XL:        .res 1
+PLOT_XH:        .res 1
+PLOT_Y:         .res 1
+PLOT_MODE:      .res 1
 
 .segment "KICKSTART"
 
@@ -40,21 +42,21 @@ gfx_off:
                 rts
 
 gfx_setcolor:
-                stx     $9e
+                stx     TMP_0
                 asl     a
                 asl     a
                 asl     a
                 asl     a
-                adc     $9e
+                adc     TMP_0
                 ldx     #>vic_colram
-                stx     $9f
+                stx     TMP_1
                 ldy     #0
-                sty     $9e
+                sty     TMP_0
                 ldx     #$04
-sc_loop:        sta     ($9e),y
+sc_loop:        sta     (TMP_0),y
                 iny
                 bne     sc_loop
-                inc     $9f
+                inc     TMP_1
                 dex
                 bne     sc_loop
                 rts
@@ -62,14 +64,14 @@ sc_loop:        sta     ($9e),y
 gfx_clear:
                 lda     #0
                 tay
-                sta     $9e
+                sta     TMP_0
                 ldx     #>vic_bitmap
-                stx     $9f
+                stx     TMP_1
                 ldx     #$20
-cl_loop:        sta     ($9e),y
+cl_loop:        sta     (TMP_0),y
                 iny
                 bne     cl_loop
-                inc     $9f
+                inc     TMP_1
                 dex
                 bne     cl_loop
                 rts
@@ -81,24 +83,24 @@ gfx_plot:
                 and     #$f8
                 clc
                 adc     gfx_tabl,x
-                sta     $9e
+                sta     TMP_0
                 lda     PLOT_XH
                 adc     gfx_tabh,x
-                sta     $9f
+                sta     TMP_1
                 lda     gfx_bits,y
                 ldy     #0
                 bit     PLOT_MODE
                 bvs     cp_set
                 bmi     cp_inv
 cp_del:         eor     #$ff
-                and     ($9e),y
-                sta     ($9e),y
+                and     (TMP_0),y
+                sta     (TMP_0),y
                 rts
-cp_set:         ora     ($9e),y
-                sta     ($9e),y
+cp_set:         ora     (TMP_0),y
+                sta     (TMP_0),y
                 rts
-cp_inv:         eor     ($9e),y
-                sta     ($9e),y
+cp_inv:         eor     (TMP_0),y
+                sta     (TMP_0),y
                 rts
 
 .segment "KSDATA"

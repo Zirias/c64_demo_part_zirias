@@ -3,6 +3,8 @@
 ;
 ; 14/11/2005 Felix Palmen <felix@palmen-it.de>
 
+.include "kickstart.inc"
+
 ; Parameters for gfx_plot, first point of line, counted by gfx_line
 .importzp PLOT_XL
 .importzp PLOT_XH
@@ -16,22 +18,23 @@
 .export gfx_line
 
 ; input parameters, endpoint of line
-.export LINETO_XL
-.export LINETO_XH
-.export LINETO_Y
+.exportzp LINETO_XL
+.exportzp LINETO_XH
+.exportzp LINETO_Y
 
-LINETO_XL       = $8b
-LINETO_XH       = $8c
-LINETO_Y        = $8d
+.segment "ZPSYS": zeropage
+LINETO_XL:      .res 1
+LINETO_XH:      .res 1
+LINETO_Y:       .res 1
 
 ; Distances x and y
-DXL             = $8e
-DXH             = $8f
-DY              = $fd
+DXL             = TMP_2
+DXH             = TMP_3
+DY              = TMP_4
 
 ; temporary distance difference for line algorithm
-DTL             = $b5
-DTH             = $b6
+DTL             = TMP_6
+DTH             = TMP_7
 
 ; counter
 ; *** weird semantics:
@@ -39,8 +42,8 @@ DTH             = $b6
 ; *** CNTL is decreased AFTER each plot and tested for 0, then (only then)
 ; *** CNTH is decreased.
 ; *** so, (0,1) means last point to plot.
-CNTL            = $b7
-CNTH            = $b8
+CNTL            = TMP_8
+CNTH            = TMP_9
 
 ; opcodes for DEC and INC in Zero-Page
 ; needed for self-modification in order to handle upwards and downwards

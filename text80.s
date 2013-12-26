@@ -4,32 +4,33 @@
 ; Felix Palmen <felix@palmen-it.de> -- 2013-11-29
 ;
 
-.export T80_DRAWPAGE
-.export T80_ROW
-.export T80_COL
-.export T80_FONT_L
-.export T80_FONT_H
+.include "kickstart.inc"
+
+.exportzp T80_DRAWPAGE
+.exportzp T80_ROW
+.exportzp T80_COL
+.exportzp T80_FONT_L
+.exportzp T80_FONT_H
 
 .export t80_putc
 
-T80_DRAWPAGE    = $8b
+.segment "ZPSYS": zeropage
+T80_DRAWPAGE:   .res 1
 
-T80_ROW         = $b7
-T80_COL         = $b8
+T80_ROW:        .res 1
+T80_COL:        .res 1
 
-T80_FONT_L      = $8e
-T80_FONT_H      = $8f
+T80_FONT_L:     .res 1
+T80_FONT_H:     .res 1
 
-PUTS_L          = $fa
-PUTS_H          = $fb
+PUTS_L          = TMP_0
+PUTS_H          = TMP_1
 
-CHAR_L          = $b5
-CHAR_H          = $b6
-WCOL            = $fd
+CHAR_L          = TMP_2
+CHAR_H          = TMP_3
+WCOL            = TMP_4
 
-.segment "KSDATA"
-
-char:           .res 8
+char            = TMP_6 ; -- TMP_D
 
 .segment "KICKSTART"
 

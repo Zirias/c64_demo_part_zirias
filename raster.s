@@ -11,20 +11,21 @@
 .export raster_off
 .export raster_install
 
-.export RASTER_SAVE_A
-.export RASTER_SAVE_X
-.export RASTER_SAVE_Y
-.export RASTER_TBL_OFFSET
+.exportzp RASTER_SAVE_A
+.exportzp RASTER_SAVE_X
+.exportzp RASTER_SAVE_Y
+.exportzp RASTER_TBL_OFFSET
 .export raster_bottom
 .export raster_tbl_base
 .export raster_top
 
 .export raster_keycheck
 
-RASTER_SAVE_A           = $22
-RASTER_SAVE_X           = $23
-RASTER_SAVE_Y           = $24
-RASTER_TBL_OFFSET       = $25
+.segment "ZPSYS": zeropage
+RASTER_SAVE_A:          .res 1
+RASTER_SAVE_X:          .res 1
+RASTER_SAVE_Y:          .res 1
+RASTER_TBL_OFFSET:      .res 1
 
 .segment "KSBSS"
 raster_table:   .res    255
@@ -103,7 +104,6 @@ r_installloop:  lda     $ffff,x
 
 ; activate raster IRQ using table for phase 0
 raster_on:
-                sei
                 lda     #%01111111
                 sta     $dc0d
                 lda     $dc0d
