@@ -59,7 +59,9 @@ bmp2c64_EXTRA =
 
 endif
 
-HTOOLS		= tools$(PSEP)bmp2c64$(EXE) tools$(PSEP)cc1541$(EXE)
+mkd64bin = tools$(PSEP)mkd64$(PSEP)mkd64$(EXE)
+
+HTOOLS = tools$(PSEP)bmp2c64$(EXE)
 
 BINARIES = demo_boot demo_loader demo_bootload demo_kickstart \
 	   demo_amigados demo_music
@@ -73,28 +75,30 @@ demo:	$(OBJECTS) $(LINKCFG)
 	$(LD) -odemo $(LDFLAGS) $(OBJECTS)
 	$(CATIN) demo_boot $(CATADD)demo_loader $(CATOUT)demo_bootloader
 
-disk:	all tools$(PSEP)cc1541$(EXE)
+disk:	all $(mkd64bin)
 	$(MDP) disks
-	tools$(PSEP)cc1541 -x \
-		-n$(DISKNAME) -i$(DISKID) \
-		-f'----------------' -u -s15 -wdemo_amigados \
-		-f'                ' -wdemo_bootloader \
-		-f'  DEMO: MUSIC   ' -d \
-		-f'                ' -u -s15 -wdemo_kickstart \
-		-f'  RELEASE 1.09A3' -d \
-		-f'  2013/12/15    ' -d \
-		-f'  BY ZIRIAS     ' -d \
-		-f'                ' -d \
-		-d \
-		-f'MUSIC           ' -u -s15 -wdemo_music \
-		-d \
-		disks$(PSEP)$(DISKFILE).d64
-
-tools$(PSEP)cc1541$(EXE):	tools$(PSEP)cc1541.o $(cc1541_EXTRA)
-	-$(HCC) -o$@ $^
+	$(mkd64bin) -mcbmdos -odisks$(PSEP)$(DISKFILE).d64 \
+		-d$(DISKNAME) -i$(DISKID) \
+		-fdemo_amigados   -n'----------------' -tU -i15 -w \
+		-fdemo_bootloader -n'                '          -w \
+		-f                -n'  DEMO: MUSIC   ' -tD      -w \
+		-fdemo_kickstart  -n'                ' -tU -i15 -w \
+		-f                -n'  RELEASE 1.09A3' -tD      -w \
+		-f                -n'  2013/12/15    ' -tD      -w \
+		-f                -n'  BY ZIRIAS     ' -tD      -w \
+		-f                -n'                ' -tD      -w \
+		-f                -n'----------------' -tD      -w \
+		-fdemo_music      -n'MUSIC           ' -tU -i15 -w \
+		-f                -n'----------------' -tD      -w
 
 tools$(PSEP)bmp2c64$(EXE):	tools$(PSEP)bmp2c64.o $(bmp2c64_EXTRA)
 	-$(HCC) -o$@ $^
+
+$(mkd64bin): tools$(PSEP)mkd64$(PSEP)Makefile
+	make -C tools$(PSEP)mkd64
+
+tools$(PSEP)mkd64$(PSEP)Makefile:
+	git submodule update --init
 
 %.o:		%.c
 	-$(HCC) -c -o$@ $(HCFLAGS) $<
@@ -140,6 +144,7 @@ clean:
 	$(RMFR) disks
 	$(RMF) tools$(PSEP)*.o
 	$(RMF) $(HTOOLS)
+	make -C tools$(PSEP)mkd64 clean
 
 mrproper:	clean
 	$(RMF) font.s

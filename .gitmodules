@@ -1,0 +1,3 @@
+[submodule "tools/mkd64"]
+	path = tools/mkd64
+	url = https://github.com/Zirias/c64_tool_mkd64
