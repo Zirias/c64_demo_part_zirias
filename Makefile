@@ -79,17 +79,17 @@ disk:	all $(mkd64bin)
 	$(MDP) disks
 	$(mkd64bin) -mcbmdos -odisks$(PSEP)$(DISKFILE).d64 \
 		-d$(DISKNAME) -i$(DISKID) \
-		-fdemo_amigados   -n'----------------' -tU -i15 -w \
+		-fdemo_amigados   -n'----------------' -TU -i15 -w \
 		-fdemo_bootloader -n'                '          -w \
-		-f                -n'  DEMO: MUSIC   ' -tD      -w \
-		-fdemo_kickstart  -n'                ' -tU -i15 -w \
-		-f                -n'  RELEASE 1.09A3' -tD      -w \
-		-f                -n'  2013/12/15    ' -tD      -w \
-		-f                -n'  BY ZIRIAS     ' -tD      -w \
-		-f                -n'                ' -tD      -w \
-		-f                -n'----------------' -tD      -w \
-		-fdemo_music      -n'MUSIC           ' -tU -i15 -w \
-		-f                -n'----------------' -tD      -w
+		-f                -n'  DEMO: MUSIC   ' -TD      -w \
+		-fdemo_kickstart  -n'                ' -TU -i15 -w \
+		-f                -n'  RELEASE 1.09A3' -TD      -w \
+		-f                -n'  2013/12/15    ' -TD      -w \
+		-f                -n'  BY ZIRIAS     ' -TD      -w \
+		-f                -n'                ' -TD      -w \
+		-f                -n'----------------' -TD      -w \
+		-fdemo_music      -n'MUSIC           ' -TU -i15 -w \
+		-f                -n'----------------' -TD      -w
 
 tools$(PSEP)bmp2c64$(EXE):	tools$(PSEP)bmp2c64.o $(bmp2c64_EXTRA)
 	-$(HCC) -o$@ $^
