@@ -88,8 +88,9 @@ ksmsgloop:      lda     ks_msg,x
                 bne     noload
 
                 ; load amigados
-                lda     #'-'
+                lda     #$ab
                 sta     fl_filename
+                lda     #$c0
                 sta     fl_filename+1
                 lda     #<__AMIGADOS_LOAD__
                 sta     fl_loadaddr

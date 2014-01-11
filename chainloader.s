@@ -166,31 +166,11 @@ buf             = $0400
                 lda     #$08
                 sta     $1800
 
-                ldx     #18
-                ldy     #1
+                ldx     #19
+                ldy     #0
 dirloop:        stx     trkbf
                 sty     sctbf
-                jsr     readsect
-                bcc     error
-                ldy     #$02
-nextfile:       lda     buf,y
-                and     #$83
-                cmp     #$83            ; look only for USR files
-                bne     notfound
-                lda     buf+3,y
-                cmp     #' '
-                bne     notfound
-                lda     buf+4,y
-                cmp     #' '
-                beq     found
-notfound:       tya
-                clc
-                adc     #$20
-                tay
-                bcc     nextfile
-                ldy     buf+1
-                ldx     buf
-                bne     dirloop
+                jmp     load
 error:          lda     #$01
 loadend:        jsr     sendbyte
                 lda     $1800
@@ -209,7 +189,7 @@ nextsect:       lda     buf,y
                 beq     loadend
                 lda     buf+1,y
                 sta     sctbf
-                jsr     readsect
+load:           jsr     readsect
                 bcc     error
                 ldy     #$ff
                 lda     buf

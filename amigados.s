@@ -216,9 +216,9 @@ copywd:         lda     defaultwd,x
                 ldx     #>message12
                 jsr     con_print
 
-                lda     #'m'
+                lda     #$dd
                 sta     fl_filename
-                lda     #'u'
+                lda     #$52
                 sta     fl_filename+1
                 lda     #<__ADEXE_LOAD__
                 sta     fl_loadaddr

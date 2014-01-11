@@ -77,19 +77,15 @@ demo:	$(OBJECTS) $(LINKCFG)
 
 disk:	all $(mkd64bin)
 	$(MDP) disks
-	$(mkd64bin) -mcbmdos -odisks$(PSEP)$(DISKFILE).d64 \
-		-d$(DISKNAME) -i$(DISKID) \
-		-fdemo_amigados   -n'----------------' -TU -i15 -w \
-		-fdemo_bootloader -n'                '          -w \
-		-f                -n'  DEMO: MUSIC   ' -TD      -w \
-		-fdemo_kickstart  -n'                ' -TU -i15 -w \
-		-f                -n'  RELEASE 1.09A3' -TD      -w \
-		-f                -n'  2013/12/15    ' -TD      -w \
-		-f                -n'  BY ZIRIAS     ' -TD      -w \
-		-f                -n'                ' -TD      -w \
-		-f                -n'----------------' -TD      -w \
-		-fdemo_music      -n'MUSIC           ' -TU -i15 -w \
-		-f                -n'----------------' -TD      -w
+	$(mkd64bin) -mcbmdos -mseparators -odisks$(PSEP)$(DISKFILE).d64 \
+	  -d$(DISKNAME) -i$(DISKID) -R1 -Da0 -0 \
+	  -fdemo_bootloader                    -proundtop        -S1      -w \
+	  -fdemo_kickstart  -n'DEMO: AMIGADOS' -pfr -t19 -s0 -TU -S0 -i15 -w \
+	  -fdemo_amigados                      -pfrmid       -TU -S0 -i15 -w \
+	  -fdemo_music      -n'RELEASE 1.09A4' -pfr          -TU -S0 -i15 -w \
+	  -f                -n'  2013/12/15  ' -pfr          -TD          -w \
+	  -f                -n'  BY ZIRIAS   ' -pfr          -TD          -w \
+	  -f                                   -proundbot    -TD          -w
 
 tools$(PSEP)bmp2c64$(EXE):	tools$(PSEP)bmp2c64.o $(bmp2c64_EXTRA)
 	-$(HCC) -o$@ $^
