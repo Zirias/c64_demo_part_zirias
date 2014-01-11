@@ -7,6 +7,6 @@ demo_music
 *.lbl
 *.map
 *.o
+*.so
 *~
 .*.swp
-

@@ -60,6 +60,7 @@ bmp2c64_EXTRA =
 endif
 
 mkd64bin = tools$(PSEP)mkd64$(PSEP)mkd64$(EXE)
+amigadosbin = tools$(PSEP)mkd64$(PSEP)amigados$(SO)
 
 HTOOLS = tools$(PSEP)bmp2c64$(EXE)
 
@@ -75,7 +76,7 @@ demo:	$(OBJECTS) $(LINKCFG)
 	$(LD) -odemo $(LDFLAGS) $(OBJECTS)
 	$(CATIN) demo_boot $(CATADD)demo_loader $(CATOUT)demo_bootloader
 
-disk:	all $(mkd64bin)
+disk:	all $(mkd64bin) $(amigadosbin)
 	$(MDP) disks
 	$(mkd64bin) -mcbmdos -mseparators -odisks$(PSEP)$(DISKFILE).d64 \
 	  -d$(DISKNAME) -i$(DISKID) -R1 -Da0 -0 \
@@ -95,6 +96,10 @@ $(mkd64bin): tools$(PSEP)mkd64$(PSEP)Makefile
 
 tools$(PSEP)mkd64$(PSEP)Makefile:
 	git submodule update --init
+
+$(amigadosbin): $(mkd64bin)
+	make -C tools$(PSEP)amigados
+	$(CPF) tools$(PSEP)amigados$(PSEP)amigados.so tools$(PSEP)mkd64
 
 %.o:		%.c
 	-$(HCC) -c -o$@ $(HCFLAGS) $<
@@ -140,6 +145,7 @@ clean:
 	$(RMFR) disks
 	$(RMF) tools$(PSEP)*.o
 	$(RMF) $(HTOOLS)
+	make -C tools$(PSEP)amigados clean
 	make -C tools$(PSEP)mkd64 clean
 
 mrproper:	clean
